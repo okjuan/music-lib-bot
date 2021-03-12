@@ -35,7 +35,7 @@ def was_added_recently(time_added):
     look_back = timedelta(NUM_DAYS_TO_LOOK_BACK)
     return now - look_back < time_added
 
-def main():
+def make_playlists_from_recently_added_albums():
     spotify = get_spotify_client()
 
     # dict w/ keys: ['href', 'items', 'limit', 'next', 'offset', 'previous', 'total']
@@ -49,4 +49,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    make_playlists_from_recently_added_albums()
