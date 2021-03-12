@@ -22,6 +22,9 @@ def get_spotify_bearer_token():
     return os.environ.get("SPOTIFY_BEARER_TOKEN")
 
 def add_album_to_playlist(albums):
+    if len(albums) == 0:
+        return
+
     tracks = []
     for album in albums:
         tracks.extend(get_most_popular_tracks(album, NUM_TRACKS_PER_ALBUM))
