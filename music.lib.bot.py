@@ -22,21 +22,29 @@ def get_spotify_bearer_token():
 def add_album_to_playlist(album):
     print(f"Ok, this is where I do stuff with {album['name']} by {album['artists'][0]['name']}")
 
-def main():
+def get_spotify_client():
     client_id, client_secret = get_spotify_creds()
-
     auth = SpotifyOAuth(scope=SPOTIFY_SCOPES)
-    spotify = spotipy.Spotify(auth_manager=auth)
+    return spotipy.Spotify(auth_manager=auth)
+
+def get_time_utc(time_utc_str):
+    return datetime.strptime(time_utc_str, ISO8601_TIMESTAMP_FORMAT)
+
+def was_added_recently(time_added):
+    now = datetime.utcnow()
+    look_back = timedelta(NUM_DAYS_TO_LOOK_BACK)
+    return now - look_back < time_added
+
+def main():
+    spotify = get_spotify_client()
 
     # dict w/ keys: ['href', 'items', 'limit', 'next', 'offset', 'previous', 'total']
     results = spotify.current_user_saved_albums()
 
     # list, each item is a dict w/ keys: ['added_at', 'album']
     for album in results['items']:
-        time_added = datetime.strptime(album['added_at'], ISO8601_TIMESTAMP_FORMAT)
-        now = datetime.utcnow()
-        look_back = timedelta(NUM_DAYS_TO_LOOK_BACK)
-        if now - look_back < time_added:
+        time_added = get_time_utc(album['added_at'])
+        if was_added_recently(time_added):
             add_album_to_playlist(album['album'])
 
 
