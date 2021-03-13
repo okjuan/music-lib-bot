@@ -21,7 +21,7 @@ def get_spotify_creds():
 def get_spotify_bearer_token():
     return os.environ.get("SPOTIFY_BEARER_TOKEN")
 
-def add_album_to_playlist(albums):
+def add_albums_to_playlist(albums):
     if len(albums) == 0:
         return
 
@@ -68,7 +68,7 @@ def was_added_recently(time_added):
 
 def make_playlists_from_recently_added_albums():
     results = spotify.current_user_saved_albums()
-    add_album_to_playlist([
+    add_albums_to_playlist([
         album['album']
         for album in results['items']
         if was_added_recently(get_time_utc(album['added_at']))
