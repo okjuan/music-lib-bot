@@ -25,10 +25,13 @@ def add_albums_to_playlist(albums):
     if len(albums) == 0:
         return
 
-    tracks = []
-    for album in albums:
-        tracks.extend(get_most_popular_tracks(album, NUM_TRACKS_PER_ALBUM))
+    tracks = [
+        track
+        for album in albums
+        for track in get_most_popular_tracks(album, NUM_TRACKS_PER_ALBUM)
+    ]
     shuffle(tracks)
+
     create_playlist("created by music.lib.bot", tracks)
 
 def create_playlist(name, tracks):
