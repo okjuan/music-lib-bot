@@ -29,7 +29,7 @@ def add_albums_to_playlist(albums):
     for album in albums:
         tracks.extend(get_most_popular_tracks(album, NUM_TRACKS_PER_ALBUM))
     shuffle(tracks)
-    create_playlist(f"created by music.lib.bot", tracks)
+    create_playlist("created by music.lib.bot", tracks)
 
 def create_playlist(name, tracks):
     user_id = spotify.me()['id']
