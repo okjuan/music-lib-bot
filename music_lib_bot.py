@@ -6,6 +6,7 @@ import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 
 
+SPOTIFY_CLIENT = None
 SPOTIFY_SCOPES = "user-library-read,playlist-modify-private"
 ISO8601_TIMESTAMP_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 NUM_DAYS_TO_LOOK_BACK = 1
@@ -35,11 +36,11 @@ def add_albums_to_playlist(albums):
     create_playlist("created by music.lib.bot", tracks)
 
 def create_playlist(name, tracks):
-    user_id = spotify.me()['id']
-    playlist = spotify.user_playlist_create(user_id, name, public=False)
+    user_id = spotify_client().me()['id']
+    playlist = spotify_client().user_playlist_create(user_id, name, public=False)
 
     track_uris = [track['uri'] for track in tracks]
-    spotify.user_playlist_add_tracks(user_id, playlist['id'], track_uris)
+    spotify_client().user_playlist_add_tracks(user_id, playlist['id'], track_uris)
 
 def get_most_popular_tracks(album, num_tracks):
     all_tracks = get_tracks_most_popular_first(album)
@@ -47,7 +48,7 @@ def get_most_popular_tracks(album, num_tracks):
 
 def get_tracks_most_popular_first(album):
     tracks_w_metadata = [
-        spotify.track(track['uri'])
+        spotify_client().track(track['uri'])
         for track in album['tracks']['items']
     ]
     return sorted(
@@ -56,10 +57,13 @@ def get_tracks_most_popular_first(album):
         reverse=True
     )
 
-def get_spotify_client():
-    client_id, client_secret = get_spotify_creds()
-    auth = SpotifyOAuth(scope=SPOTIFY_SCOPES)
-    return spotipy.Spotify(auth_manager=auth)
+def spotify_client():
+    global SPOTIFY_CLIENT
+    if SPOTIFY_CLIENT is None:
+        client_id, client_secret = get_spotify_creds()
+        auth = SpotifyOAuth(scope=SPOTIFY_SCOPES)
+        SPOTIFY_CLIENT = spotipy.Spotify(auth_manager=auth)
+    return SPOTIFY_CLIENT
 
 def get_time_utc(time_utc_str):
     return datetime.strptime(time_utc_str, ISO8601_TIMESTAMP_FORMAT)
@@ -70,7 +74,7 @@ def was_added_recently(time_added):
     return now - look_back < time_added
 
 def make_playlists_from_recently_added_albums():
-    results = spotify.current_user_saved_albums()
+    results = spotify_client().current_user_saved_albums()
     add_albums_to_playlist([
         album['album']
         for album in results['items']
@@ -78,5 +82,4 @@ def make_playlists_from_recently_added_albums():
     ])
 
 if __name__ == "__main__":
-    spotify = get_spotify_client()
     make_playlists_from_recently_added_albums()
