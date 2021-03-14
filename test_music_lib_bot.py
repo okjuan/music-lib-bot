@@ -68,13 +68,13 @@ class TestMusicLibBot(unittest.TestCase):
     def test_get_genre_key_string__multiple_genres__orders_alphabetically(self, _):
         genre_string = get_genre_key_string(mock_album(artists=[mock_artist()]))
 
-        self.assertEqual("jazz---pop---rock", genre_string, "Expected single group of albums")
+        self.assertEqual("jazz---pop---rock", genre_string)
 
     @patch("music_lib_bot.spotify_client", return_value=Mock(artist=Mock(side_effect=[dict(genres=['rock'])])))
     def test_get_genre_key_string__same_genre__groups_together(self, _):
         genre_string = get_genre_key_string(mock_album(artists=[mock_artist()]))
 
-        self.assertEqual("rock", genre_string, "Expected single group of albums")
+        self.assertEqual("rock", genre_string)
 
     @patch("music_lib_bot.spotify_client", return_value=Mock(artist=Mock(side_effect=[dict(genres=[])])))
     def test_get_genre_key_string__no_genre__defaults(self, _):
