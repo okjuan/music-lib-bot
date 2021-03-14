@@ -61,7 +61,7 @@ def get_genre_key_string(album):
     ]
     genres = list(set(genres))
     genres.sort()
-    return ", ".join(genres)
+    return ", ".join(genres) if len(genres) > 0 else "unknown genre"
 
 def create_playlist(name, tracks, description=""):
     user_id = spotify_client().me()['id']

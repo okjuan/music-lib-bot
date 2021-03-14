@@ -76,6 +76,12 @@ class TestMusicLibBot(unittest.TestCase):
 
         self.assertEqual("rock", genre_string, "Expected single group of albums")
 
+    @patch("music_lib_bot.spotify_client", return_value=Mock(artist=Mock(side_effect=[dict(genres=[])])))
+    def test_get_genre_key_string__no_genre__defaults(self, _):
+        genre_string = get_genre_key_string(mock_album(artists=[mock_artist()]))
+
+        self.assertEqual("unknown genre", genre_string)
+
 
 def get_num_times_called(mock):
     if isinstance(mock, Mock):
