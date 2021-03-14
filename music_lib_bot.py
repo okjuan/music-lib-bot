@@ -1,3 +1,4 @@
+from collections import defaultdict
 from datetime import datetime, timedelta
 from random import shuffle
 import os
@@ -9,7 +10,7 @@ from spotipy.oauth2 import SpotifyOAuth
 SPOTIFY_CLIENT = None
 SPOTIFY_SCOPES = "user-library-read,playlist-modify-private"
 ISO8601_TIMESTAMP_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
-NUM_DAYS_TO_LOOK_BACK = 1
+NUM_DAYS_TO_LOOK_BACK = 15
 NUM_TRACKS_PER_ALBUM = 3
 
 def get_spotify_creds():
@@ -34,6 +35,22 @@ def add_albums_to_playlist(albums):
     shuffle(tracks)
 
     create_playlist("created by music.lib.bot", tracks)
+
+def group_albums_by_genre(albums):
+    albums_by_genre = defaultdict(list)
+    for album in albums:
+        albums_by_genre[get_genre_key_string(album)].append(album)
+    return albums_by_genre
+
+def get_genre_key_string(album):
+    genres = [
+        genre
+        for artist in album['artists']
+        for genre in spotify_client().artist(artist['id'])['genres']
+    ]
+    genres = list(set(genres))
+    genres.sort()
+    return "---".join(genres)
 
 def create_playlist(name, tracks):
     user_id = spotify_client().me()['id']

@@ -1,17 +1,17 @@
-def mock_album():
+def mock_album(genres=[], artists=[], name=[]):
     return dict(
         album_type="",
-        artists=[],
+        artists=artists,
         available_markets=[],
         copyrights=[],
         external_ids=[],
         external_urls=[],
-        genres=[],
+        genres=genres,
         href="",
         id="",
         images="",
         label="",
-        name="",
+        name=name,
         popularity=0,
         release_date="",
         release_date_precision=1,
@@ -23,3 +23,6 @@ def mock_album():
 
 def mock_track():
     return dict(uri="")
+
+def mock_artist():
+    return dict(id="123")
