@@ -23,20 +23,31 @@ def get_spotify_creds():
 def get_spotify_bearer_token():
     return os.environ.get("SPOTIFY_BEARER_TOKEN")
 
-def add_albums_to_playlist(albums):
-    if len(albums) == 0:
+def add_albums_to_playlist(all_albums):
+    if len(all_albums) == 0:
         return
 
-    tracks = [
-        track
-        for album in albums
-        for track in get_most_popular_tracks(album, NUM_TRACKS_PER_ALBUM)
-    ]
-    shuffle(tracks)
+    albums_by_genre = group_albums_by_genre(all_albums)
+    for description, albums in albums_by_genre.items():
+        tracks = [
+            track
+            for album in albums
+            for track in get_most_popular_tracks(album, NUM_TRACKS_PER_ALBUM)
+        ]
+        shuffle(tracks)
 
-    create_playlist("created by music.lib.bot", tracks)
+        create_playlist(
+            "created by music.lib.bot",
+            tracks,
+            description=description
+        )
 
 def group_albums_by_genre(albums):
+    """
+    Returns:
+        albums_by_genre (dict): key:string, value:[Album].
+            e.g. {'rock': [Album], 'jazz': [Album, Album]}.
+    """
     albums_by_genre = defaultdict(list)
     for album in albums:
         albums_by_genre[get_genre_key_string(album)].append(album)
@@ -52,9 +63,10 @@ def get_genre_key_string(album):
     genres.sort()
     return "---".join(genres)
 
-def create_playlist(name, tracks):
+def create_playlist(name, tracks, description=""):
     user_id = spotify_client().me()['id']
-    playlist = spotify_client().user_playlist_create(user_id, name, public=False)
+    playlist = spotify_client().user_playlist_create(
+        user_id, name, public=False, description=description)
 
     track_uris = [track['uri'] for track in tracks]
     spotify_client().user_playlist_add_tracks(user_id, playlist['id'], track_uris)
