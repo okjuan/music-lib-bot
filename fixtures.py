@@ -1,4 +1,4 @@
-def mock_album(genres=[], artists=[], name=[]):
+def mock_album(id="", genres=[], artists=[], name=[]):
     return dict(
         album_type="",
         artists=artists,
@@ -8,7 +8,7 @@ def mock_album(genres=[], artists=[], name=[]):
         external_urls=[],
         genres=genres,
         href="",
-        id="",
+        id=id,
         images="",
         label="",
         name=name,

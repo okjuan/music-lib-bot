@@ -50,19 +50,57 @@ def group_albums_by_genre(albums):
         albums_by_genre (dict): key:string, value:[Album].
             e.g. {'rock': [Album], 'jazz': [Album, Album]}.
     """
-    albums_by_genre = defaultdict(list)
     for album in albums:
-        albums_by_genre[get_genre_key_string(album)].append(album)
-    return albums_by_genre
+        album['genres'] = get_genres(album)
 
-def get_genre_key_string(album):
-    genres = [
+    album_groups = _group_albums_by_genre(albums)
+    album_groups_by_genre_string = dict()
+    for album_group in album_groups:
+        # TODO: move this logic to _group_albums_by_genre, where we should already know it?
+        genres = set(album_group[0]['genres'])
+        for album in album_group[1:]:
+            genres &= set(album['genres'])
+        album_groups_by_genre_string[get_genre_key_string(genres)] = album_group
+    return album_groups_by_genre_string
+
+def _group_albums_by_genre(albums):
+    """Determine which albums have similar genres."""
+    adjacencies, genre_to_albums = defaultdict(lambda: defaultdict(int)), defaultdict(set)
+    albums_by_id = dict()
+    for album in albums:
+        for genre in album['genres']:
+            for matching_album_id in genre_to_albums[genre]:
+                adjacencies[album['id']][matching_album_id] += 1
+                adjacencies[matching_album_id][album['id']] += 1
+            genre_to_albums[genre].add(album['id'])
+        albums_by_id[album['id']] = album
+
+    album_ids = albums_by_id.keys()
+    min_genres_in_common, albums_to_group = 1, set(album_ids)
+    grouped_albums = []
+    for album_id in album_ids:
+        if album_id not in albums_to_group:
+            continue
+
+        group = []
+        for matching_album_id, num_matches in adjacencies[album_id].items():
+            if num_matches >= min_genres_in_common:
+                group.append(albums_by_id[matching_album_id])
+                albums_to_group.remove(matching_album_id)
+        group.append(albums_by_id[album_id])
+        albums_to_group.remove(album_id)
+        grouped_albums.append(group)
+
+    return grouped_albums
+
+def get_genres(album):
+    return [
         genre
         for artist in album['artists']
         for genre in spotify_client().artist(artist['id'])['genres']
     ]
-    genres = list(set(genres))
-    genres.sort()
+
+def get_genre_key_string(genres):
     return ", ".join(genres) if len(genres) > 0 else "unknown genre"
 
 def create_playlist(name, tracks, description=""):

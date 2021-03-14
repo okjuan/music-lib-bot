@@ -2,7 +2,12 @@ import unittest
 from unittest.mock import patch, Mock, MagicMock
 
 from fixtures import mock_album, mock_track, mock_artist
-from music_lib_bot import add_albums_to_playlist, group_albums_by_genre, get_genre_key_string
+from music_lib_bot import (
+    add_albums_to_playlist,
+    group_albums_by_genre,
+    get_genre_key_string,
+    _group_albums_by_genre
+)
 
 
 class TestMusicLibBot(unittest.TestCase):
@@ -81,6 +86,17 @@ class TestMusicLibBot(unittest.TestCase):
         genre_string = get_genre_key_string(mock_album(artists=[mock_artist()]))
 
         self.assertEqual("unknown genre", genre_string)
+
+    def test__group_albums_by_genre(self):
+        albums = [mock_album(id="123", genres=['jazz']), mock_album(id="456", genres=['jazz'])]
+
+        album_groups = _group_albums_by_genre(albums)
+
+        self.assertEqual(1, len(album_groups))
+        self.assertEqual(2, len(album_groups[0]))
+        album_ids = [album['id'] for album in album_groups[0]]
+        self.assertIn("123", album_ids)
+        self.assertIn("456", album_ids)
 
 
 def get_num_times_called(mock):
