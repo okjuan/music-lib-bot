@@ -11,6 +11,7 @@ SPOTIFY_CLIENT = None
 SPOTIFY_SCOPES = "user-library-read,playlist-modify-private"
 ISO8601_TIMESTAMP_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 NUM_DAYS_TO_LOOK_BACK = 15
+MIN_GENRES_IN_COMMON = 3
 NUM_TRACKS_PER_ALBUM = 3
 
 def get_spotify_creds():
@@ -76,7 +77,7 @@ def _group_albums_by_genre(albums):
         albums_by_id[album['id']] = album
 
     album_ids = albums_by_id.keys()
-    min_genres_in_common, albums_to_group = 1, set(album_ids)
+    albums_to_group = set(album_ids)
     grouped_albums = []
     for album_id in album_ids:
         if album_id not in albums_to_group:
@@ -84,14 +85,18 @@ def _group_albums_by_genre(albums):
 
         group = []
         for matching_album_id, num_matches in adjacencies[album_id].items():
-            if num_matches >= min_genres_in_common:
+            if num_matches >= MIN_GENRES_IN_COMMON:
                 group.append(albums_by_id[matching_album_id])
-                albums_to_group.remove(matching_album_id)
+                remove_from_set(albums_to_group, matching_album_id)
         group.append(albums_by_id[album_id])
-        albums_to_group.remove(album_id)
+        remove_from_set(albums_to_group, album_id)
         grouped_albums.append(group)
 
     return grouped_albums
+
+def remove_from_set(set_, member):
+    if member in set_:
+        set_.remove(member)
 
 def get_genres(album):
     return [
