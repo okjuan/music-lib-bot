@@ -29,18 +29,20 @@ def add_albums_to_playlist(all_albums):
 
     albums_by_genre = group_albums_by_genre(all_albums)
     for description, albums in albums_by_genre.items():
-        tracks = [
-            track
-            for album in albums
-            for track in get_most_popular_tracks(album, NUM_TRACKS_PER_ALBUM)
-        ]
-        shuffle(tracks)
-
         create_playlist(
             "created by music.lib.bot",
-            tracks,
+            get_tracks_from_each(albums),
             description=description
         )
+
+def get_tracks_from_each(albums):
+    tracks = [
+        track
+        for album in albums
+        for track in get_most_popular_tracks(album, NUM_TRACKS_PER_ALBUM)
+    ]
+    shuffle(tracks)
+    return tracks
 
 def group_albums_by_genre(albums):
     """
