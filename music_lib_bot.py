@@ -7,14 +7,15 @@ import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 
 
+SPOTIFY_ALBUMS_API_LIMIT = 50
 SPOTIFY_CLIENT = None
 SPOTIFY_SCOPES = "user-library-read,playlist-modify-private"
 ISO8601_TIMESTAMP_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
-ALBUMS_TO_FETCH = 50
+ALBUMS_TO_FETCH = 1000
 LOOK_AT_ENTIRE_LIBRARY = True
-MIN_ALBUMS_PER_PLAYLIST = 3
+MIN_ALBUMS_PER_PLAYLIST = 8
 NUM_DAYS_TO_LOOK_BACK = 15
-MIN_MATCHES_TO_GROUP = 3
+MIN_MATCHES_TO_GROUP = 4
 NUM_TRACKS_PER_ALBUM = 3
 
 def get_spotify_creds():
@@ -35,6 +36,7 @@ def add_albums_to_playlist(all_albums):
     albums_by_genre = group_albums_by_genre(all_albums)
     print(f"Matched into {len(albums_by_genre)} groups...")
 
+    playlist_count = 0
     for description, albums in albums_by_genre.items():
         if len(albums) >= MIN_ALBUMS_PER_PLAYLIST:
             print(f"Creating '{description}' playlist from {len(albums)} albums...")
@@ -43,6 +45,8 @@ def add_albums_to_playlist(all_albums):
                 get_tracks_from_each(albums),
                 description=description
             )
+            playlist_count += 1
+    print(f"Created {playlist_count} playlists!")
 
 def get_tracks_from_each(albums):
     tracks = [
@@ -154,14 +158,29 @@ def was_added_recently(time_added):
     look_back = timedelta(NUM_DAYS_TO_LOOK_BACK)
     return now - look_back < time_added
 
+def fetch_albums():
+    all_results, albums_fetched_so_far = [], 0
+    while albums_fetched_so_far < ALBUMS_TO_FETCH:
+        albums_to_fetch = ALBUMS_TO_FETCH - albums_fetched_so_far
+        batch_size = albums_to_fetch if albums_to_fetch <= SPOTIFY_ALBUMS_API_LIMIT else SPOTIFY_ALBUMS_API_LIMIT
+        all_results.append(spotify_client().current_user_saved_albums(
+            limit=batch_size, offset=albums_fetched_so_far))
+        # TODO: quit fetching once we reach an album added before LOOK_AT_ENTIRE_LIBRARY
+        albums_fetched_so_far += batch_size
+    return [
+        (album['added_at'], album['album'])
+        for results in all_results
+        for album in results['items']
+    ]
+
 def make_playlists_from_recently_added_albums():
     print(f"Fetching recently saved albums...")
-    results = spotify_client().current_user_saved_albums(limit=ALBUMS_TO_FETCH)
-    print(f"Fetched {len(results['items'])} albums...")
+    albums = fetch_albums()
+    print(f"Fetched {len(albums)} albums...")
     add_albums_to_playlist([
-        album['album']
-        for album in results['items']
-        if LOOK_AT_ENTIRE_LIBRARY or was_added_recently(get_time_utc(album['added_at']))
+        album
+        for timestamp, album in albums
+        if LOOK_AT_ENTIRE_LIBRARY or was_added_recently(get_time_utc(timestamp))
     ])
 
 if __name__ == "__main__":
