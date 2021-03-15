@@ -62,10 +62,11 @@ def group_albums_by_genre(albums):
     albums_by_id = add_artist_genres(albums)
     matches = detect_genre_matches(albums_by_id)
     album_groups = group_albums(albums_by_id.keys(), matches)
-    return get_genre_descriptions([
-        albums_by_id[album_id]
-        for album_id in album_groups
-    ])
+    return {
+        description: [albums_by_id[album_id] for album_id in group["album ids"]]
+        for description, group in album_groups.items()
+        if group["num matches"] >= MIN_MATCHES_TO_GROUP
+    }
 
 def add_artist_genres(albums):
     albums_by_id = dict()
@@ -74,41 +75,28 @@ def add_artist_genres(albums):
         albums_by_id[album['id']] = album
     return albums_by_id
 
-def get_genre_descriptions(album_groups):
-    album_groups_by_genre_string = dict()
-    for album_group in album_groups:
-        genres = set(album_group[0]['genres'])
-        albums_in_group = [album]
-        for album in album_group[1:]:
-            albums_in_group.append(album)
-            genres &= set(album['genres'])
-        album_groups_by_genre_string[get_genre_key_string(genres)] = albums_in_group
-    return album_groups_by_genre_string
-
 def group_albums(album_ids, matches):
     if len(album_ids) == 0 or len(matches) == 0:
         return [album_ids]
 
-    albums_to_group, grouped_albums = set(album_ids), []
+    grouped_albums = dict()
     for album_id in album_ids:
-        if album_id in albums_to_group:
-            group = []
-            for matching_album_id, matched_on in matches[album_id].items():
-                if len(matched_on) >= MIN_MATCHES_TO_GROUP:
-                    group.append(matching_album_id)
-                    remove_from_set(albums_to_group, matching_album_id)
-            group.append(album_id)
-            remove_from_set(albums_to_group, album_id)
-            grouped_albums.append(group)
+        for matching_album_id, matched_on in matches[album_id].items():
+            group_key = as_readable_key(matched_on)
+            if group_key not in grouped_albums:
+                grouped_albums[group_key] = {"num matches": 0, "album ids": set()}
+            grouped_albums[group_key]["num matches"] = len(matched_on)
+            grouped_albums[group_key]["album ids"].add(album_id)
+            grouped_albums[group_key]["album ids"].add(matching_album_id)
     return grouped_albums
 
 def detect_genre_matches(albums_by_id):
-    adjacencies, genre_to_albums = defaultdict(lambda: defaultdict(int)), defaultdict(set)
+    adjacencies, genre_to_albums = defaultdict(lambda: defaultdict(list)), defaultdict(set)
     for _, album in albums_by_id.items():
         for genre in album['genres']:
             for matching_album_id in genre_to_albums[genre]:
-                adjacencies[album['id']][matching_album_id] += 1
-                adjacencies[matching_album_id][album['id']] += 1
+                adjacencies[album['id']][matching_album_id].append(genre)
+                adjacencies[matching_album_id][album['id']].append(genre)
             genre_to_albums[genre].add(album['id'])
     return adjacencies
 
@@ -123,9 +111,9 @@ def get_artist_genres(album):
         for genre in spotify_client().artist(artist['id'])['genres']
     ]
 
-def get_genre_key_string(genres):
-    genres.sort()
-    return ", ".join(genres) if len(genres) > 0 else "unknown genre"
+def as_readable_key(list_):
+    list_.sort()
+    return ", ".join(list_) if len(list_) > 0 else "unknown"
 
 def create_playlist(name, tracks, description=""):
     user_id = spotify_client().me()['id']

@@ -5,7 +5,7 @@ from fixtures import mock_album, mock_track, mock_artist
 from music_lib_bot import (
     add_albums_to_playlist,
     group_albums_by_genre,
-    get_genre_key_string,
+    as_readable_key,
     detect_genre_matches,
     group_albums,
 )
@@ -29,7 +29,7 @@ class TestMusicLibBot(unittest.TestCase):
             "created by music.lib.bot", [mock_track(), mock_track(), mock_track()])
 
     @unittest.skip("needs to be updated")
-    @patch("music_lib_bot.get_genre_key_string", return_value="unbelievable-funk")
+    @patch("music_lib_bot.as_readable_key", return_value="unbelievable-funk")
     def test_group_albums_by_genre__single_album(self, _):
         albums_by_genre = group_albums_by_genre([mock_album(name="jiggery pokery")])
 
@@ -42,7 +42,7 @@ class TestMusicLibBot(unittest.TestCase):
         )
 
     @unittest.skip("needs to be updated")
-    @patch("music_lib_bot.get_genre_key_string", return_value="unbelievable-funk")
+    @patch("music_lib_bot.as_readable_key", return_value="unbelievable-funk")
     def test_group_albums_by_genre__same_genre_key__groups_together(self, _):
         albums = [mock_album(name="jiggery pokery"), mock_album(name="mischief")]
 
@@ -55,7 +55,7 @@ class TestMusicLibBot(unittest.TestCase):
         self.assertIn("mischief", album_names)
 
     @unittest.skip("needs to be updated")
-    @patch("music_lib_bot.get_genre_key_string", side_effect=["unbelievable-funk", "ambient-whispering"])
+    @patch("music_lib_bot.as_readable_key", side_effect=["unbelievable-funk", "ambient-whispering"])
     def test_group_albums_by_genre__diff_genre_key__groups_separately(self, _):
         albums = [mock_album(name="jiggery pokery"), mock_album(name="mischief")]
 
@@ -74,26 +74,26 @@ class TestMusicLibBot(unittest.TestCase):
         self.assertEqual("jiggery pokery", albums_by_genre["unbelievable-funk"][0]['name'])
         self.assertEqual("mischief", albums_by_genre["ambient-whispering"][0]['name'])
 
-    def test_get_genre_key_string__multiple_genres__orders_alphabetically(self):
+    def test_as_readable_key__multiple_genres__orders_alphabetically(self):
         genres = ['rock', 'jazz', 'pop']
 
-        genre_string = get_genre_key_string(genres)
+        genre_string = as_readable_key(genres)
 
         self.assertEqual("jazz, pop, rock", genre_string)
 
-    def test_get_genre_key_string__same_genre__groups_together(self):
+    def test_as_readable_key__single__returns(self):
         genres = ['rock']
 
-        genre_string = get_genre_key_string(genres)
+        genre_string = as_readable_key(genres)
 
         self.assertEqual("rock", genre_string)
 
-    def test_get_genre_key_string__no_genre__defaults(self):
+    def test_as_readable_key__empty__defaults(self):
         genres = []
 
-        genre_string = get_genre_key_string(genres)
+        genre_string = as_readable_key(genres)
 
-        self.assertEqual("unknown genre", genre_string)
+        self.assertEqual("unknown", genre_string)
 
     @unittest.skip("function no longer exists")
     def test__group_albums_by_genre(self):
@@ -130,8 +130,10 @@ class TestMusicLibBot(unittest.TestCase):
         self.assertIn("456", matches)
         self.assertEqual(1, len(matches["123"]))
         self.assertEqual(1, len(matches["456"]))
-        self.assertEqual(2, matches["123"]["456"])
-        self.assertEqual(2, matches["456"]["123"])
+        self.assertEqual(2, len(matches["123"]["456"]))
+        self.assertEqual(2, len(matches["456"]["123"]))
+        self.assertEqual(["A", "B"], matches["123"]["456"])
+        self.assertEqual(["A", "B"], matches["456"]["123"])
 
     def test_detect_genre_matches__no_matches__empty(self):
         albums_by_id = {
@@ -172,12 +174,16 @@ class TestMusicLibBot(unittest.TestCase):
         self.assertEqual(1, len(matches["123"]))
         self.assertEqual(2, len(matches["456"]))
         self.assertEqual(1, len(matches["789"]))
-        self.assertEqual(1, matches["123"]["456"])
-        self.assertEqual(1, matches["456"]["123"])
-        self.assertEqual(1, matches["456"]["789"])
-        self.assertEqual(1, matches["789"]["456"])
+        self.assertEqual(1, len(matches["123"]["456"]))
+        self.assertEqual(1, len(matches["456"]["123"]))
+        self.assertEqual(1, len(matches["456"]["789"]))
+        self.assertEqual(1, len(matches["789"]["456"]))
+        self.assertEqual(["B"], matches["123"]["456"])
+        self.assertEqual(["B"], matches["456"]["123"])
+        self.assertEqual(["C"], matches["456"]["789"])
+        self.assertEqual(["C"], matches["789"]["456"])
 
-    def test_group_albums(self):
+    def test_group_albums__single_album__single_group(self):
         album_ids, matches = ["1"], {}
 
         album_groups = group_albums(album_ids, matches)
@@ -193,16 +199,14 @@ class TestMusicLibBot(unittest.TestCase):
         self.assertEqual(1, len(album_groups))
 
     @patch("music_lib_bot.MIN_MATCHES_TO_GROUP", 2)
-    def test_group_albums__not_enough_matches__separate_groups(self):
+    def test_group_albums__single_match__group_together(self):
         album_ids, matches = ["1", "2"], {"1": {"2": ["jazz"]}, "2": {"1": ["jazz"]}}
 
         album_groups = group_albums(album_ids, matches)
 
-        self.assertEqual(2, len(album_groups))
-        self.assertTrue(
-            (album_groups[0] == ["1"] and album_groups[1] == ["2"])
-            or (album_groups[1] == ["1"] and album_groups[0] == ["2"])
-        )
+        self.assertEqual(1, len(album_groups))
+        self.assertIn("jazz", album_groups)
+        self.assertEqual(2, len(album_groups["jazz"]))
 
     @patch("music_lib_bot.MIN_MATCHES_TO_GROUP", 1)
     def test_group_albums__transitive_match__does_not_group(self):
@@ -215,7 +219,7 @@ class TestMusicLibBot(unittest.TestCase):
 
         album_groups = group_albums(album_ids, matches)
 
-        self.assertEqual(3, len(album_groups))
+        self.assertEqual(2, len(album_groups))
 
     @patch("music_lib_bot.MIN_MATCHES_TO_GROUP", 1)
     def test_group_albums__disjoint_matches__includes_all_group_variations(self):
