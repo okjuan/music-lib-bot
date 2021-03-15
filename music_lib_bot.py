@@ -86,6 +86,9 @@ def get_genre_descriptions(album_groups):
     return album_groups_by_genre_string
 
 def group_albums(album_ids, matches):
+    if len(album_ids) == 0 or len(matches) == 0:
+        return [album_ids]
+
     albums_to_group, grouped_albums = set(album_ids), []
     for album_id in album_ids:
         if album_id not in albums_to_group:

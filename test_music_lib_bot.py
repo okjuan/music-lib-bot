@@ -7,6 +7,7 @@ from music_lib_bot import (
     group_albums_by_genre,
     get_genre_key_string,
     detect_genre_matches,
+    group_albums,
 )
 
 
@@ -175,6 +176,33 @@ class TestMusicLibBot(unittest.TestCase):
         self.assertEqual(1, matches["456"]["123"])
         self.assertEqual(1, matches["456"]["789"])
         self.assertEqual(1, matches["789"]["456"])
+
+    def test_group_albums(self):
+        album_ids, matches = ["1"], {}
+
+        album_groups = group_albums(album_ids, matches)
+
+        self.assertEqual(1, len(album_groups))
+
+    @patch("music_lib_bot.MIN_MATCHES_TO_GROUP", 1)
+    def test_group_albums__single_qualifying_match__single_group(self):
+        album_ids, matches = ["1", "2"], {"1": {"2": 1}, "2": {"1": 1}}
+
+        album_groups = group_albums(album_ids, matches)
+
+        self.assertEqual(1, len(album_groups))
+
+    @patch("music_lib_bot.MIN_MATCHES_TO_GROUP", 2)
+    def test_group_albums__single_nonqualifying_match__separate_groups(self):
+        album_ids, matches = ["1", "2"], {"1": {"2": 1}, "2": {"1": 1}}
+
+        album_groups = group_albums(album_ids, matches)
+
+        self.assertEqual(2, len(album_groups))
+        self.assertTrue(
+            (album_groups[0] == ["1"] and album_groups[1] == ["2"])
+            or (album_groups[1] == ["1"] and album_groups[0] == ["2"])
+        )
 
 
 def get_num_times_called(mock):
