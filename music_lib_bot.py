@@ -91,17 +91,15 @@ def group_albums(album_ids, matches):
 
     albums_to_group, grouped_albums = set(album_ids), []
     for album_id in album_ids:
-        if album_id not in albums_to_group:
-            continue
-
-        group = []
-        for matching_album_id, num_matches in matches[album_id].items():
-            if num_matches >= MIN_MATCHES_TO_GROUP:
-                group.append(matching_album_id)
-                remove_from_set(albums_to_group, matching_album_id)
-        group.append(album_id)
-        remove_from_set(albums_to_group, album_id)
-        grouped_albums.append(group)
+        if album_id in albums_to_group:
+            group = []
+            for matching_album_id, num_matches in matches[album_id].items():
+                if num_matches >= MIN_MATCHES_TO_GROUP:
+                    group.append(matching_album_id)
+                    remove_from_set(albums_to_group, matching_album_id)
+            group.append(album_id)
+            remove_from_set(albums_to_group, album_id)
+            grouped_albums.append(group)
     return grouped_albums
 
 def detect_genre_matches(albums_by_id):
