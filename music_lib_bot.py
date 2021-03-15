@@ -93,8 +93,8 @@ def group_albums(album_ids, matches):
     for album_id in album_ids:
         if album_id in albums_to_group:
             group = []
-            for matching_album_id, num_matches in matches[album_id].items():
-                if num_matches >= MIN_MATCHES_TO_GROUP:
+            for matching_album_id, matched_on in matches[album_id].items():
+                if len(matched_on) >= MIN_MATCHES_TO_GROUP:
                     group.append(matching_album_id)
                     remove_from_set(albums_to_group, matching_album_id)
             group.append(album_id)

@@ -186,15 +186,15 @@ class TestMusicLibBot(unittest.TestCase):
 
     @patch("music_lib_bot.MIN_MATCHES_TO_GROUP", 1)
     def test_group_albums__single_qualifying_match__single_group(self):
-        album_ids, matches = ["1", "2"], {"1": {"2": 1}, "2": {"1": 1}}
+        album_ids, matches = ["1", "2"], {"1": {"2": ["jazz"]}, "2": {"1": ["jazz"]}}
 
         album_groups = group_albums(album_ids, matches)
 
         self.assertEqual(1, len(album_groups))
 
     @patch("music_lib_bot.MIN_MATCHES_TO_GROUP", 2)
-    def test_group_albums__single_nonqualifying_match__separate_groups(self):
-        album_ids, matches = ["1", "2"], {"1": {"2": 1}, "2": {"1": 1}}
+    def test_group_albums__not_enough_matches__separate_groups(self):
+        album_ids, matches = ["1", "2"], {"1": {"2": ["jazz"]}, "2": {"1": ["jazz"]}}
 
         album_groups = group_albums(album_ids, matches)
 
@@ -203,6 +203,33 @@ class TestMusicLibBot(unittest.TestCase):
             (album_groups[0] == ["1"] and album_groups[1] == ["2"])
             or (album_groups[1] == ["1"] and album_groups[0] == ["2"])
         )
+
+    @patch("music_lib_bot.MIN_MATCHES_TO_GROUP", 1)
+    def test_group_albums__transitive_match__does_not_group(self):
+        album_ids = ["2", "1", "3"]
+        matches = {
+            "1": {"2": ["jazz"]},
+            "2": {"1": ["jazz"], "3": ["rock"]},
+            "3": {"2": ["rock"]}
+        }
+
+        album_groups = group_albums(album_ids, matches)
+
+        self.assertEqual(3, len(album_groups))
+
+    @patch("music_lib_bot.MIN_MATCHES_TO_GROUP", 1)
+    def test_group_albums__disjoint_matches__includes_all_group_variations(self):
+        album_ids = ["2", "1", "3", "4"]
+        matches = {
+            "1": {"2": ["jazz"]},
+            "2": {"1": ["jazz"], "3": ["rock"], "4": ["pop"]},
+            "3": {"2": ["rock"]},
+            "4": {"2": ["pop"]}
+        }
+
+        album_groups = group_albums(album_ids, matches)
+
+        self.assertEqual(3, len(album_groups))
 
 
 def get_num_times_called(mock):
