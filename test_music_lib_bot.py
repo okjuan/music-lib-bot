@@ -6,7 +6,8 @@ from music_lib_bot import (
     add_albums_to_playlist,
     group_albums_by_genre,
     get_genre_key_string,
-    _group_albums_by_genre
+    _group_albums_by_genre,
+    detect_genre_matches,
 )
 
 
@@ -97,6 +98,73 @@ class TestMusicLibBot(unittest.TestCase):
         album_ids = [album['id'] for album in album_groups[0]]
         self.assertIn("123", album_ids)
         self.assertIn("456", album_ids)
+
+    def test_detect_genre_matches__single_album__empty(self):
+        albums_by_id = {123: mock_album()}
+
+        matches = detect_genre_matches(albums_by_id)
+
+        self.assertEqual(0, len(matches.keys()))
+
+    def test_detect_genre_matches__two_albums__match_counts_are_symmetrical(self):
+        albums_by_id = {
+            "123": mock_album(id="123", genres=["A", "B", "C"]),
+            "456": mock_album(id="456", genres=["A", "B", "D"]),
+        }
+
+        matches = detect_genre_matches(albums_by_id)
+
+        self.assertEqual(2, len(matches.keys()))
+        self.assertIn("123", matches)
+        self.assertIn("456", matches)
+        self.assertEqual(1, len(matches["123"]))
+        self.assertEqual(1, len(matches["456"]))
+        self.assertEqual(2, matches["123"]["456"])
+        self.assertEqual(2, matches["456"]["123"])
+
+    def test_detect_genre_matches__no_matches__empty(self):
+        albums_by_id = {
+            "123": mock_album(id="123", genres=["A"]),
+            "456": mock_album(id="456", genres=["B"]),
+        }
+
+        matches = detect_genre_matches(albums_by_id)
+
+        self.assertEqual(0, len(matches.keys()))
+
+    def test_detect_genre_matches__some_matches__only_returns_entries_for_albums_w_matches(self):
+        albums_by_id = {
+            "123": mock_album(id="123", genres=["A"]),
+            "456": mock_album(id="456", genres=["A"]),
+            "789": mock_album(id="789", genres=["B"]),
+        }
+
+        matches = detect_genre_matches(albums_by_id)
+
+        self.assertEqual(2, len(matches.keys()))
+        self.assertIn("123", matches)
+        self.assertIn("456", matches)
+
+    def test_detect_genre_matches__transitive_match__ignored(self):
+        albums_by_id = {
+            "123": mock_album(id="123", genres=["A", "B"]),
+            "456": mock_album(id="456", genres=["B", "C"]),
+            "789": mock_album(id="789", genres=["C", "D"]),
+        }
+
+        matches = detect_genre_matches(albums_by_id)
+
+        self.assertEqual(3, len(matches.keys()))
+        self.assertIn("123", matches)
+        self.assertIn("456", matches)
+        self.assertIn("789", matches)
+        self.assertEqual(1, len(matches["123"]))
+        self.assertEqual(2, len(matches["456"]))
+        self.assertEqual(1, len(matches["789"]))
+        self.assertEqual(1, matches["123"]["456"])
+        self.assertEqual(1, matches["456"]["123"])
+        self.assertEqual(1, matches["456"]["789"])
+        self.assertEqual(1, matches["789"]["456"])
 
 
 def get_num_times_called(mock):

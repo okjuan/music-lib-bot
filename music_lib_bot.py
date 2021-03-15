@@ -59,48 +59,52 @@ def group_albums_by_genre(albums):
         albums_by_genre (dict): key:string, value:[Album].
             e.g. {'rock': [Album], 'jazz': [Album, Album]}.
     """
+    albums_by_id = dict()
     for album in albums:
         album['genres'] = get_genres(album)
+        albums_by_id[album['id']] = album
 
-    album_groups = _group_albums_by_genre(albums)
+    album_groups = _group_albums_by_genre(albums_by_id)
     album_groups_by_genre_string = dict()
     for album_group in album_groups:
         # TODO: move this logic to _group_albums_by_genre, where we should already know it?
-        genres = set(album_group[0]['genres'])
-        for album in album_group[1:]:
+        album = albums_by_id[album_group[0]]
+        genres = set(album['genres'])
+        albums_in_group = [album]
+        for album_id in album_group[1:]:
+            album = albums_by_id[album_id]
+            albums_in_group.append(album)
             genres &= set(album['genres'])
-        album_groups_by_genre_string[get_genre_key_string(genres)] = album_group
+        album_groups_by_genre_string[get_genre_key_string(genres)] = albums_in_group
     return album_groups_by_genre_string
 
-def _group_albums_by_genre(albums):
+def _group_albums_by_genre(albums_by_id):
     """Determine which albums have similar genres."""
+    matches = detect_genre_matches(albums_by_id)
+    albums_to_group, grouped_albums = set(albums_by_id.keys()), []
+    for album_id in albums_by_id:
+        if album_id not in albums_to_group:
+            continue
+
+        group = []
+        for matching_album_id, num_matches in matches[album_id].items():
+            if num_matches >= MIN_GENRES_IN_COMMON:
+                group.append(matching_album_id)
+                remove_from_set(albums_to_group, matching_album_id)
+        group.append(album_id)
+        remove_from_set(albums_to_group, album_id)
+        grouped_albums.append(group)
+    return grouped_albums
+
+def detect_genre_matches(albums_by_id):
     adjacencies, genre_to_albums = defaultdict(lambda: defaultdict(int)), defaultdict(set)
-    albums_by_id = dict()
-    for album in albums:
+    for _, album in albums_by_id.items():
         for genre in album['genres']:
             for matching_album_id in genre_to_albums[genre]:
                 adjacencies[album['id']][matching_album_id] += 1
                 adjacencies[matching_album_id][album['id']] += 1
             genre_to_albums[genre].add(album['id'])
-        albums_by_id[album['id']] = album
-
-    album_ids = albums_by_id.keys()
-    albums_to_group = set(album_ids)
-    grouped_albums = []
-    for album_id in album_ids:
-        if album_id not in albums_to_group:
-            continue
-
-        group = []
-        for matching_album_id, num_matches in adjacencies[album_id].items():
-            if num_matches >= MIN_GENRES_IN_COMMON:
-                group.append(albums_by_id[matching_album_id])
-                remove_from_set(albums_to_group, matching_album_id)
-        group.append(albums_by_id[album_id])
-        remove_from_set(albums_to_group, album_id)
-        grouped_albums.append(group)
-
-    return grouped_albums
+    return adjacencies
 
 def remove_from_set(set_, member):
     if member in set_:
