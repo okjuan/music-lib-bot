@@ -7,15 +7,17 @@ from music_lib_api import (
 
 SELECTION_MAPPING = []
 SELECTION_LOWER_BOUND, SELECTION_UPPER_BOUND = -1, -1
+MIN_GROUP_SIZE = 5
 
 def print_all_genre_groups(albums_by_genre):
     global SELECTION_LOWER_BOUND, SELECTION_UPPER_BOUND
     SELECTION_LOWER_BOUND, count = 0, 0
     print("Here are your options:")
     for genre_group, albums in albums_by_genre.items():
-        print(f"\n#{count} --- {len(albums)} albums based on these genres:\n{genre_group}")
-        SELECTION_MAPPING.append(genre_group)
-        count += 1
+        if len(albums) >= MIN_GROUP_SIZE:
+            print(f"\n#{count} --- {len(albums)} albums based on these genres:\n{genre_group}")
+            SELECTION_MAPPING.append(genre_group)
+            count += 1
     SELECTION_UPPER_BOUND = count
 
 def get_user_selection():
