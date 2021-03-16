@@ -39,7 +39,7 @@ All done. Happy listening!
 ```
 
 ### What is this?
-A program that looks at your recently saved albums on Spotify and adds songs from them into your Spotify playlists.
+An interactive app that looks at your recently saved albums on Spotify, groups them by their genres, and lets you select which groups to make into Spotify playlists.
 
 ### Pre-requisites
 - Python 3.6 or greater
