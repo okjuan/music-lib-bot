@@ -7,18 +7,22 @@ from music_lib_api import (
 
 SELECTION_MAPPING = []
 SELECTION_LOWER_BOUND, SELECTION_UPPER_BOUND = -1, -1
+SELECTION_QUIT_APP = "Quit"
 MIN_GROUP_SIZE = 5
 
-def print_all_genre_groups(albums_by_genre):
+def set_up_selections(albums_by_genre):
     global SELECTION_LOWER_BOUND, SELECTION_UPPER_BOUND
     SELECTION_LOWER_BOUND, count = 0, 0
-    print("Here are your options:")
     for genre_group, albums in albums_by_genre.items():
         if len(albums) >= MIN_GROUP_SIZE:
-            print(f"\n#{count} --- {len(albums)} albums based on these genres:\n{genre_group}")
             SELECTION_MAPPING.append(genre_group)
             count += 1
     SELECTION_UPPER_BOUND = count
+
+def print_all_genre_groups():
+    print("Here are your options for creating a playlist from albums in your library:")
+    for idx, option in enumerate(SELECTION_MAPPING):
+        print(f"\n#{idx} --- playlist from these genres:\n{option}")
 
 def get_user_selection():
     if SELECTION_LOWER_BOUND >= SELECTION_UPPER_BOUND:
@@ -29,12 +33,15 @@ def get_user_selection():
     while selection is None:
         selection = parse_selection(
             input(
-                f"Please select which playlist to create!\nEnter a number between 0 and {len(SELECTION_MAPPING)}:\n"
+                f"Please select which playlist to create!\nEnter a number between 0 and {len(SELECTION_MAPPING)} or enter 'q' to quit:\n"
             )
         )
-    return SELECTION_MAPPING[selection]
+    return selection
 
 def parse_selection(selection):
+    if selection.strip() == "q":
+        return SELECTION_QUIT_APP
+
     try:
         selection_int = int(selection.strip())
     except ValueError:
@@ -45,15 +52,10 @@ def parse_selection(selection):
     else:
         return None
 
-def get_selected_albums(albums_by_genre):
-    print_all_genre_groups(albums_by_genre)
-
-    selected_genre_group = get_user_selection()
-    if selected_genre_group is None:
-        print("Looks like there was nothing to select from!")
-        return None
-
-    return (selected_genre_group, albums_by_genre[selected_genre_group])
+def get_selection(albums_by_genre):
+    print_all_genre_groups()
+    selection = get_user_selection()
+    return selection
 
 def create_playlist_from_albums(albums, description):
     print(f"Creating '{description}' playlist from {len(albums)} albums...")
@@ -65,10 +67,15 @@ def create_playlist_from_albums(albums, description):
 
 def playlist_picker():
     albums_by_genre = get_my_albums_grouped_by_genre()
-    description, albums = get_selected_albums(albums_by_genre)
-    if albums is not None and len(albums) > 0:
-        create_playlist_from_albums(albums, description)
-    print(f"All done. Happy listening!")
+    set_up_selections(albums_by_genre)
+    while True:
+        selection = get_selection(albums_by_genre)
+        if selection is SELECTION_QUIT_APP:
+            print("Quitting...")
+            break
+        genre_group = SELECTION_MAPPING[selection]
+        create_playlist_from_albums(albums_by_genre[genre_group], genre_group)
+    print(f"Happy listening!")
 
 
 if __name__ == "__main__":
