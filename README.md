@@ -6,6 +6,7 @@ Fetching recently saved albums...
 Fetched 10 albums...
 Grouping 10 albums...
 Matched into 7 groups...
+
 Here are your options:
 
 #0 --- 3 albums based on these genres:
@@ -28,9 +29,11 @@ art punk, art rock, dance rock, dance-punk, experimental, new wave, post-punk, p
 
 #6 --- 2 albums based on these genres:
 art rock, dance rock, madchester, new wave, post-punk, uk post-punk
+
 Please select which playlist to create!
 Enter a number between 0 and 7:
 3
+
 Creating 'alternative rock, art rock, dance rock, new wave, post-punk, uk post-punk' playlist from 4 albums...
 All done. Happy listening!
 ```
