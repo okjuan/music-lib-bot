@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import patch, Mock, MagicMock
 
 from fixtures import mock_album, mock_track, mock_artist
-from music_lib_bot import (
+from music_lib_api import (
     group_albums_by_genre,
     as_readable_key,
     detect_genre_matches,
@@ -12,7 +12,7 @@ from music_lib_bot import (
 
 class TestMusicLibBot(unittest.TestCase):
     @unittest.skip("needs to be updated")
-    @patch("music_lib_bot.as_readable_key", return_value="unbelievable-funk")
+    @patch("music_lib_api.as_readable_key", return_value="unbelievable-funk")
     def test_group_albums_by_genre__single_album(self, _):
         albums_by_genre = group_albums_by_genre([mock_album(name="jiggery pokery")])
 
@@ -25,7 +25,7 @@ class TestMusicLibBot(unittest.TestCase):
         )
 
     @unittest.skip("needs to be updated")
-    @patch("music_lib_bot.as_readable_key", return_value="unbelievable-funk")
+    @patch("music_lib_api.as_readable_key", return_value="unbelievable-funk")
     def test_group_albums_by_genre__same_genre_key__groups_together(self, _):
         albums = [mock_album(name="jiggery pokery"), mock_album(name="mischief")]
 
@@ -38,7 +38,7 @@ class TestMusicLibBot(unittest.TestCase):
         self.assertIn("mischief", album_names)
 
     @unittest.skip("needs to be updated")
-    @patch("music_lib_bot.as_readable_key", side_effect=["unbelievable-funk", "ambient-whispering"])
+    @patch("music_lib_api.as_readable_key", side_effect=["unbelievable-funk", "ambient-whispering"])
     def test_group_albums_by_genre__diff_genre_key__groups_separately(self, _):
         albums = [mock_album(name="jiggery pokery"), mock_album(name="mischief")]
 
@@ -173,7 +173,7 @@ class TestMusicLibBot(unittest.TestCase):
 
         self.assertEqual(1, len(album_groups))
 
-    @patch("music_lib_bot.MIN_MATCHES_TO_GROUP", 1)
+    @patch("music_lib_api.MIN_MATCHES_TO_GROUP", 1)
     def test_group_albums__single_qualifying_match__single_group(self):
         album_ids, matches = ["1", "2"], {"1": {"2": ["jazz"]}, "2": {"1": ["jazz"]}}
 
@@ -181,7 +181,7 @@ class TestMusicLibBot(unittest.TestCase):
 
         self.assertEqual(1, len(album_groups))
 
-    @patch("music_lib_bot.MIN_MATCHES_TO_GROUP", 2)
+    @patch("music_lib_api.MIN_MATCHES_TO_GROUP", 2)
     def test_group_albums__single_match__group_together(self):
         album_ids, matches = ["1", "2"], {"1": {"2": ["jazz"]}, "2": {"1": ["jazz"]}}
 
@@ -191,7 +191,7 @@ class TestMusicLibBot(unittest.TestCase):
         self.assertIn("jazz", album_groups)
         self.assertEqual(2, len(album_groups["jazz"]))
 
-    @patch("music_lib_bot.MIN_MATCHES_TO_GROUP", 1)
+    @patch("music_lib_api.MIN_MATCHES_TO_GROUP", 1)
     def test_group_albums__transitive_match__does_not_group(self):
         album_ids = ["2", "1", "3"]
         matches = {
@@ -204,7 +204,7 @@ class TestMusicLibBot(unittest.TestCase):
 
         self.assertEqual(2, len(album_groups))
 
-    @patch("music_lib_bot.MIN_MATCHES_TO_GROUP", 1)
+    @patch("music_lib_api.MIN_MATCHES_TO_GROUP", 1)
     def test_group_albums__disjoint_matches__includes_all_group_variations(self):
         album_ids = ["2", "1", "3", "4"]
         matches = {

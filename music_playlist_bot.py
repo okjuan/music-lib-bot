@@ -1,4 +1,4 @@
-from music_lib_bot import (
+from music_lib_api import (
     create_playlist,
     get_tracks_from_each,
     get_my_albums_grouped_by_genre
