@@ -11,32 +11,12 @@ SPOTIFY_ALBUMS_API_LIMIT = 50
 SPOTIFY_CLIENT = None
 SPOTIFY_SCOPES = "user-library-read,playlist-modify-private"
 ISO8601_TIMESTAMP_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
-ALBUMS_TO_FETCH = 1000
+ALBUMS_TO_FETCH = 10
 LOOK_AT_ENTIRE_LIBRARY = True
 MIN_ALBUMS_PER_PLAYLIST = 8
 NUM_DAYS_TO_LOOK_BACK = 15
 MIN_MATCHES_TO_GROUP = 4
 NUM_TRACKS_PER_ALBUM = 3
-
-def add_albums_to_playlist(all_albums):
-    if len(all_albums) == 0:
-        return
-
-    print(f"Grouping {len(all_albums)} albums...")
-    albums_by_genre = group_albums_by_genre(all_albums)
-    print(f"Matched into {len(albums_by_genre)} groups...")
-
-    playlist_count = 0
-    for description, albums in albums_by_genre.items():
-        if len(albums) >= MIN_ALBUMS_PER_PLAYLIST:
-            print(f"Creating '{description}' playlist from {len(albums)} albums...")
-            create_playlist(
-                "created by music.lib.bot",
-                get_tracks_from_each(albums),
-                description=description
-            )
-            playlist_count += 1
-    print(f"Created {playlist_count} playlists!")
 
 def get_tracks_from_each(albums):
     tracks = [
@@ -150,7 +130,6 @@ def fetch_albums():
         batch_size = albums_to_fetch if albums_to_fetch <= SPOTIFY_ALBUMS_API_LIMIT else SPOTIFY_ALBUMS_API_LIMIT
         all_results.append(spotify_client().current_user_saved_albums(
             limit=batch_size, offset=albums_fetched_so_far))
-        # TODO: quit fetching once we reach an album added before LOOK_AT_ENTIRE_LIBRARY
         albums_fetched_so_far += batch_size
     return [
         (album['added_at'], album['album'])
@@ -158,15 +137,20 @@ def fetch_albums():
         for album in results['items']
     ]
 
-def make_playlists_from_recently_added_albums():
+def get_my_albums_grouped_by_genre():
     print(f"Fetching recently saved albums...")
     albums = fetch_albums()
+
     print(f"Fetched {len(albums)} albums...")
-    add_albums_to_playlist([
+    if len(albums) == 0:
+        return {}
+
+    print(f"Grouping {len(albums)} albums...")
+    albums_by_genre = group_albums_by_genre([
         album
         for timestamp, album in albums
         if LOOK_AT_ENTIRE_LIBRARY or was_added_recently(get_time_utc(timestamp))
     ])
 
-if __name__ == "__main__":
-    make_playlists_from_recently_added_albums()
+    print(f"Matched into {len(albums_by_genre)} groups...")
+    return albums_by_genre

@@ -3,7 +3,6 @@ from unittest.mock import patch, Mock, MagicMock
 
 from fixtures import mock_album, mock_track, mock_artist
 from music_lib_bot import (
-    add_albums_to_playlist,
     group_albums_by_genre,
     as_readable_key,
     detect_genre_matches,
@@ -12,22 +11,6 @@ from music_lib_bot import (
 
 
 class TestMusicLibBot(unittest.TestCase):
-    def test_add_albums_to_playlist__empty(self):
-        add_albums_to_playlist([])
-
-    @unittest.skip("needs to be updated")
-    @patch("music_lib_bot.create_playlist")
-    @patch("music_lib_bot.get_most_popular_tracks", return_value=[mock_track()])
-    def test_add_albums_to_playlist__multiple_albums(self, mock_get_most_popular_tracks, mock_create_playlist):
-        albums = [mock_album(), mock_album(), mock_album()]
-
-        add_albums_to_playlist(albums)
-
-        self.assertEqual(1, get_num_times_called(mock_create_playlist))
-        self.assertEqual(3, get_num_times_called(mock_get_most_popular_tracks))
-        mock_create_playlist.assert_any_call(
-            "created by music.lib.bot", [mock_track(), mock_track(), mock_track()])
-
     @unittest.skip("needs to be updated")
     @patch("music_lib_bot.as_readable_key", return_value="unbelievable-funk")
     def test_group_albums_by_genre__single_album(self, _):
