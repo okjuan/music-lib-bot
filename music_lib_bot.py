@@ -18,16 +18,6 @@ NUM_DAYS_TO_LOOK_BACK = 15
 MIN_MATCHES_TO_GROUP = 4
 NUM_TRACKS_PER_ALBUM = 3
 
-def get_spotify_creds():
-    client_id = os.environ.get("SPOTIPY_CLIENT_ID")
-    secret_key = os.environ.get("SPOTIPY_CLIENT_SECRET")
-    if client_id is None or secret_key is None:
-        raise Exception("Env vars 'SPOTIPY_CLIENT_ID' and 'SPOTIPY_CLIENT_SECRET' must be set.")
-    return client_id, secret_key
-
-def get_spotify_bearer_token():
-    return os.environ.get("SPOTIFY_BEARER_TOKEN")
-
 def add_albums_to_playlist(all_albums):
     if len(all_albums) == 0:
         return
@@ -104,10 +94,6 @@ def detect_genre_matches(albums_by_id):
             genre_to_albums[genre].add(album['id'])
     return adjacencies
 
-def remove_from_set(set_, member):
-    if member in set_:
-        set_.remove(member)
-
 def get_artist_genres(album):
     return [
         genre
@@ -145,7 +131,6 @@ def get_tracks_most_popular_first(album):
 def spotify_client():
     global SPOTIFY_CLIENT
     if SPOTIFY_CLIENT is None:
-        client_id, client_secret = get_spotify_creds()
         auth = SpotifyOAuth(scope=SPOTIFY_SCOPES)
         SPOTIFY_CLIENT = spotipy.Spotify(auth_manager=auth)
     return SPOTIFY_CLIENT
