@@ -5,10 +5,75 @@ SELECTION_QUIT_APP = "Quit"
 QUIT_KEY = "q"
 MIN_GROUP_SIZE = 1
 MUSIC_LIB_API = None
+DEFAULT_ALBUMS_TO_FETCH = 50
+DEFAULT_LOOK_AT_ENTIRE_LIBRARY = False
+DEFAULT_NUM_DAYS_TO_LOOK_BACK = 15
+DEFAULT_MIN_GENRES_PER_GROUP = 4
+DEFAULT_NUM_TRACKS_PER_ALBUM = 3
 
 class PlaylistPicker:
-    def __init__(self):
-        self.music_lib_api = MusicLibApi()
+    def set_up_user_preferences(self):
+        min_genres_per_group = self.get_preference_int(
+            "What is the minimum number of genres you want per playlist?",
+            DEFAULT_MIN_GENRES_PER_GROUP
+        )
+
+        num_tracks_per_album = self.get_preference_int(
+            "What is the minimum number of tracks you want per album per playlist?",
+            DEFAULT_NUM_TRACKS_PER_ALBUM
+        )
+
+        look_at_entire_library = self.get_preference_yes_or_no(
+            "Should I look at your entire library? (y or n)",
+            DEFAULT_LOOK_AT_ENTIRE_LIBRARY
+        )
+
+        if look_at_entire_library:
+            self.music_lib_api = MusicLibApi(
+                look_at_entire_library=look_at_entire_library,
+                min_genres_per_group=min_genres_per_group,
+                num_tracks_per_album=num_tracks_per_album
+            )
+        else:
+            albums_to_fetch = self.get_preference_int(
+                "How many albums should I fetch from your library?",
+                DEFAULT_ALBUMS_TO_FETCH
+            )
+            num_days_to_look_back = self.get_preference_int(
+                "How many days should I look back for recently saved albums?",
+                DEFAULT_NUM_DAYS_TO_LOOK_BACK
+            )
+            self.music_lib_api = MusicLibApi(
+                albums_to_fetch=albums_to_fetch,
+                look_at_entire_library=look_at_entire_library,
+                num_days_to_look_back=num_days_to_look_back,
+                min_genres_per_group=min_genres_per_group,
+                num_tracks_per_album=num_tracks_per_album
+            )
+
+    def get_preference_int(self, prompt, default):
+        return self.unless_none(self.parse_int(input(prompt+"\n")), default)
+
+    def get_preference_yes_or_no(self, prompt, default):
+        return self.unless_none(self.parse_yes_or_no(input(prompt+"\n")), default)
+
+    def unless_none(self, val, default):
+        return default if val is None else val
+
+    def parse_int(self, input_str):
+        try:
+            return int(input_str.strip())
+        except ValueError:
+            return None
+
+    def parse_yes_or_no(self, input_str):
+        answer = input_str.strip().lower()
+        if answer == "y":
+            return True
+        elif answer == "n":
+            return False
+        else:
+            return None
 
     def set_up_options(self, albums_by_genre):
         return [
@@ -36,12 +101,8 @@ class PlaylistPicker:
         if selection.strip() == QUIT_KEY:
             return SELECTION_QUIT_APP
 
-        try:
-            selection_int = int(selection.strip())
-        except ValueError:
-            return None
-
-        if selection_int >= min_option and selection_int <= max_option:
+        selection_int = self.parse_int(selection)
+        if selection_int is not None and selection_int >= min_option and selection_int <= max_option:
             return selection_int
         return None
 
@@ -67,6 +128,7 @@ class PlaylistPicker:
             self.create_playlist_from_albums(options[selection])
 
     def run(self):
+        self.set_up_user_preferences()
         albums_by_genre = self.music_lib_api.get_my_albums_grouped_by_genre()
 
         options = self.set_up_options(albums_by_genre)

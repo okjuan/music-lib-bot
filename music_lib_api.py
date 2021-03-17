@@ -7,16 +7,23 @@ import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 
 
+SPOTIFY_ALBUMS_API_LIMIT = 50
+SPOTIFY_SCOPES = "user-library-read,playlist-modify-private"
+ISO8601_TIMESTAMP_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+
 class MusicLibApi:
-    def __init__(self):
-        self.SPOTIFY_ALBUMS_API_LIMIT = 50
-        self.SPOTIFY_SCOPES = "user-library-read,playlist-modify-private"
-        self.ISO8601_TIMESTAMP_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
-        self.ALBUMS_TO_FETCH = 10
-        self.LOOK_AT_ENTIRE_LIBRARY = True
-        self.NUM_DAYS_TO_LOOK_BACK = 15
-        self.MIN_MATCHES_TO_GROUP = 4
-        self.NUM_TRACKS_PER_ALBUM = 3
+    def __init__(
+        self,
+        albums_to_fetch=1000,
+        look_at_entire_library=False,
+        num_days_to_look_back=7,
+        min_genres_per_group=4,
+        num_tracks_per_album=3):
+        self.ALBUMS_TO_FETCH = albums_to_fetch
+        self.LOOK_AT_ENTIRE_LIBRARY = look_at_entire_library
+        self.NUM_DAYS_TO_LOOK_BACK = num_days_to_look_back
+        self.MIN_GENRES_PER_GROUP = min_genres_per_group
+        self.NUM_TRACKS_PER_ALBUM = num_tracks_per_album
         self.SPOTIFY_CLIENT = self.spotify_client()
 
     def get_tracks_from_each(self, albums):
@@ -40,7 +47,7 @@ class MusicLibApi:
         return {
             description: [albums_by_id[album_id] for album_id in group["album ids"]]
             for description, group in album_groups.items()
-            if group["num matches"] >= self.MIN_MATCHES_TO_GROUP
+            if group["num matches"] >= self.MIN_GENRES_PER_GROUP
         }
 
     def add_artist_genres(self, albums):
@@ -110,11 +117,11 @@ class MusicLibApi:
         )
 
     def spotify_client(self):
-        auth = SpotifyOAuth(scope=self.SPOTIFY_SCOPES)
+        auth = SpotifyOAuth(scope=SPOTIFY_SCOPES)
         return spotipy.Spotify(auth_manager=auth)
 
     def get_time_utc(self, time_utc_str):
-        return datetime.strptime(time_utc_str, self.ISO8601_TIMESTAMP_FORMAT)
+        return datetime.strptime(time_utc_str, ISO8601_TIMESTAMP_FORMAT)
 
     def was_added_recently(self, time_added):
         now = datetime.utcnow()
@@ -125,7 +132,7 @@ class MusicLibApi:
         all_results, albums_fetched_so_far = [], 0
         while albums_fetched_so_far < self.ALBUMS_TO_FETCH:
             self.ALBUMS_TO_FETCH = self.ALBUMS_TO_FETCH - albums_fetched_so_far
-            batch_size = self.ALBUMS_TO_FETCH if self.ALBUMS_TO_FETCH <= self.SPOTIFY_ALBUMS_API_LIMIT else self.SPOTIFY_ALBUMS_API_LIMIT
+            batch_size = self.ALBUMS_TO_FETCH if self.ALBUMS_TO_FETCH <= SPOTIFY_ALBUMS_API_LIMIT else SPOTIFY_ALBUMS_API_LIMIT
             all_results.append(self.spotify_client().current_user_saved_albums(
                 limit=batch_size, offset=albums_fetched_so_far))
             albums_fetched_so_far += batch_size
