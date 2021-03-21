@@ -53,7 +53,7 @@ class PlaylistPicker:
             DEFAULT_MIN_NUM_ARTISTS_PER_PLAYLIST
         )
 
-    def set_up_options(self, albums_by_genre):
+    def get_playlist_options(self, albums_by_genre):
         min_albums_per_playlist = self.get_min_albums_per_playlist()
         min_artists_per_playlist = self.get_min_artists_per_playlist()
         criteria = lambda albums: len(albums) >= min_albums_per_playlist and self.get_num_diff_artists(albums) >= min_artists_per_playlist
@@ -162,7 +162,7 @@ class PlaylistPicker:
         return albums_by_genre
 
     def run(self):
-        options = self.set_up_options(self.get_albums_by_genre())
+        options = self.get_playlist_options(self.get_albums_by_genre())
         if len(options) == 0:
             print("Didn't find any options to select from!")
             return
