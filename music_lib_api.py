@@ -9,22 +9,15 @@ from spotipy.oauth2 import SpotifyOAuth
 
 SPOTIFY_ALBUMS_API_LIMIT = 50
 SPOTIFY_SCOPES = "user-library-read,playlist-modify-private"
-ISO8601_TIMESTAMP_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+
+# To prevent fetching a copious amount of albums and overwhelming memory
+MAX_ALBUMS_TO_FETCH = 1000
 
 class MusicLibApi:
-    def __init__(
-        self,
-        albums_to_fetch=1000,
-        look_at_entire_library=False,
-        num_days_to_look_back=7,
-        min_genres_per_group=4):
-        self.albums_to_fetch = albums_to_fetch
-        self.look_at_entire_library = look_at_entire_library
-        self.num_days_to_look_back = num_days_to_look_back
-        self.min_genres_per_group = min_genres_per_group
+    def __init__(self):
         self.spotify_client = self.spotify_client()
 
-    def group_albums_by_genre(self, albums):
+    def group_albums_by_genre(self, albums, min_genres_per_group):
         """
         Returns:
             albums_by_genre (dict): key:string, value:[Album].
@@ -36,7 +29,7 @@ class MusicLibApi:
         return {
             description: [albums_by_id[album_id] for album_id in group["album ids"]]
             for description, group in album_groups.items()
-            if group["num matches"] >= self.min_genres_per_group
+            if group["num matches"] >= min_genres_per_group
         }
 
     def add_artist_genres(self, albums):
@@ -118,47 +111,46 @@ class MusicLibApi:
         auth = SpotifyOAuth(scope=SPOTIFY_SCOPES)
         return spotipy.Spotify(auth_manager=auth)
 
-    def get_time_utc(self, time_utc_str):
-        return datetime.strptime(time_utc_str, ISO8601_TIMESTAMP_FORMAT)
+    def fetch_albums(self, max_albums_to_fetch):
+        print(f"Fetching recently saved albums...")
+        albums, albums_fetched_so_far = [], 0
+        while albums_fetched_so_far < max_albums_to_fetch:
+            max_batch_size = max_albums_to_fetch - albums_fetched_so_far
 
-    def was_added_recently(self, time_added):
-        now = datetime.utcnow()
-        look_back = timedelta(self.num_days_to_look_back)
-        return now - look_back < time_added
+            batch_size = max_batch_size if max_batch_size <= SPOTIFY_ALBUMS_API_LIMIT else SPOTIFY_ALBUMS_API_LIMIT
+            results = self.spotify_client.current_user_saved_albums(
+                limit=batch_size, offset=albums_fetched_so_far)
 
-    def fetch_albums(self):
-        all_results, albums_fetched_so_far = [], 0
-        while albums_fetched_so_far < self.albums_to_fetch:
-            self.albums_to_fetch = self.albums_to_fetch - albums_fetched_so_far
-            batch_size = self.albums_to_fetch if self.albums_to_fetch <= SPOTIFY_ALBUMS_API_LIMIT else SPOTIFY_ALBUMS_API_LIMIT
-            all_results.append(self.spotify_client.current_user_saved_albums(
-                limit=batch_size, offset=albums_fetched_so_far))
+            if len(results['items']) == 0:
+                print(f"No albums left to fetch...")
+                break
+
+            albums.extend([album['album'] for album in results['items']])
             albums_fetched_so_far += batch_size
-        return [
-            (album['added_at'], album['album'])
-            for results in all_results
-            for album in results['items']
-        ]
 
-    def get_my_albums_grouped_by_genre(self):
+        print(f"Fetched {len(albums)} albums...")
+        return albums
+
+    def get_my_albums_grouped_by_genre(self, albums_to_fetch, min_genres_per_group):
         """
         Returns:
             albums_by_genre (dict): key:string, value:[Album].
                 e.g. {'rock': [Album], 'jazz': [Album, Album]}.
         """
-        print(f"Fetching recently saved albums...")
-        albums = self.fetch_albums()
-
-        print(f"Fetched {len(albums)} albums...")
+        albums = self.fetch_albums(albums_to_fetch)
         if len(albums) == 0:
             return {}
 
         print(f"Grouping {len(albums)} albums...")
-        albums_by_genre = self.group_albums_by_genre([
-            album
-            for timestamp, album in albums
-            if self.look_at_entire_library or self.was_added_recently(self.get_time_utc(timestamp))
-        ])
+        albums_by_genre = self.group_albums_by_genre(albums, min_genres_per_group)
 
         print(f"Matched into {len(albums_by_genre)} groups...")
         return albums_by_genre
+
+    def get_all_my_albums_grouped_by_genre(self, min_genres_per_group):
+        """
+        Returns:
+            albums_by_genre (dict): key:string, value:[Album].
+                e.g. {'rock': [Album], 'jazz': [Album, Album]}.
+        """
+        return self.get_my_albums_grouped_by_genre(MAX_ALBUMS_TO_FETCH, min_genres_per_group)

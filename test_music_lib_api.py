@@ -218,6 +218,31 @@ class TestMusicLibApi(unittest.TestCase):
 
         self.assertEqual(3, len(album_groups))
 
+    @unittest.skip("Integration tests disabled by default")
+    def test_fetch_albums__few(self):
+        album_to_fetch = 10
+
+        albums = self.music_lib_api.fetch_albums(album_to_fetch)
+
+        self.assertEqual(10, len(albums))
+
+    @unittest.skip("Integration tests disabled by default")
+    def test_fetch_albums__many(self):
+        album_to_fetch = 101
+
+        albums = self.music_lib_api.fetch_albums(album_to_fetch)
+
+        self.assertEqual(101, len(albums))
+
+    @unittest.skip("Integration tests disabled by default")
+    def test_fetch_albums__more_than_possible__returns_max(self):
+        album_to_fetch = 1000
+
+        albums = self.music_lib_api.fetch_albums(album_to_fetch)
+
+        self.assertGreater(1000, len(albums))
+        self.assertLess(0, len(albums))
+
 
 def get_num_times_called(mock):
     if isinstance(mock, Mock):

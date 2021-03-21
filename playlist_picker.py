@@ -6,7 +6,6 @@ QUIT_KEY = "q"
 MUSIC_LIB_API = None
 DEFAULT_ALBUMS_TO_FETCH = 50
 DEFAULT_LOOK_AT_ENTIRE_LIBRARY = False
-DEFAULT_NUM_DAYS_TO_LOOK_BACK = 15
 DEFAULT_NUM_TRACKS_PER_ALBUM = 3
 DEFAULT_MIN_ALBUMS_PER_PLAYLIST = 1
 DEFAULT_MIN_NUM_ARTISTS_PER_PLAYLIST = 1
@@ -20,7 +19,7 @@ class PlaylistPicker:
     def set_up_user_preferences(self):
         global MIN_ALBUMS_PER_PLAYLIST, MIN_NUM_ARTISTS_PER_PLAYLIST
 
-        min_genres_per_group = self.get_preference_int(
+        self.min_genres_per_group = self.get_preference_int(
             "Minimum # of genres per playlist?",
             DEFAULT_MIN_GENRES_PER_GROUP
         )
@@ -40,31 +39,18 @@ class PlaylistPicker:
             DEFAULT_NUM_TRACKS_PER_ALBUM
         )
 
-        look_at_entire_library = self.get_preference_yes_or_no(
+        self.look_at_entire_library = self.get_preference_yes_or_no(
             "Should I look at your entire library? (y or n)",
             DEFAULT_LOOK_AT_ENTIRE_LIBRARY
         )
 
-        if look_at_entire_library:
-            self.music_lib_api = MusicLibApi(
-                look_at_entire_library=look_at_entire_library,
-                min_genres_per_group=min_genres_per_group,
-            )
-        else:
-            albums_to_fetch = self.get_preference_int(
+        if not self.look_at_entire_library:
+            self.albums_to_fetch = self.get_preference_int(
                 "How many albums should I fetch from your library?",
                 DEFAULT_ALBUMS_TO_FETCH
             )
-            num_days_to_look_back = self.get_preference_int(
-                "How many days should I look back for recently saved albums?",
-                DEFAULT_NUM_DAYS_TO_LOOK_BACK
-            )
-            self.music_lib_api = MusicLibApi(
-                albums_to_fetch=albums_to_fetch,
-                look_at_entire_library=look_at_entire_library,
-                num_days_to_look_back=num_days_to_look_back,
-                min_genres_per_group=min_genres_per_group,
-            )
+
+        self.music_lib_api = MusicLibApi()
 
     def get_preference_int(self, prompt, default):
         return self.unless_none(self.parse_int(input(prompt+"\n")), default)
@@ -150,11 +136,18 @@ class PlaylistPicker:
             for artist in album["artists"]
         })
 
+    def get_albums_by_genre(self):
+        if self.look_at_entire_library:
+            albums_by_genre = self.music_lib_api.get_all_my_albums_grouped_by_genre(
+                self.min_genres_per_group)
+        else:
+            albums_by_genre = self.music_lib_api.get_my_albums_grouped_by_genre(
+                self.albums_to_fetch, self.min_genres_per_group)
+        return albums_by_genre
+
     def run(self):
         self.set_up_user_preferences()
-        albums_by_genre = self.music_lib_api.get_my_albums_grouped_by_genre()
-
-        options = self.set_up_options(albums_by_genre)
+        options = self.set_up_options(self.get_albums_by_genre())
         if len(options) == 0:
             print("Didn't find any options to select from!")
             return
