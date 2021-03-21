@@ -10,55 +10,51 @@ DEFAULT_NUM_TRACKS_PER_ALBUM = 3
 DEFAULT_MIN_ALBUMS_PER_PLAYLIST = 1
 DEFAULT_MIN_NUM_ARTISTS_PER_PLAYLIST = 1
 DEFAULT_MIN_GENRES_PER_GROUP = 4
-MIN_ALBUMS_PER_PLAYLIST = DEFAULT_MIN_ALBUMS_PER_PLAYLIST
-MIN_NUM_ARTISTS_PER_PLAYLIST = DEFAULT_MIN_NUM_ARTISTS_PER_PLAYLIST
-NUM_TRACKS_PER_ALBUM = DEFAULT_NUM_TRACKS_PER_ALBUM
-
 
 class PlaylistPicker:
     def set_up_user_preferences(self):
         global MIN_ALBUMS_PER_PLAYLIST, MIN_NUM_ARTISTS_PER_PLAYLIST
 
-        self.min_genres_per_group = self.get_preference_int(
-            "Minimum # of genres per playlist?",
+        self.min_genres_per_group = self.if_none(
+            self.get_preference_int(f"Minimum # of genres per playlist? default is {DEFAULT_MIN_GENRES_PER_GROUP}"),
             DEFAULT_MIN_GENRES_PER_GROUP
         )
 
-        MIN_ALBUMS_PER_PLAYLIST = self.get_preference_int(
-            "Minimum # of albums per playlist?",
+        MIN_ALBUMS_PER_PLAYLIST = self.if_none(
+            self.get_preference_int(f"Minimum # of albums per playlist? default is {DEFAULT_MIN_ALBUMS_PER_PLAYLIST}"),
             DEFAULT_MIN_ALBUMS_PER_PLAYLIST
         )
 
-        MIN_NUM_ARTISTS_PER_PLAYLIST = self.get_preference_int(
-            "Minimum # of artists per playlist?",
+        MIN_NUM_ARTISTS_PER_PLAYLIST = self.if_none(
+            self.get_preference_int(f"Minimum # of artists per playlist? default is {DEFAULT_MIN_NUM_ARTISTS_PER_PLAYLIST}"),
             DEFAULT_MIN_NUM_ARTISTS_PER_PLAYLIST
         )
 
-        NUM_TRACKS_PER_ALBUM = self.get_preference_int(
-            "Minimum # of tracks per album per playlist?",
+        NUM_TRACKS_PER_ALBUM = self.if_none(
+            self.get_preference_int(f"Minimum # of tracks per album per playlist? default is {DEFAULT_NUM_TRACKS_PER_ALBUM}"),
             DEFAULT_NUM_TRACKS_PER_ALBUM
         )
 
-        self.look_at_entire_library = self.get_preference_yes_or_no(
-            "Should I look at your entire library? (y or n)",
+        self.look_at_entire_library = self.if_none(
+            self.get_preference_yes_or_no(f"Should I look at your entire library? y or n - default is {'y' if DEFAULT_LOOK_AT_ENTIRE_LIBRARY else 'n'}"),
             DEFAULT_LOOK_AT_ENTIRE_LIBRARY
         )
 
         if not self.look_at_entire_library:
-            self.albums_to_fetch = self.get_preference_int(
-                "How many albums should I fetch from your library?",
+            self.albums_to_fetch = self.if_none(
+                self.get_preference_int(f"# of albums to fetch from your library? default is {DEFAULT_ALBUMS_TO_FETCH}"),
                 DEFAULT_ALBUMS_TO_FETCH
             )
 
         self.music_lib_api = MusicLibApi()
 
-    def get_preference_int(self, prompt, default):
-        return self.unless_none(self.parse_int(input(prompt+"\n")), default)
+    def get_preference_int(self, prompt):
+        return self.parse_int(input(prompt+"\n"))
 
-    def get_preference_yes_or_no(self, prompt, default):
-        return self.unless_none(self.parse_yes_or_no(input(prompt+"\n")), default)
+    def get_preference_yes_or_no(self, prompt):
+        return self.parse_yes_or_no(input(prompt+"\n"))
 
-    def unless_none(self, val, default):
+    def if_none(self, val, default):
         return default if val is None else val
 
     def parse_int(self, input_str):
