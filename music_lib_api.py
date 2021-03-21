@@ -17,23 +17,12 @@ class MusicLibApi:
         albums_to_fetch=1000,
         look_at_entire_library=False,
         num_days_to_look_back=7,
-        min_genres_per_group=4,
-        num_tracks_per_album=3):
-        self.ALBUMS_TO_FETCH = albums_to_fetch
-        self.LOOK_AT_ENTIRE_LIBRARY = look_at_entire_library
-        self.NUM_DAYS_TO_LOOK_BACK = num_days_to_look_back
-        self.MIN_GENRES_PER_GROUP = min_genres_per_group
-        self.NUM_TRACKS_PER_ALBUM = num_tracks_per_album
-        self.SPOTIFY_CLIENT = self.spotify_client()
-
-    def get_tracks_from_each(self, albums):
-        tracks = [
-            track
-            for album in albums
-            for track in self.get_most_popular_tracks(album, self.NUM_TRACKS_PER_ALBUM)
-        ]
-        shuffle(tracks)
-        return tracks
+        min_genres_per_group=4):
+        self.albums_to_fetch = albums_to_fetch
+        self.look_at_entire_library = look_at_entire_library
+        self.num_days_to_look_back = num_days_to_look_back
+        self.min_genres_per_group = min_genres_per_group
+        self.spotify_client = self.spotify_client()
 
     def group_albums_by_genre(self, albums):
         """
@@ -47,7 +36,7 @@ class MusicLibApi:
         return {
             description: [albums_by_id[album_id] for album_id in group["album ids"]]
             for description, group in album_groups.items()
-            if group["num matches"] >= self.MIN_GENRES_PER_GROUP
+            if group["num matches"] >= self.min_genres_per_group
         }
 
     def add_artist_genres(self, albums):
@@ -86,7 +75,7 @@ class MusicLibApi:
         return [
             genre
             for artist in album['artists']
-            for genre in self.spotify_client().artist(artist['id'])['genres']
+            for genre in self.spotify_client.artist(artist['id'])['genres']
         ]
 
     def as_readable_key(self, list_):
@@ -94,20 +83,29 @@ class MusicLibApi:
         return ", ".join(list_) if len(list_) > 0 else "unknown"
 
     def create_playlist(self, name, tracks, description=""):
-        user_id = self.spotify_client().me()['id']
-        playlist = self.spotify_client().user_playlist_create(
+        user_id = self.spotify_client.me()['id']
+        playlist = self.spotify_client.user_playlist_create(
             user_id, name, public=False, description=description)
 
         track_uris = [track['uri'] for track in tracks]
-        self.spotify_client().user_playlist_add_tracks(user_id, playlist['id'], track_uris)
+        self.spotify_client.user_playlist_add_tracks(user_id, playlist['id'], track_uris)
 
     def get_most_popular_tracks(self, album, num_tracks):
         all_tracks = self.get_tracks_most_popular_first(album)
-        return all_tracks[:min(self.NUM_TRACKS_PER_ALBUM, len(all_tracks))]
+        return all_tracks[:min(num_tracks, len(all_tracks))]
+
+    def get_tracks_from_each(self, albums, num_tracks_per_album):
+        tracks = [
+            track
+            for album in albums
+            for track in self.get_most_popular_tracks(album, num_tracks_per_album)
+        ]
+        shuffle(tracks)
+        return tracks
 
     def get_tracks_most_popular_first(self, album):
         tracks_w_metadata = [
-            self.spotify_client().track(track['uri'])
+            self.spotify_client.track(track['uri'])
             for track in album['tracks']['items']
         ]
         return sorted(
@@ -125,15 +123,15 @@ class MusicLibApi:
 
     def was_added_recently(self, time_added):
         now = datetime.utcnow()
-        look_back = timedelta(self.NUM_DAYS_TO_LOOK_BACK)
+        look_back = timedelta(self.num_days_to_look_back)
         return now - look_back < time_added
 
     def fetch_albums(self):
         all_results, albums_fetched_so_far = [], 0
-        while albums_fetched_so_far < self.ALBUMS_TO_FETCH:
-            self.ALBUMS_TO_FETCH = self.ALBUMS_TO_FETCH - albums_fetched_so_far
-            batch_size = self.ALBUMS_TO_FETCH if self.ALBUMS_TO_FETCH <= SPOTIFY_ALBUMS_API_LIMIT else SPOTIFY_ALBUMS_API_LIMIT
-            all_results.append(self.spotify_client().current_user_saved_albums(
+        while albums_fetched_so_far < self.albums_to_fetch:
+            self.albums_to_fetch = self.albums_to_fetch - albums_fetched_so_far
+            batch_size = self.albums_to_fetch if self.albums_to_fetch <= SPOTIFY_ALBUMS_API_LIMIT else SPOTIFY_ALBUMS_API_LIMIT
+            all_results.append(self.spotify_client.current_user_saved_albums(
                 limit=batch_size, offset=albums_fetched_so_far))
             albums_fetched_so_far += batch_size
         return [
@@ -154,7 +152,7 @@ class MusicLibApi:
         albums_by_genre = self.group_albums_by_genre([
             album
             for timestamp, album in albums
-            if self.LOOK_AT_ENTIRE_LIBRARY or self.was_added_recently(self.get_time_utc(timestamp))
+            if self.look_at_entire_library or self.was_added_recently(self.get_time_utc(timestamp))
         ])
 
         print(f"Matched into {len(albums_by_genre)} groups...")

@@ -9,7 +9,7 @@ DEFAULT_ALBUMS_TO_FETCH = 50
 DEFAULT_LOOK_AT_ENTIRE_LIBRARY = False
 DEFAULT_NUM_DAYS_TO_LOOK_BACK = 15
 DEFAULT_MIN_GENRES_PER_GROUP = 4
-DEFAULT_NUM_TRACKS_PER_ALBUM = 3
+NUM_TRACKS_PER_ALBUM = 3
 
 class PlaylistPicker:
     def set_up_user_preferences(self):
@@ -20,7 +20,7 @@ class PlaylistPicker:
 
         num_tracks_per_album = self.get_preference_int(
             "What is the minimum number of tracks you want per album per playlist?",
-            DEFAULT_NUM_TRACKS_PER_ALBUM
+            NUM_TRACKS_PER_ALBUM
         )
 
         look_at_entire_library = self.get_preference_yes_or_no(
@@ -32,7 +32,6 @@ class PlaylistPicker:
             self.music_lib_api = MusicLibApi(
                 look_at_entire_library=look_at_entire_library,
                 min_genres_per_group=min_genres_per_group,
-                num_tracks_per_album=num_tracks_per_album
             )
         else:
             albums_to_fetch = self.get_preference_int(
@@ -48,7 +47,6 @@ class PlaylistPicker:
                 look_at_entire_library=look_at_entire_library,
                 num_days_to_look_back=num_days_to_look_back,
                 min_genres_per_group=min_genres_per_group,
-                num_tracks_per_album=num_tracks_per_album
             )
 
     def get_preference_int(self, prompt, default):
@@ -115,7 +113,7 @@ class PlaylistPicker:
         print(f"Creating '{album_group['description']}' playlist from {len(album_group['albums'])} albums...")
         self.music_lib_api.create_playlist(
             "created by music.lib.bot",
-            self.music_lib_api.get_tracks_from_each(album_group["albums"]),
+            self.music_lib_api.get_tracks_from_each(album_group["albums"], NUM_TRACKS_PER_ALBUM),
             description=album_group["description"]
         )
 
