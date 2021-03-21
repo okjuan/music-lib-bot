@@ -3,24 +3,41 @@ from music_lib_api import MusicLibApi
 
 SELECTION_QUIT_APP = "Quit"
 QUIT_KEY = "q"
-MIN_GROUP_SIZE = 1
 MUSIC_LIB_API = None
 DEFAULT_ALBUMS_TO_FETCH = 50
 DEFAULT_LOOK_AT_ENTIRE_LIBRARY = False
 DEFAULT_NUM_DAYS_TO_LOOK_BACK = 15
+DEFAULT_NUM_TRACKS_PER_ALBUM = 3
+DEFAULT_MIN_ALBUMS_PER_PLAYLIST = 1
+DEFAULT_MIN_NUM_ARTISTS_PER_PLAYLIST = 1
 DEFAULT_MIN_GENRES_PER_GROUP = 4
-NUM_TRACKS_PER_ALBUM = 3
+MIN_ALBUMS_PER_PLAYLIST = DEFAULT_MIN_ALBUMS_PER_PLAYLIST
+MIN_NUM_ARTISTS_PER_PLAYLIST = DEFAULT_MIN_NUM_ARTISTS_PER_PLAYLIST
+NUM_TRACKS_PER_ALBUM = DEFAULT_NUM_TRACKS_PER_ALBUM
+
 
 class PlaylistPicker:
     def set_up_user_preferences(self):
+        global MIN_ALBUMS_PER_PLAYLIST, MIN_NUM_ARTISTS_PER_PLAYLIST
+
         min_genres_per_group = self.get_preference_int(
-            "What is the minimum number of genres you want per playlist?",
+            "Minimum # of genres per playlist?",
             DEFAULT_MIN_GENRES_PER_GROUP
         )
 
-        num_tracks_per_album = self.get_preference_int(
-            "What is the minimum number of tracks you want per album per playlist?",
-            NUM_TRACKS_PER_ALBUM
+        MIN_ALBUMS_PER_PLAYLIST = self.get_preference_int(
+            "Minimum # of albums per playlist?",
+            DEFAULT_MIN_ALBUMS_PER_PLAYLIST
+        )
+
+        MIN_NUM_ARTISTS_PER_PLAYLIST = self.get_preference_int(
+            "Minimum # of artists per playlist?",
+            DEFAULT_MIN_NUM_ARTISTS_PER_PLAYLIST
+        )
+
+        NUM_TRACKS_PER_ALBUM = self.get_preference_int(
+            "Minimum # of tracks per album per playlist?",
+            DEFAULT_NUM_TRACKS_PER_ALBUM
         )
 
         look_at_entire_library = self.get_preference_yes_or_no(
@@ -77,13 +94,14 @@ class PlaylistPicker:
         return [
             dict(description=genre_group, albums=albums)
             for genre_group, albums in albums_by_genre.items()
-            if len(albums) >= MIN_GROUP_SIZE
+            if len(albums) >= MIN_ALBUMS_PER_PLAYLIST and self.get_num_diff_artists(albums) >= MIN_NUM_ARTISTS_PER_PLAYLIST
         ]
 
     def print_playlist_options(self, options):
         print("\nHere are your options for creating a playlist from albums in your library:")
         for idx, album_groups in enumerate(options):
-            print(f"#{idx}\n\tDescription: {album_groups['description']}\n\tNumber of albums: {len(album_groups['albums'])}")
+            artists = list({artist['name'] for album in album_groups['albums'] for artist in album['artists']})
+            print(f"#{idx}\n\tDescription: {album_groups['description']}\n\tNumber of albums: {len(album_groups['albums'])}\n\tArtists: {', '.join(artists)}")
         print()
 
     def get_user_selection(self, min_option, max_option):
@@ -124,6 +142,13 @@ class PlaylistPicker:
                 print("Quitting...")
                 break
             self.create_playlist_from_albums(options[selection])
+
+    def get_num_diff_artists(self, albums):
+        return len({
+            artist['id']
+            for album in albums
+            for artist in album["artists"]
+        })
 
     def run(self):
         self.set_up_user_preferences()

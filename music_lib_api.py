@@ -141,6 +141,11 @@ class MusicLibApi:
         ]
 
     def get_my_albums_grouped_by_genre(self):
+        """
+        Returns:
+            albums_by_genre (dict): key:string, value:[Album].
+                e.g. {'rock': [Album], 'jazz': [Album, Album]}.
+        """
         print(f"Fetching recently saved albums...")
         albums = self.fetch_albums()
 

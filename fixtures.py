@@ -24,5 +24,5 @@ def mock_album(id="", genres=[], artists=[], name=[]):
 def mock_track():
     return dict(uri="")
 
-def mock_artist():
-    return dict(id="123")
+def mock_artist(id=""):
+    return dict(id=id)
