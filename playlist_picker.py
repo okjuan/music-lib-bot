@@ -3,56 +3,25 @@ from music_lib_api import MusicLibApi
 
 SELECTION_QUIT_APP = "Quit"
 QUIT_KEY = "q"
-MUSIC_LIB_API = None
 DEFAULT_ALBUMS_TO_FETCH = 50
 DEFAULT_LOOK_AT_ENTIRE_LIBRARY = False
 DEFAULT_NUM_TRACKS_PER_ALBUM = 3
-DEFAULT_MIN_ALBUMS_PER_PLAYLIST = 1
-DEFAULT_MIN_NUM_ARTISTS_PER_PLAYLIST = 1
-DEFAULT_MIN_GENRES_PER_GROUP = 4
+DEFAULT_MIN_ALBUMS_PER_PLAYLIST = 4
+DEFAULT_MIN_NUM_ARTISTS_PER_PLAYLIST = 4
+DEFAULT_MIN_GENRES_PER_PLAYLIST = 4
 
 class PlaylistPicker:
-    def set_up_user_preferences(self):
-        global MIN_ALBUMS_PER_PLAYLIST, MIN_NUM_ARTISTS_PER_PLAYLIST
-
-        self.min_genres_per_group = self.if_none(
-            self.get_preference_int(f"Minimum # of genres per playlist? default is {DEFAULT_MIN_GENRES_PER_GROUP}"),
-            DEFAULT_MIN_GENRES_PER_GROUP
-        )
-
-        MIN_ALBUMS_PER_PLAYLIST = self.if_none(
-            self.get_preference_int(f"Minimum # of albums per playlist? default is {DEFAULT_MIN_ALBUMS_PER_PLAYLIST}"),
-            DEFAULT_MIN_ALBUMS_PER_PLAYLIST
-        )
-
-        MIN_NUM_ARTISTS_PER_PLAYLIST = self.if_none(
-            self.get_preference_int(f"Minimum # of artists per playlist? default is {DEFAULT_MIN_NUM_ARTISTS_PER_PLAYLIST}"),
-            DEFAULT_MIN_NUM_ARTISTS_PER_PLAYLIST
-        )
-
-        NUM_TRACKS_PER_ALBUM = self.if_none(
-            self.get_preference_int(f"Minimum # of tracks per album per playlist? default is {DEFAULT_NUM_TRACKS_PER_ALBUM}"),
-            DEFAULT_NUM_TRACKS_PER_ALBUM
-        )
-
-        self.look_at_entire_library = self.if_none(
-            self.get_preference_yes_or_no(f"Should I look at your entire library? y or n - default is {'y' if DEFAULT_LOOK_AT_ENTIRE_LIBRARY else 'n'}"),
-            DEFAULT_LOOK_AT_ENTIRE_LIBRARY
-        )
-
-        if not self.look_at_entire_library:
-            self.albums_to_fetch = self.if_none(
-                self.get_preference_int(f"# of albums to fetch from your library? default is {DEFAULT_ALBUMS_TO_FETCH}"),
-                DEFAULT_ALBUMS_TO_FETCH
-            )
-
+    def __init__(self):
         self.music_lib_api = MusicLibApi()
 
     def get_preference_int(self, prompt):
-        return self.parse_int(input(prompt+"\n"))
+        return self.parse_int(self.prompt_user(prompt))
 
     def get_preference_yes_or_no(self, prompt):
-        return self.parse_yes_or_no(input(prompt+"\n"))
+        return self.parse_yes_or_no(self.prompt_user(prompt))
+
+    def prompt_user(self, msg):
+        return input(f"\n> {msg}\n")
 
     def if_none(self, val, default):
         return default if val is None else val
@@ -72,11 +41,26 @@ class PlaylistPicker:
         else:
             return None
 
+    def get_min_albums_per_playlist(self):
+        return self.if_none(
+            self.get_preference_int(f"Minimum # of albums per playlist? default is {DEFAULT_MIN_ALBUMS_PER_PLAYLIST}"),
+            DEFAULT_MIN_ALBUMS_PER_PLAYLIST
+        )
+
+    def get_min_artists_per_playlist(self):
+        return self.if_none(
+            self.get_preference_int(f"Minimum # of artists per playlist? default is {DEFAULT_MIN_NUM_ARTISTS_PER_PLAYLIST}"),
+            DEFAULT_MIN_NUM_ARTISTS_PER_PLAYLIST
+        )
+
     def set_up_options(self, albums_by_genre):
+        min_albums_per_playlist = self.get_min_albums_per_playlist()
+        min_artists_per_playlist = self.get_min_artists_per_playlist()
+        criteria = lambda albums: len(albums) >= min_albums_per_playlist and self.get_num_diff_artists(albums) >= min_artists_per_playlist
         return [
             dict(description=genre_group, albums=albums)
             for genre_group, albums in albums_by_genre.items()
-            if len(albums) >= MIN_ALBUMS_PER_PLAYLIST and self.get_num_diff_artists(albums) >= MIN_NUM_ARTISTS_PER_PLAYLIST
+            if criteria(albums)
         ]
 
     def print_playlist_options(self, options):
@@ -109,13 +93,21 @@ class PlaylistPicker:
         selection = self.get_user_selection(0, len(options)-1)
         return selection
 
+    def get_num_tracks_per_album(self):
+        return self.if_none(
+            self.get_preference_int(f"Minimum # of tracks per album per playlist? default is {DEFAULT_NUM_TRACKS_PER_ALBUM}"),
+            DEFAULT_NUM_TRACKS_PER_ALBUM
+        )
+
     def create_playlist_from_albums(self, album_group):
         print(f"Creating '{album_group['description']}' playlist from {len(album_group['albums'])} albums...")
+        tracks = self.music_lib_api.get_tracks_from_each(album_group["albums"], self.get_num_tracks_per_album())
         self.music_lib_api.create_playlist(
             album_group["description"],
-            self.music_lib_api.get_tracks_from_each(album_group["albums"], NUM_TRACKS_PER_ALBUM),
+            tracks,
             description="created by music.lib.bot"
         )
+        print(f"Playlist created!")
 
     def launch_ui(self, options):
         while True:
@@ -123,7 +115,10 @@ class PlaylistPicker:
             if selection is SELECTION_QUIT_APP:
                 print("Quitting...")
                 break
+
             self.create_playlist_from_albums(options[selection])
+            if not self.user_wants_to_create_another_playlist():
+                break
 
     def get_num_diff_artists(self, albums):
         return len({
@@ -132,22 +127,45 @@ class PlaylistPicker:
             for artist in album["artists"]
         })
 
+    def get_min_genres_per_group(self):
+        return self.if_none(
+            self.get_preference_int(f"Minimum # of genres per playlist? default is {DEFAULT_MIN_GENRES_PER_PLAYLIST}"),
+            DEFAULT_MIN_GENRES_PER_PLAYLIST
+        )
+
+    def look_at_entire_library(self):
+        return self.if_none(
+            self.get_preference_yes_or_no(f"Should I look at your entire library? y or n - default is {'y' if DEFAULT_LOOK_AT_ENTIRE_LIBRARY else 'n'}"),
+            DEFAULT_LOOK_AT_ENTIRE_LIBRARY
+        )
+
+    def get_num_albums_to_fetch(self):
+        return self.if_none(
+            self.get_preference_int(f"# of albums to fetch from your library? default is {DEFAULT_ALBUMS_TO_FETCH}"),
+            DEFAULT_ALBUMS_TO_FETCH
+        )
+
+    def user_wants_to_create_another_playlist(self):
+        return self.if_none(
+            self.get_preference_yes_or_no(f"Create another playlist? y or n - default is 'y'"),
+            True
+        )
+
     def get_albums_by_genre(self):
-        if self.look_at_entire_library:
+        min_genres_per_group = self.get_min_genres_per_group()
+        if self.look_at_entire_library():
             albums_by_genre = self.music_lib_api.get_all_my_albums_grouped_by_genre(
-                self.min_genres_per_group)
+                min_genres_per_group)
         else:
             albums_by_genre = self.music_lib_api.get_my_albums_grouped_by_genre(
-                self.albums_to_fetch, self.min_genres_per_group)
+                self.get_num_albums_to_fetch(), min_genres_per_group)
         return albums_by_genre
 
     def run(self):
-        self.set_up_user_preferences()
         options = self.set_up_options(self.get_albums_by_genre())
         if len(options) == 0:
             print("Didn't find any options to select from!")
             return
-
         self.launch_ui(options)
         print(f"Happy listening!")
 
