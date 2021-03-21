@@ -130,9 +130,9 @@ class PlaylistPicker:
     def create_playlist_from_albums(self, album_group):
         print(f"Creating '{album_group['description']}' playlist from {len(album_group['albums'])} albums...")
         self.music_lib_api.create_playlist(
-            "created by music.lib.bot",
+            album_group["description"],
             self.music_lib_api.get_tracks_from_each(album_group["albums"], NUM_TRACKS_PER_ALBUM),
-            description=album_group["description"]
+            description="created by music.lib.bot"
         )
 
     def launch_ui(self, options):
