@@ -45,3 +45,6 @@ class SpotifyClientWrapper:
 
         print(f"Fetched {len(albums)} albums...")
         return albums
+
+    def get_track(self, track_id):
+        return self.client.track(track_id)

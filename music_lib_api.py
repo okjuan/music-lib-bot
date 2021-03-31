@@ -23,10 +23,6 @@ class MusicLibApi:
         track_uris = [track['uri'] for track in tracks]
         self.spotify_client.user_playlist_add_tracks(user_id, playlist['id'], track_uris)
 
-    def get_most_popular_tracks(self, album, num_tracks):
-        all_tracks = self.get_tracks_most_popular_first(album)
-        return all_tracks[:min(num_tracks, len(all_tracks))]
-
     def get_tracks_from_each(self, albums, num_tracks_per_album):
         tracks = [
             track
@@ -35,17 +31,6 @@ class MusicLibApi:
         ]
         shuffle(tracks)
         return tracks
-
-    def get_tracks_most_popular_first(self, album):
-        tracks_w_metadata = [
-            self.spotify_client.track(track['uri'])
-            for track in album['tracks']['items']
-        ]
-        return sorted(
-            tracks_w_metadata,
-            key=lambda track: track['popularity'],
-            reverse=True
-        )
 
     def spotify_client(self):
         auth = SpotifyOAuth(scope=SPOTIFY_SCOPES)

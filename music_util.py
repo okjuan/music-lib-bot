@@ -62,3 +62,18 @@ class MusicUtil:
             for description, group in album_groups.items()
             if group["num matches"] >= min_genres_per_group
         }
+
+    def get_most_popular_tracks(self, album, num_tracks):
+        all_tracks = self.get_tracks_most_popular_first(album)
+        return all_tracks[:min(num_tracks, len(all_tracks))]
+
+    def get_tracks_most_popular_first(self, album):
+        tracks_w_metadata = [
+            self.spotify_client_wrapper.get_track(track['uri'])
+            for track in album['tracks']['items']
+        ]
+        return sorted(
+            tracks_w_metadata,
+            key=lambda track: track['popularity'],
+            reverse=True
+        )
