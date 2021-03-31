@@ -1,11 +1,11 @@
 # NOTES:
 # Assumes existence of:
-# - Playlist object
+# - [ ] Playlist object
 #   - with __contains__ implementation
 #   - with methods
-# - music_recommender API
-# - music_util API
-# - MyMusicLib API object
+# - [ ] music_recommender API
+# - [x] music_util API
+# - [x] MyMusicLib API object
 
 
 import music_recommender
@@ -28,7 +28,7 @@ class PlaylistUpdater:
 
     def get_my_albums_that_suit_this_playlist(self):
         genres = self.playlist.get_description()
-        return self.my_music_lib.get_my_albums_by_genres(genres)
+        return self.my_music_lib.get_all_my_albums_grouped_by_genre(genres)
 
     def add_new_tracks_from_recommendations(self):
         tracks_to_add = [
