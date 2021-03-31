@@ -31,11 +31,12 @@ class TestMyMusicLib(unittest.TestCase):
         self.assertIsNone(playlist)
 
     def test_get_my_albums_by_genres(self):
-        genres = []
+        min_genres_per_group = 1
 
-        my_albums = self.my_music_lib.get_my_albums_by_genres(genres)
+        album_groups = self.my_music_lib.get_my_albums_grouped_by_genre(10, min_genres_per_group)
 
-        self.assertIsNone(my_albums)
+        self.assertIsNotNone(album_groups)
+        self.assertLess(1, len(album_groups.keys()))
 
 
 if __name__ == '__main__':
