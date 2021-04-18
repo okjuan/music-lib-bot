@@ -249,5 +249,6 @@ def get_num_times_called(mock):
         return len(mock.call_args_list)
     return NotImplemented
 
+
 if __name__ == '__main__':
     unittest.main()

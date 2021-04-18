@@ -1,21 +1,21 @@
 from collections import defaultdict
 
+from album import Album
+
 
 class MusicUtil:
     def __init__(self, spotify_client_wrapper):
         self.spotify_client_wrapper = spotify_client_wrapper
 
-    def get_artist_genres(self, album):
-        return [
-            genre
-            for artist in album['artists']
-            for genre in self.spotify_client_wrapper.get_artist_genres(artist['id'])
-        ]
-
     def _add_artist_genres(self, albums):
         albums_by_id = dict()
         for album in albums:
-            album['genres'] = self.get_artist_genres(album)
+            artist_ids = [artist['id'] for artist in album['artists']]
+            album['genres'] = [
+                genre
+                for artist_id in artist_ids
+                for genre in self.spotify_client_wrapper.get_artist_genres(artist_id)
+            ]
             albums_by_id[album['id']] = album
         return albums_by_id
 
@@ -33,35 +33,48 @@ class MusicUtil:
         list_.sort()
         return ", ".join(list_) if len(list_) > 0 else "unknown"
 
-    def _group_albums(self, album_ids, matches):
-        if len(album_ids) == 0 or len(matches) == 0:
+    def _group_albums(self, album_ids, genre_matches):
+        """
+        Returns:
+            grouped_albums ([dict]):
+                e.g. [{
+                    'album ids': {'3tb57GFYfkABviRejjp1lh'},
+                    'genres': ['rock', 'punk']
+                }].
+        """
+        if len(album_ids) == 0 or len(genre_matches) == 0:
             return [album_ids]
 
         grouped_albums = dict()
         for album_id in album_ids:
-            for matching_album_id, matched_on in matches[album_id].items():
-                group_key = self._as_readable_key(matched_on)
+            for matching_album_id, genres_matched_on in genre_matches[album_id].items():
+                group_key = self._as_readable_key(genres_matched_on)
                 if group_key not in grouped_albums:
-                    grouped_albums[group_key] = {"num matches": 0, "album ids": set()}
-                grouped_albums[group_key]["num matches"] = len(matched_on)
+                    grouped_albums[group_key] = {
+                        "album ids": set(),
+                        "genres": genres_matched_on
+                    }
                 grouped_albums[group_key]["album ids"].add(album_id)
                 grouped_albums[group_key]["album ids"].add(matching_album_id)
-        return grouped_albums
+        return [group for _, group in grouped_albums.items()]
 
     def group_albums_by_genre(self, albums, min_genres_per_group):
         """
         Returns:
-            albums_by_genre (dict): key:string, value:[Album].
-                e.g. {'rock': [Album], 'jazz': [Album, Album]}.
+            albums_by_genre ([dict]):
+                e.g. [{genres: ['rock', 'dance rock'], albums: [Album]}]
         """
         albums_by_id = self._add_artist_genres(albums)
-        matches = self._detect_genre_matches(albums_by_id)
-        album_groups = self._group_albums(albums_by_id.keys(), matches)
-        return {
-            description: [albums_by_id[album_id] for album_id in group["album ids"]]
-            for description, group in album_groups.items()
-            if group["num matches"] >= min_genres_per_group
-        }
+        genre_matches = self._detect_genre_matches(albums_by_id)
+        album_groups = self._group_albums(albums_by_id.keys(), genre_matches)
+        return [
+            {
+                "genres": group['genres'],
+                "albums": [albums_by_id[album_id] for album_id in group["album ids"]]
+            }
+            for group in album_groups
+            if len(group["genres"]) >= min_genres_per_group
+        ]
 
     def get_most_popular_tracks(self, album, num_tracks):
         all_tracks = self.get_tracks_most_popular_first(album)
@@ -77,3 +90,32 @@ class MusicUtil:
             key=lambda track: track['popularity'],
             reverse=True
         )
+
+    def get_albums_as_readable_list(self, albums):
+        artist_names_to_str = lambda artists: ', '.join([artist['name'] for artist in artists])
+        return '\n'.join([
+            f"- {album['name']} by {artist_names_to_str(album['artists'])}"
+            for album in albums
+        ])
+
+    def get_albums(self, tracks):
+        return [Album(track['album']) for track in tracks]
+
+    def get_genres_in_playlist(self, spotify_playlist_id):
+        artist_ids = self._get_artist_ids(spotify_playlist_id)
+        if len(artist_ids) == 0:
+            return []
+
+        genres_in_common = set(self.spotify_client_wrapper.get_artist_genres(artist_ids[0]))
+        for artist_id in artist_ids[1:]:
+            genres = set(self.spotify_client_wrapper.get_artist_genres(artist_id))
+            genres_in_common &= genres
+        return list(genres_in_common)
+
+    def _get_artist_ids(self, spotify_playlist_id):
+        playlist = self.spotify_client_wrapper.get_playlist(spotify_playlist_id)
+        return list({
+            artist['id']
+            for track in playlist['tracks']['items']
+            for artist in track['track']['artists']
+        })

@@ -1,6 +1,8 @@
 from spotipy.oauth2 import SpotifyOAuth
 import spotipy
 
+from playlist import Playlist
+
 SPOTIFY_ALBUMS_API_LIMIT = 50
 SPOTIFY_SCOPES = "user-library-read,playlist-modify-private,playlist-modify-private,playlist-read-private,playlist-read-collaborative"
 
@@ -11,6 +13,18 @@ class SpotifyClientWrapper:
         self.client = spotipy.Spotify(auth_manager=auth)
 
     def get_current_user_playlist(self, name):
+        playlist_id = self.search_current_user_playlists(name)
+        if playlist_id is None:
+            return None
+
+        playlist = self.get_playlist(playlist_id)
+        return Playlist.from_spotify_playlist(playlist)
+
+    def get_playlist(self, playlist_id):
+        return self.client.playlist(playlist_id)
+
+    def search_current_user_playlists(self, playlist_name):
+        "Returns playlist ID or None if not found."
         num_playlists_fetched = 0
         while True:
             playlists = self.client.current_user_playlists(
@@ -18,9 +32,9 @@ class SpotifyClientWrapper:
             if len(playlists) == 0:
                 break
             num_playlists_fetched += len(playlists)
-            for p in playlists:
-                if p['name'] == name:
-                    return p
+            for playlist in playlists:
+                if playlist['name'] == playlist_name:
+                    return playlist['id']
         return None
 
     def get_artist_genres(self, artist_id):
@@ -48,3 +62,15 @@ class SpotifyClientWrapper:
 
     def get_track(self, track_id):
         return self.client.track(track_id)
+
+    # TODO: test this. Is this even used?
+    def create_playlist(self, name, description):
+        return self.client.user_playlist_create(
+            self.client.me()['id'],
+            name,
+            public=False,
+            description=description
+        )
+
+    def add_tracks(self, playlist_id, track_uris):
+        self.client.user_playlist_add_tracks(self.client.me()['id'], playlist_id, track_uris)
