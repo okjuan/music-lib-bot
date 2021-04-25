@@ -4,6 +4,7 @@ import spotipy
 from playlist import Playlist
 
 SPOTIFY_ALBUMS_API_LIMIT = 50
+SPOTIFY_ADD_TRACKS_TO_PLAYLIST_API_LIMIT = 100
 SPOTIFY_SCOPES = "user-library-read,playlist-modify-private,playlist-modify-private,playlist-read-private,playlist-read-collaborative"
 
 
@@ -73,4 +74,13 @@ class SpotifyClientWrapper:
         )
 
     def add_tracks(self, playlist_id, track_uris):
-        self.client.user_playlist_add_tracks(self.client.me()['id'], playlist_id, track_uris)
+        items, num_tracks_added_so_far, num_tracks_to_add = [], 0, len(track_uris)
+        while num_tracks_added_so_far < num_tracks_to_add:
+            num_items_left_to_fetch = num_tracks_to_add - num_tracks_added_so_far
+            batch_size = num_items_left_to_fetch if num_items_left_to_fetch <= SPOTIFY_ADD_TRACKS_TO_PLAYLIST_API_LIMIT else SPOTIFY_ADD_TRACKS_TO_PLAYLIST_API_LIMIT
+            self.client.user_playlist_add_tracks(
+                self.client.me()['id'],
+                playlist_id,
+                track_uris[num_tracks_added_so_far:num_tracks_added_so_far+batch_size],
+            )
+            num_tracks_added_so_far += batch_size
