@@ -1,6 +1,7 @@
 from music_util import MusicUtil
 from my_music_lib import MyMusicLib
 from playlist import Playlist
+from random import shuffle
 from spotify_client_wrapper import SpotifyClientWrapper
 
 NUM_ALBUMS_TO_FETCH = 30
@@ -27,6 +28,7 @@ class PlaylistUpdater:
             return
 
         print(f"Found {len(track_uris)} tracks to add to playlist...")
+        shuffle(track_uris)
         if len(track_uris) > 0:
             print(f"Adding them to your playlist: '{self.playlist.name}'")
             self.my_music_lib.add_tracks_to_playlist(self.playlist.id, track_uris)
