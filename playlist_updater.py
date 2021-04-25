@@ -13,16 +13,7 @@ class PlaylistUpdater:
         self.music_util = music_util
 
     def add_new_tracks_from_saved_albums(self):
-        albums_in_playlist = [
-            album.id
-            for album in self.music_util.get_albums(self.playlist.tracks)
-        ]
-        track_uris = [
-            track['uri']
-            for album in self.get_my_albums_that_suit_this_playlist()
-            if album['id'] not in albums_in_playlist
-            for track in self.music_util.get_most_popular_tracks(album, 3)
-        ]
+        track_uris = self.get_tracks_to_add()
         if len(track_uris) == 0:
             print(f"No tracks to add to your playlist: '{self.playlist.name}'")
             return
@@ -35,17 +26,29 @@ class PlaylistUpdater:
         else:
             print("Not adding any songs to your playlist.")
 
-    def get_my_albums_that_suit_this_playlist(self):
+    def get_tracks_to_add(self):
+        genres = self.get_playlist_genres()
+        albums_in_playlist = [
+            album.id
+            for album in self.music_util.get_albums(self.playlist.tracks)
+        ]
+        return [
+            track['uri']
+            for album in self.get_my_albums(genres)
+            if album['id'] not in albums_in_playlist
+            for track in self.music_util.get_most_popular_tracks(album, 3)
+        ]
+
+    def get_playlist_genres(self):
         target_genres = self.music_util.get_genres_in_playlist(self.playlist.id)
         if len(target_genres) == 0:
             print("Couldn't find any genres :(")
             return []
         print(f"Your playlist's genres are {', '.join(target_genres)}")
+        return target_genres
 
-        # TODO: pass in target_genres
-        album_groups = self.my_music_lib.get_all_my_albums_grouped_by_genre(
-            len(target_genres))
-
+    def get_my_albums(self, target_genres):
+        album_groups = self.my_music_lib.get_all_my_albums_grouped_by_genre(len(target_genres))
         for group in album_groups:
             if sorted(target_genres) == sorted(group['genres']):
                 print(f"Good news! I found {len(group['albums'])} album(s) matching your playlist's genres:")
