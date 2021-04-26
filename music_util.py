@@ -102,7 +102,7 @@ class MusicUtil:
         return [Album(track['album']) for track in tracks]
 
     def get_genres_in_playlist(self, spotify_playlist_id):
-        artist_ids = self._get_artist_ids(spotify_playlist_id)
+        artist_ids = self.get_artist_ids(spotify_playlist_id)
         if len(artist_ids) == 0:
             return []
 
@@ -112,7 +112,15 @@ class MusicUtil:
             genres_in_common &= genres
         return list(genres_in_common)
 
-    def _get_artist_ids(self, spotify_playlist_id):
+    def get_genres_by_frequency(self, spotify_playlist_id):
+        genre_count = defaultdict(int)
+        for artist_id in self.get_artist_ids(spotify_playlist_id):
+            genres = self.spotify_client_wrapper.get_artist_genres(artist_id)
+            for genre in genres:
+                genre_count[genre] += 1
+        return dict(genre_count)
+
+    def get_artist_ids(self, spotify_playlist_id):
         playlist = self.spotify_client_wrapper.get_playlist(spotify_playlist_id)
         return list({
             artist['id']

@@ -1,0 +1,720 @@
+Playlist 'americana 4 PlaylistUpdater Test Playlist' has these genres in common: [].
+Num artists in playlist: 62
+...with this genre breakdown:
+9	traditional blues
+9	folk
+9	folk rock
+9	rock
+8	singer-songwriter
+8	classic rock
+7	traditional folk
+6	adult standards
+6	indie folk
+6	blues
+6	roots rock
+5	country rock
+5	rock-and-roll
+5	rockabilly
+5	freak folk
+5	mellow gold
+5	appalachian folk
+4	anti-folk
+4	brill building pop
+4	permanent wave
+4	psychedelic rock
+3	cosmic american
+3	indie rock
+3	stomp and holler
+3	doo-wop
+3	album rock
+3	melancholia
+3	yodeling
+3	american folk revival
+3	old-time
+2	big band
+2	british dance band
+2	swing
+2	indie pop
+2	banjo
+2	funk
+2	alternative country
+2	chamber pop
+2	merseybeat
+2	british invasion
+2	acoustic blues
+2	chicago blues
+2	outlaw country
+2	country blues
+2	soft rock
+2	traditional country
+2	vocal harmony group
+2	beatlesque
+2	native american
+2	delta blues
+1	country gospel
+1	skiffle
+1	british blues
+1	soul
+1	australian blues
+1	canadian indie folk
+1	small room
+1	movie tunes
+1	deep new americana
+1	new americana
+1	pub rock
+1	bubblegum pop
+1	art rock
+1	protopunk
+1	electric blues
+1	harmonica blues
+1	modern blues
+1	classic country pop
+1	country
+1	contemporary country
+1	country dawn
+1	pop
+1	post-teen pop
+1	texas country
+1	piedmont blues
+1	blues rock
+1	psychedelic folk rock
+1	honky tonk
+1	gospel blues
+1	omaha indie
+1	canadian singer-songwriter
+1	classic canadian rock
+1	deep motown
+1	arkansas country
+1	kentucky mountain folk
+1	punk blues
+1	surf music
+1	classic soul
+1	gospel soul
+1	modern swing
+1	heartland rock
+1	british folk
+1	new weird america
+1	psychedelic folk
+1	audiophile vocal
+1	nashville sound
+1	easy listening
+1	lounge
+1	vocal jazz
+1	country boogie
+1	western swing
+1	ambient folk
+1	baroque pop
+1	protest folk
+
+Playlist 'bag of revels 4 PlaylistUpdater Test Playlist' has these genres in common: [].
+Num artists in playlist: 56
+...with this genre breakdown:
+24	soul
+20	funk
+19	classic soul
+11	motown
+10	quiet storm
+9	southern soul
+8	adult standards
+7	disco
+5	brill building pop
+4	afrobeat
+4	jazz funk
+4	memphis soul
+3	rock
+3	classic rock
+3	traditional soul
+3	mellow gold
+3	psychedelic rock
+3	soft rock
+2	blues rock
+2	instrumental funk
+2	gospel soul
+2	souldies
+2	soul blues
+2	bubblegum pop
+2	folk rock
+2	lounge
+2	jazz blues
+2	vocal jazz
+2	lovers rock
+2	rock steady
+1	psychedelic soul
+1	alternative rock
+1	garage rock
+1	modern alternative rock
+1	modern blues rock
+1	modern rock
+1	punk blues
+1	ethio-jazz
+1	instrumental soul
+1	modern blues
+1	country gospel
+1	art rock
+1	glam rock
+1	permanent wave
+1	chicago soul
+1	girl group
+1	post-disco
+1	urban contemporary
+1	movie tunes
+1	philly soul
+1	folk
+1	sunshine pop
+1	portland hip hop
+1	blues
+1	country rock
+1	electric blues
+1	rock keyboard
+1	roots rock
+1	indie r&b
+1	northern soul
+1	acid rock
+1	african rock
+1	brass band
+1	indie jazz
+1	funk rock
+1	minneapolis sound
+1	synth funk
+1	torch song
+1	art pop
+1	chillwave
+1	dream pop
+1	experimental pop
+1	freak folk
+1	indie pop
+1	la indie
+1	neo-psychedelic
+1	new rave
+1	new weird america
+1	nu gaze
+1	doo-wop
+1	rhythm and blues
+1	dub
+1	reggae
+1	roots reggae
+1	ska
+1	nashville sound
+1	rockabilly
+1	experimental
+1	experimental rock
+1	outsider
+1	protopunk
+1	zolo
+1	easy listening
+1	indie soul
+1	neo soul
+1	retro soul
+
+Playlist 'art rock 4 PlaylistUpdater Test Playlist' has these genres in common: [].
+Num artists in playlist: 46
+...with this genre breakdown:
+44	art rock
+24	rock
+17	classic rock
+17	psychedelic rock
+15	new wave
+14	folk rock
+14	post-punk
+13	alternative rock
+11	permanent wave
+11	experimental
+9	album rock
+9	mellow gold
+9	roots rock
+9	new wave pop
+8	art punk
+8	punk
+8	new romantic
+7	art pop
+7	glam rock
+6	freak folk
+6	protopunk
+6	zolo
+6	country rock
+6	folk
+6	soft rock
+5	dream pop
+5	indie rock
+5	melancholia
+5	blues rock
+5	pub rock
+5	singer-songwriter
+5	uk post-punk
+4	british invasion
+4	dance rock
+4	power pop
+4	brill building pop
+4	dance-punk
+4	progressive rock
+3	electronica
+3	experimental pop
+3	noise pop
+3	pop rock
+3	beatlesque
+3	synthpop
+3	classic uk pop
+3	symphonic rock
+2	indie pop
+2	funk rock
+2	british folk
+2	baroque pop
+2	chamber psych
+2	supergroup
+2	punk blues
+2	post-hardcore
+2	lo-fi
+2	hard rock
+2	piano rock
+2	experimental rock
+1	alternative dance
+1	baltimore indie
+1	chillwave
+1	modern rock
+1	new rave
+1	alternative pop
+1	oxford indie
+1	psychedelic folk
+1	scottish singer-songwriter
+1	cosmic american
+1	bubblegum pop
+1	ska
+1	british blues
+1	classic garage rock
+1	freakbeat
+1	merseybeat
+1	heartland rock
+1	yacht rock
+1	britpop
+1	nu gaze
+1	shoegaze
+1	collage pop
+1	electra
+1	la indie
+1	no wave
+1	jangle pop
+1	indietronica
+1	neo-psychedelic
+1	madchester
+1	anti-folk
+1	chamber pop
+1	indie folk
+1	metropopolis
+1	stomp and holler
+1	tape club
+1	instrumental rock
+1	jazz fusion
+1	jazz rock
+1	synth punk
+1	ambient
+1	compositional ambient
+1	experimental ambient
+1	fourth world
+1	minimalism
+1	c86
+1	scottish new wave
+1	scottish rock
+1	garage psych
+1	acid rock
+
+Playlist 'between stations 4 PlaylistUpdater Test Playlist' has these genres in common: [].
+Num artists in playlist: 22
+...with this genre breakdown:
+8	rock
+7	alternative rock
+6	classic rock
+6	art rock
+5	psychedelic rock
+4	modern rock
+4	permanent wave
+4	dance-punk
+4	indie pop
+4	indie rock
+4	freak folk
+3	folk rock
+3	mellow gold
+3	soft rock
+3	lo-fi
+3	beatlesque
+3	new wave
+3	post-punk
+2	british invasion
+2	alternative dance
+2	baroque pop
+2	canadian indie
+2	adult standards
+2	album rock
+2	anti-folk
+2	art pop
+2	dream pop
+2	new wave pop
+2	experimental
+2	neo-psychedelic
+1	garage rock
+1	sheffield indie
+1	acid rock
+1	argentine rock
+1	latin alternative
+1	latin rock
+1	rock en espanol
+1	melancholia
+1	protopunk
+1	new rave
+1	quebec indie
+1	cosmic american
+1	country rock
+1	folk
+1	roots rock
+1	singer-songwriter
+1	classic uk pop
+1	canadian rock
+1	chillwave
+1	indie folk
+1	nu gaze
+1	stomp and holler
+1	bristol indie
+1	portuguese indie
+1	yacht rock
+1	new jersey indie
+1	art punk
+1	jangle pop
+1	new romantic
+1	power pop
+1	pub rock
+1	zolo
+1	chamber psych
+1	electronica
+1	experimental pop
+1	indietronica
+1	noise pop
+1	modern alternative rock
+1	noise rock
+1	uk noise rock
+1	uk post-punk revival
+1	elephant 6
+1	merseybeat
+1	funk
+1	motown
+1	quiet storm
+1	soul
+1	experimental rock
+1	krautrock
+1	space rock
+1	c86
+1	scottish new wave
+1	scottish rock
+1	uk post-punk
+
+Playlist 'buzz off 4 PlaylistUpdater' has these genres in common: [].
+Num artists in playlist: 41
+...with this genre breakdown:
+17	psychedelic rock
+13	classic rock
+12	rock
+11	folk rock
+9	art rock
+8	protopunk
+7	acid rock
+6	mellow gold
+6	roots rock
+5	album rock
+5	glam rock
+5	post-punk
+4	permanent wave
+4	country rock
+4	alternative rock
+4	punk blues
+4	classic garage rock
+4	freakbeat
+4	experimental
+3	garage rock
+3	british invasion
+3	folk
+3	punk
+3	soft rock
+3	melancholia
+3	singer-songwriter
+2	psychedelic folk rock
+2	blues rock
+2	pub rock
+2	art pop
+1	modern rock
+1	sheffield indie
+1	classic finnish rock
+1	brill building pop
+1	british folk
+1	psychedelic folk
+1	scottish singer-songwriter
+1	gothabilly
+1	new wave
+1	psychobilly
+1	adult standards
+1	jazz rock
+1	art punk
+1	african rock
+1	afro psych
+1	cosmic american
+1	britpop
+1	indie rock
+1	scottish indie
+1	classic soul
+1	disco
+1	funk
+1	motown
+1	quiet storm
+1	soul
+1	dream pop
+1	beatlesque
+1	bubblegum pop
+1	progressive rock
+1	symphonic rock
+1	early us punk
+1	glam punk
+1	power pop
+1	ye ye
+1	southern rock
+1	dance-punk
+1	experimental rock
+1	krautrock
+1	neo-psychedelic
+1	space rock
+
+Playlist 'it's been easy 4 PlaylistUpdater Test Playlist' has these genres in common: [].
+Num artists in playlist: 54
+...with this genre breakdown:
+11	indie rock
+9	rock
+8	indie folk
+7	indie soul
+6	folk rock
+6	singer-songwriter
+6	classic rock
+6	freak folk
+5	folk
+5	art pop
+5	indie pop
+5	alternative r&b
+4	melancholia
+4	permanent wave
+4	mellow gold
+4	roots rock
+4	stomp and holler
+4	pop
+3	album rock
+3	art rock
+3	funk
+3	soul
+3	dream pop
+3	anti-folk
+3	dance pop
+3	chillwave
+3	new rave
+2	canadian singer-songwriter
+2	blues rock
+2	country rock
+2	soft rock
+2	blues
+2	traditional blues
+2	neo-psychedelic
+2	canadian contemporary r&b
+2	classic soul
+2	alternative rock
+2	ambient folk
+2	psychedelic rock
+2	big band
+2	stride
+2	swing
+2	post-teen pop
+2	neo soul
+2	chill r&b
+2	indie r&b
+2	chamber pop
+2	alternative dance
+2	indietronica
+1	psychedelic folk rock
+1	brill building pop
+1	bubblegum pop
+1	hard rock
+1	heartland rock
+1	alabama indie
+1	modern blues rock
+1	australian blues
+1	souldies
+1	arab groove
+1	modern dream pop
+1	disco
+1	motown
+1	philly soul
+1	quiet storm
+1	southern soul
+1	noise pop
+1	noise rock
+1	post-punk
+1	omaha indie
+1	protopunk
+1	experimental hip hop
+1	psychedelic hip hop
+1	anime score
+1	j-ambient
+1	japanese soundtrack
+1	bebop
+1	electropop
+1	girl group
+1	indie poptimism
+1	neo mellow
+1	fourth world
+1	indie jazz
+1	american folk revival
+1	appalachian folk
+1	traditional folk
+1	uk alternative pop
+1	classic canadian rock
+1	indie garage rock
+1	lo-fi indie
+1	philly indie
+1	new weird america
+1	toronto indie
+1	british soul
+1	psychedelic soul
+1	atlanta indie
+1	bedroom pop
+1	chicago indie
+1	barbadian pop
+1	urban contemporary
+1	lo-fi
+1	chamber psych
+1	kc indie
+1	modern folk rock
+1	beatlesque
+1	british invasion
+1	merseybeat
+1	baltimore indie
+1	modern rock
+1	alternative americana
+1	r&b
+1	uk contemporary r&b
+1	adult standards
+1	cool jazz
+1	jazz
+1	jazz clarinet
+1	lounge
+1	vintage jazz
+1	vocal jazz
+1	nu gaze
+1	alternative hip hop
+1	canadian modern jazz
+1	escape room
+1	hip hop
+1	kiwi rock
+1	portland hip hop
+1	psychedelic pop
+1	baroque pop
+
+Playlist 'prize of Snell 4 PlaylistUpdater Test Playlist' has these genres in common: [].
+Num artists in playlist: 26
+...with this genre breakdown:
+15	rock
+12	classic rock
+10	folk rock
+9	psychedelic rock
+7	art rock
+7	mellow gold
+7	roots rock
+5	permanent wave
+4	indie pop
+4	indie rock
+4	british invasion
+4	folk
+4	singer-songwriter
+4	soft rock
+3	album rock
+3	protopunk
+3	alternative rock
+3	experimental
+3	sunshine pop
+2	indie folk
+2	stomp and holler
+2	glam rock
+2	new wave
+2	modern rock
+2	country rock
+2	merseybeat
+2	brill building pop
+2	canadian singer-songwriter
+2	beatlesque
+2	fourth world
+1	alternative pop
+1	pop rock
+1	post-punk
+1	power pop
+1	punk
+1	modern folk rock
+1	philly indie
+1	melancholia
+1	blues rock
+1	british blues
+1	classic garage rock
+1	classic uk pop
+1	freakbeat
+1	pub rock
+1	bubblegum pop
+1	madchester
+1	uk post-punk
+1	synth funk
+1	classic canadian rock
+1	cosmic american
+1	double drumming
+1	jam band
+1	noise pop
+1	okc indie
+1	art pop
+1	chillwave
+1	dream pop
+1	experimental pop
+1	freak folk
+1	la indie
+1	neo-psychedelic
+1	new rave
+1	new weird america
+1	nu gaze
+1	baroque pop
+1	experimental rock
+1	krautrock
+1	space rock
+1	ambient
+1	compositional ambient
+1	electronica
+1	experimental ambient
+1	minimalism
+1	lilith
+
+Playlist 'velour 4 PlaylistUpdater' has these genres in common: [].
+Num artists in playlist: 16
+...with this genre breakdown:
+10	hip hop
+8	underground hip hop
+8	alternative hip hop
+5	rap
+3	escape room
+3	southern hip hop
+2	boom bap
+2	indie soul
+2	trap
+2	west coast rap
+2	gangster rap
+2	pop rap
+1	electronica
+1	psychedelic hip hop
+1	detroit hip hop
+1	pop soul
+1	r&b
+1	abstract beats
+1	alternative r&b
+1	indie r&b
+1	wonky
+1	indiana hip hop
+1	hardcore hip hop
+1	dirty south rap
+1	new orleans rap
+1	atl hip hop
+1	g funk
