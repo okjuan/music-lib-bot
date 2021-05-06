@@ -1,3 +1,5 @@
+from track import Track
+
 class Playlist:
     def __init__(self, id_, name, description, tracks):
         self.id = id_
@@ -11,14 +13,7 @@ class Playlist:
             spotify_playlist['name'],
             spotify_playlist['description'],
             [
-                Playlist.from_spotify_track(track)
+                Track.from_spotify_track(track)
                 for track in spotify_playlist['tracks']['items']
             ],
         )
-
-    def from_spotify_track(spotify_track):
-        # TODO create and use a new Track class
-        return {
-            'added_at': spotify_track['added_at'],
-            **spotify_track['track']
-        }

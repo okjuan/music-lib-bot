@@ -1,3 +1,4 @@
+from collections import defaultdict
 from random import shuffle
 
 NUM_ALBUMS_TO_FETCH = 2
@@ -9,6 +10,26 @@ class PlaylistUpdater:
         self.my_music_lib = my_music_lib
         self.music_util = music_util
         self.playlist_genres = None
+
+    def duplicate_and_reduce_num_tracks_per_album(self, num_tracks_per_album, new_playlist_name):
+        tracks_by_album = defaultdict(list)
+        for track in self.playlist.tracks:
+            tracks_by_album[track.album].append(track)
+
+        most_popular_tracks_per_album = []
+        # TODO: use music_util.get_tracks_most_popular_first(album) ?
+        for album, tracks in tracks_by_album.items():
+            tracks_sorted_by_popularity = sorted(
+                tracks, key=lambda track: track.popularity, reverse=True)
+            most_popular_tracks_per_album.extend(
+                tracks_sorted_by_popularity[:num_tracks_per_album])
+
+        print("total tracks", len(self.playlist.tracks))
+        print("new set of tracks", len(most_popular_tracks_per_album))
+
+        track_uris = [track.id for track in most_popular_tracks_per_album]
+        shuffle(track_uris)
+        self.my_music_lib.create_playlist(new_playlist_name, track_uris)
 
     def add_tracks_from_my_saved_albums_with_same_genres(self, num_tracks_per_album):
         track_uris = self._get_tracks_from_my_saved_albums_with_same_genres(
@@ -24,6 +45,13 @@ class PlaylistUpdater:
             self.my_music_lib.add_tracks_to_playlist(self.playlist.id, track_uris)
         else:
             print("Not adding any songs to your playlist.")
+
+    def shuffle(self):
+        pass
+
+    def remove_all_tracks_and_add_them_back_in(self):
+        """Spotify weights their shuffle play feature based on how recently a song was added. This would reweight all songs evenly"""
+        pass
 
     def _get_tracks_from_my_saved_albums_with_same_genres(self, num_tracks_per_album):
         """Skips albums that are already present in the playlist."""

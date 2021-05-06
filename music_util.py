@@ -99,7 +99,7 @@ class MusicUtil:
         ])
 
     def get_albums(self, tracks):
-        return [Album(track['album']) for track in tracks]
+        return list(set([track.album for track in tracks]))
 
     def get_genres_in_playlist(self, spotify_playlist_id):
         artist_ids = self.get_artist_ids(spotify_playlist_id)
