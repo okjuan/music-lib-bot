@@ -17,6 +17,7 @@ class Playlist:
         )
 
     def from_spotify_track(spotify_track):
+        # TODO create and use a new Track class
         return {
             'added_at': spotify_track['added_at'],
             **spotify_track['track']

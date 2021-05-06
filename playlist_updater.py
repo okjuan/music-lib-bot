@@ -1,19 +1,18 @@
-from music_util import MusicUtil
-from my_music_lib import MyMusicLib
-from playlist import Playlist
 from random import shuffle
-from spotify_client_wrapper import SpotifyClientWrapper
 
-NUM_ALBUMS_TO_FETCH = 30
+NUM_ALBUMS_TO_FETCH = 2
+
 
 class PlaylistUpdater:
     def __init__(self, playlist, my_music_lib, music_util):
         self.playlist = playlist
         self.my_music_lib = my_music_lib
         self.music_util = music_util
+        self.playlist_genres = None
 
-    def add_new_tracks_from_saved_albums(self):
-        track_uris = self.get_tracks_to_add()
+    def add_tracks_from_my_saved_albums_with_same_genres(self, num_tracks_per_album):
+        track_uris = self._get_tracks_from_my_saved_albums_with_same_genres(
+            num_tracks_per_album)
         if len(track_uris) == 0:
             print(f"No tracks to add to your playlist: '{self.playlist.name}'")
             return
@@ -26,51 +25,39 @@ class PlaylistUpdater:
         else:
             print("Not adding any songs to your playlist.")
 
-    def get_tracks_to_add(self):
-        genres = self.get_playlist_genres()
+    def _get_tracks_from_my_saved_albums_with_same_genres(self, num_tracks_per_album):
+        """Skips albums that are already present in the playlist."""
+        genres = self._get_playlist_genres()
+        if len(genres) == 0:
+            print("Couldn't find any genres :(")
+            return []
+        print(f"Your playlist's genres are {', '.join(genres)}")
+
         albums_in_playlist = [
             album.id
             for album in self.music_util.get_albums(self.playlist.tracks)
         ]
         return [
             track['uri']
-            for album in self.get_my_albums(genres)
+            for album in self._get_my_albums_with_same_genres(genres)
             if album['id'] not in albums_in_playlist
-            for track in self.music_util.get_most_popular_tracks(album, 3)
+            for track in self.music_util.get_most_popular_tracks(album, num_tracks_per_album)
         ]
 
-    def get_playlist_genres(self):
-        target_genres = self.music_util.get_genres_in_playlist(self.playlist.id)
-        if len(target_genres) == 0:
-            print("Couldn't find any genres :(")
-            return []
-        print(f"Your playlist's genres are {', '.join(target_genres)}")
-        return target_genres
+    def _get_playlist_genres(self):
+        if self.playlist_genres is None:
+            target_genres = self.music_util.get_genres_in_playlist(self.playlist.id)
+            self.playlist_genres = [] if len(target_genres) == 0 else target_genres
+        return self.playlist_genres
 
-    def get_my_albums(self, target_genres):
-        album_groups = self.my_music_lib.get_all_my_albums_grouped_by_genre(len(target_genres))
+    def _get_my_albums_with_same_genres(self, genres):
+        album_groups = self.my_music_lib.get_my_albums_grouped_by_genre(
+            NUM_ALBUMS_TO_FETCH, len(genres))
+        sorted_genres = sorted(genres)
         for group in album_groups:
-            if sorted(target_genres) == sorted(group['genres']):
+            if sorted_genres == sorted(group['genres']):
                 print(f"Good news! I found {len(group['albums'])} album(s) matching your playlist's genres:")
                 print(self.music_util.get_albums_as_readable_list(group['albums']))
                 return group['albums']
         print("Sorry, I couldn't find any albums matching your playlist's genres :(")
         return []
-
-def main():
-    spotify_client_wrapper = SpotifyClientWrapper()
-    music_util = MusicUtil(spotify_client_wrapper)
-    my_music_lib = MyMusicLib(spotify_client_wrapper, music_util)
-
-    playlist_name = "PlaylistUpdater Test Playlist"
-    playlist = my_music_lib.get_playlist(playlist_name)
-    if playlist is None:
-        print(f"Couldn't find your playlist '{playlist_name}'")
-        return
-
-    playlist_updater = PlaylistUpdater(playlist, my_music_lib, music_util)
-    playlist_updater.add_new_tracks_from_saved_albums()
-
-
-if __name__ == "__main__":
-    main()

@@ -18,11 +18,10 @@ class SpotifyClientWrapper:
         if playlist_id is None:
             return None
 
-        playlist = self.get_playlist(playlist_id)
-        return Playlist.from_spotify_playlist(playlist)
+        return self.get_playlist(playlist_id)
 
     def get_playlist(self, playlist_id):
-        return self.client.playlist(playlist_id)
+        return Playlist.from_spotify_playlist(self.client.playlist(playlist_id))
 
     def search_current_user_playlists(self, playlist_name):
         "Returns playlist ID or None if not found."
@@ -64,14 +63,11 @@ class SpotifyClientWrapper:
     def get_track(self, track_id):
         return self.client.track(track_id)
 
-    # TODO: test this. Is this even used?
     def create_playlist(self, name, description):
-        return self.client.user_playlist_create(
-            self.client.me()['id'],
-            name,
-            public=False,
-            description=description
-        )
+        user_id = self.client.me()['id']
+        playlist = self.client.user_playlist_create(
+            user_id, name, public=False, description=description)
+        return Playlist.from_spotify_playlist(playlist)
 
     def add_tracks(self, playlist_id, track_uris):
         items, num_tracks_added_so_far, num_tracks_to_add = [], 0, len(track_uris)

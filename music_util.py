@@ -124,6 +124,6 @@ class MusicUtil:
         playlist = self.spotify_client_wrapper.get_playlist(spotify_playlist_id)
         return list({
             artist['id']
-            for track in playlist['tracks']['items']
-            for artist in track['track']['artists']
+            for track in playlist.tracks
+            for artist in track['artists']
         })

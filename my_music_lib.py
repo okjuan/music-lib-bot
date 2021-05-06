@@ -7,8 +7,16 @@ class MyMusicLib:
         self.spotify_client_wrapper = spotify_client_wrapper
         self.music_util = music_util
 
-    def get_playlist(self, name):
+    def get_playlist_by_name(self, name):
         return self.spotify_client_wrapper.get_current_user_playlist(name)
+
+    def get_playlist_by_id(self, playlist_id):
+        return self.spotify_client_wrapper.get_playlist(playlist_id)
+
+    def create_playlist(self, name, track_uris, description=""):
+        playlist = self.spotify_client_wrapper.create_playlist(name, description)
+        self.spotify_client_wrapper.add_tracks(playlist.id, track_uris)
+        return playlist
 
     def get_my_albums_grouped_by_genre(self, albums_to_fetch, min_genres_per_group):
         """

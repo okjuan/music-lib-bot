@@ -102,6 +102,7 @@ class PlaylistPicker:
     def create_playlist_from_albums(self, album_group):
         print(f"Creating '{album_group['description']}' playlist from {len(album_group['albums'])} albums...")
         tracks = self.music_lib_api.get_tracks_from_each(album_group["albums"], self.get_num_tracks_per_album())
+        # TODO: call my_music_lib.create_playlist instead
         self.music_lib_api.create_playlist(
             album_group["description"],
             tracks,

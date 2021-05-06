@@ -20,7 +20,7 @@ def main():
         "velour 4 PlaylistUpdater"
     ]
     for playlist_name in playlist_names:
-        playlist = my_music_lib.get_playlist(playlist_name)
+        playlist = my_music_lib.get_playlist_by_name(playlist_name)
         if playlist is None:
             print(f"Couldn't find your playlist '{playlist_name}'")
             continue
