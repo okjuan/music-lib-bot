@@ -1,4 +1,8 @@
-from music_lib_api import MusicLibApi
+from random import shuffle
+
+from music_util import MusicUtil
+from my_music_lib import MyMusicLib
+from spotify_client_wrapper import SpotifyClientWrapper
 
 
 SELECTION_QUIT_APP = "Quit"
@@ -11,8 +15,9 @@ DEFAULT_MIN_NUM_ARTISTS_PER_PLAYLIST = 4
 DEFAULT_MIN_GENRES_PER_PLAYLIST = 4
 
 class PlaylistPicker:
-    def __init__(self):
-        self.music_lib_api = MusicLibApi()
+    def __init__(self, my_music_lib, music_util):
+        self.my_music_lib = my_music_lib
+        self.music_util = music_util
 
     def get_preference_int(self, prompt):
         return self.parse_int(self.prompt_user(prompt))
@@ -58,9 +63,12 @@ class PlaylistPicker:
         min_artists_per_playlist = self.get_min_artists_per_playlist()
         criteria = lambda albums: len(albums) >= min_albums_per_playlist and self.get_num_diff_artists(albums) >= min_artists_per_playlist
         return [
-            dict(description=genre_group, albums=albums)
-            for genre_group, albums in albums_by_genre.items()
-            if criteria(albums)
+            dict(
+                description=', '.join(album_group['genres']),
+                albums=album_group['albums']
+            )
+            for album_group in albums_by_genre
+            if criteria(album_group['albums'])
         ]
 
     def print_playlist_options(self, options):
@@ -100,13 +108,15 @@ class PlaylistPicker:
         )
 
     def create_playlist_from_albums(self, album_group):
+        tracks = self.music_util.get_most_popular_tracks_from_each(
+            album_group["albums"], self.get_num_tracks_per_album())
+        shuffle(tracks)
+
         print(f"Creating '{album_group['description']}' playlist from {len(album_group['albums'])} albums...")
-        tracks = self.music_lib_api.get_tracks_from_each(album_group["albums"], self.get_num_tracks_per_album())
-        # TODO: call my_music_lib.create_playlist instead
-        self.music_lib_api.create_playlist(
+        self.my_music_lib.create_playlist(
             album_group["description"],
-            tracks,
-            description="created by music.lib.bot"
+            [track['uri'] for track in tracks],
+            description="created by playlist_picker"
         )
         print(f"Playlist created!")
 
@@ -155,10 +165,11 @@ class PlaylistPicker:
     def get_albums_by_genre(self):
         min_genres_per_group = self.get_min_genres_per_group()
         if self.look_at_entire_library():
-            albums_by_genre = self.music_lib_api.get_all_my_albums_grouped_by_genre(
+            # TODO test this case
+            albums_by_genre = self.my_music_lib.get_all_my_albums_grouped_by_genre(
                 min_genres_per_group)
         else:
-            albums_by_genre = self.music_lib_api.get_my_albums_grouped_by_genre(
+            albums_by_genre = self.my_music_lib.get_my_albums_grouped_by_genre(
                 self.get_num_albums_to_fetch(), min_genres_per_group)
         return albums_by_genre
 
@@ -171,5 +182,12 @@ class PlaylistPicker:
         print(f"Happy listening!")
 
 
+def main():
+    spotify_client_wrapper = SpotifyClientWrapper()
+    music_util = MusicUtil(spotify_client_wrapper)
+    my_music_lib = MyMusicLib(spotify_client_wrapper, music_util)
+    PlaylistPicker(my_music_lib, music_util).run()
+
+
 if __name__ == "__main__":
-    PlaylistPicker().run()
+    main()

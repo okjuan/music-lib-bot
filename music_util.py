@@ -80,6 +80,14 @@ class MusicUtil:
         all_tracks = self.get_tracks_most_popular_first(album)
         return all_tracks[:min(num_tracks, len(all_tracks))]
 
+    def get_most_popular_tracks_from_each(self, albums, num_tracks_per_album):
+        tracks = [
+            track
+            for album in albums
+            for track in self.get_most_popular_tracks(album, num_tracks_per_album)
+        ]
+        return tracks
+
     def get_tracks_most_popular_first(self, album):
         tracks_w_metadata = [
             self.spotify_client_wrapper.get_track(track['uri'])

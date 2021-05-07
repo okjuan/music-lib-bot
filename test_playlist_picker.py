@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch, MagicMock
 
 from fixtures import mock_album, mock_artist
 from playlist_picker import PlaylistPicker
@@ -6,7 +7,7 @@ from playlist_picker import PlaylistPicker
 
 class TestPlaylistPicker(unittest.TestCase):
     def setUp(self):
-        self.playlist_picker = PlaylistPicker()
+        self.playlist_picker = PlaylistPicker(MagicMock(), MagicMock())
 
     def test_get_num_diff_artists(self):
         albums = []
