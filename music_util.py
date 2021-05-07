@@ -133,5 +133,5 @@ class MusicUtil:
         return list({
             artist['id']
             for track in playlist.tracks
-            for artist in track['artists']
+            for artist in track.artists
         })
