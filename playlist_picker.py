@@ -95,7 +95,7 @@ class PlaylistPicker:
 
     def get_num_tracks_per_album(self):
         return self.if_none(
-            self.get_preference_int(f"Minimum # of tracks per album per playlist? default is {DEFAULT_NUM_TRACKS_PER_ALBUM}"),
+            self.get_preference_int(f"How many tracks per album per playlist? default is {DEFAULT_NUM_TRACKS_PER_ALBUM}"),
             DEFAULT_NUM_TRACKS_PER_ALBUM
         )
 
