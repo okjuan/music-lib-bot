@@ -15,14 +15,14 @@ class SpotifyClientWrapper:
         auth = SpotifyOAuth(scope=SPOTIFY_SCOPES)
         self.client = spotipy.Spotify(auth_manager=auth)
 
-    def get_current_user_playlist(self, name):
+    def get_current_user_playlist_by_name(self, name):
         playlist_id = self.search_current_user_playlists(name)
         if playlist_id is None:
             return None
 
-        return self.get_playlist(playlist_id)
+        return self.get_current_user_playlist(playlist_id)
 
-    def get_playlist(self, playlist_id):
+    def get_current_user_playlist(self, playlist_id):
         return Playlist.from_spotify_playlist(self.client.playlist(playlist_id))
 
     def search_current_user_playlists(self, playlist_name):
@@ -60,7 +60,7 @@ class SpotifyClientWrapper:
             albums_fetched_so_far += batch_size
 
         print(f"Fetched {len(albums)} albums...")
-        return albums
+        return [Album.from_spotify_album(album) for album in albums]
 
     def get_track(self, track_id):
         return Track.from_spotify_track(self.client.track(track_id))

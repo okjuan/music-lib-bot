@@ -22,7 +22,7 @@ class Track:
     def from_spotify_track(spotify_track):
         """
         Params:
-            spotify_track (dict): e.g. as it appears in spotify_playlist['tracks']['items'].
+            spotify_track (dict).
         """
         return Track(
             spotify_track['name'],

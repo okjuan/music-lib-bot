@@ -10,23 +10,23 @@ class MusicUtil:
     def _add_artist_genres(self, albums):
         albums_by_id = dict()
         for album in albums:
-            artist_ids = [artist['id'] for artist in album['artists']]
-            album['genres'] = [
+            artist_ids = [artist['id'] for artist in album.artists]
+            album.set_genres([
                 genre
                 for artist_id in artist_ids
                 for genre in self.spotify_client_wrapper.get_artist_genres(artist_id)
-            ]
-            albums_by_id[album['id']] = album
+            ])
+            albums_by_id[album.id] = album
         return albums_by_id
 
     def _detect_genre_matches(self, albums_by_id):
         adjacencies, genre_to_albums = defaultdict(lambda: defaultdict(list)), defaultdict(set)
         for _, album in albums_by_id.items():
-            for genre in album['genres']:
+            for genre in album.genres:
                 for matching_album_id in genre_to_albums[genre]:
-                    adjacencies[album['id']][matching_album_id].append(genre)
-                    adjacencies[matching_album_id][album['id']].append(genre)
-                genre_to_albums[genre].add(album['id'])
+                    adjacencies[album.id][matching_album_id].append(genre)
+                    adjacencies[matching_album_id][album.id].append(genre)
+                genre_to_albums[genre].add(album.id)
         return adjacencies
 
     def _as_readable_key(self, list_):
@@ -96,8 +96,8 @@ class MusicUtil:
 
     def get_tracks_most_popular_first(self, album):
         tracks_w_metadata = [
-            self.spotify_client_wrapper.get_track(track['uri'])
-            for track in album['tracks']['items']
+            self.spotify_client_wrapper.get_track(track.uri)
+            for track in album.tracks
         ]
         return sorted(
             tracks_w_metadata,
@@ -108,7 +108,7 @@ class MusicUtil:
     def get_albums_as_readable_list(self, albums):
         artist_names_to_str = lambda artists: ', '.join([artist['name'] for artist in artists])
         return '\n'.join([
-            f"- {album['name']} by {artist_names_to_str(album['artists'])}"
+            f"- {album.name} by {artist_names_to_str(album.artists)}"
             for album in albums
         ])
 
@@ -141,7 +141,7 @@ class MusicUtil:
         return genres
 
     def get_artist_ids(self, spotify_playlist_id):
-        playlist = self.spotify_client_wrapper.get_playlist(spotify_playlist_id)
+        playlist = self.spotify_client_wrapper.get_current_user_playlist(spotify_playlist_id)
         return list({
             artist['id']
             for track in playlist.tracks

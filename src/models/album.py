@@ -13,6 +13,7 @@ class Album:
         self.artists = artists
         self.release_date = release_date
         self.num_tracks = num_tracks
+        self.genres = None
 
     def __key(self):
         return self.id
@@ -24,6 +25,9 @@ class Album:
         if isinstance(other, Album):
             return self.__key() == other.__key()
         return NotImplemented
+
+    def set_genres(self, genres):
+        self.genres = genres
 
     def from_spotify_album(spotify_album):
         return Album(

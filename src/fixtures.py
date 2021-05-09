@@ -1,28 +1,12 @@
+from models.album import Album
+from models.playlist import Playlist
+from models.track import Track
+
 def mock_album(id="", genres=[], artists=[], name=""):
-    return dict(
-        album_type="",
-        artists=artists,
-        available_markets=[],
-        copyrights=[],
-        external_ids=[],
-        external_urls=[],
-        genres=genres,
-        href="",
-        id=id,
-        images="",
-        label="",
-        name=name,
-        popularity=0,
-        release_date="",
-        release_date_precision=1,
-        total_tracks=0,
-        tracks=[],
-        type="",
-        uri=""
-    )
+    return Album(name, id, artists, release_date="", num_tracks=0)
 
 def mock_track():
-    return dict(uri="")
+    return Track("", "", "", mock_album(), [mock_artist], 0)
 
 def mock_artist(id="", name=""):
     return dict(id=id, name=name)

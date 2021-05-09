@@ -66,7 +66,7 @@ class PlaylistUpdater:
         return [
             track.uri
             for album in self._get_my_albums_with_same_genres(genres, num_albums_to_fetch)
-            if album['id'] not in albums_in_playlist
+            if album.id not in albums_in_playlist
             for track in self.music_util.get_most_popular_tracks(album, num_tracks_per_album)
         ]
 

@@ -8,10 +8,10 @@ class MyMusicLib:
         self.music_util = music_util
 
     def get_playlist_by_name(self, name):
-        return self.spotify_client_wrapper.get_current_user_playlist(name)
+        return self.spotify_client_wrapper.get_current_user_playlist_by_name(name)
 
     def get_playlist_by_id(self, playlist_id):
-        return self.spotify_client_wrapper.get_playlist(playlist_id)
+        return self.spotify_client_wrapper.get_current_user_playlist(playlist_id)
 
     def create_playlist(self, name, track_uris, description=""):
         playlist = self.spotify_client_wrapper.create_playlist(name, description)

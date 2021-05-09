@@ -74,7 +74,7 @@ class PlaylistPicker:
     def print_playlist_options(self, options):
         print("\nHere are your options for creating a playlist from albums in your library:")
         for idx, album_groups in enumerate(options):
-            artists = list({artist['name'] for album in album_groups['albums'] for artist in album['artists']})
+            artists = list({artist['name'] for album in album_groups['albums'] for artist in album.artists})
             print(f"#{idx}\n\tDescription: {album_groups['description']}\n\tNumber of albums: {len(album_groups['albums'])}\n\tArtists: {', '.join(artists)}")
         print()
 
@@ -135,7 +135,7 @@ class PlaylistPicker:
         return len({
             artist['id']
             for album in albums
-            for artist in album["artists"]
+            for artist in album.artists
         })
 
     def get_min_genres_per_group(self):
