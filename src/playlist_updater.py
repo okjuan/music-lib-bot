@@ -12,11 +12,11 @@ class PlaylistUpdater:
     def duplicate_and_reduce_num_tracks_per_album(self, num_tracks_per_album, new_playlist_name):
         tracks_by_album = defaultdict(list)
         for track in self.playlist.tracks:
-            tracks_by_album[track.album].append(track)
+            tracks_by_album[track.album_id].append(track)
 
         most_popular_tracks_per_album = []
         # TODO: use music_util.get_tracks_most_popular_first(album) ?
-        for album, tracks in tracks_by_album.items():
+        for _, tracks in tracks_by_album.items():
             tracks_sorted_by_popularity = sorted(
                 tracks, key=lambda track: track.popularity, reverse=True)
             most_popular_tracks_per_album.extend(
@@ -59,14 +59,11 @@ class PlaylistUpdater:
             return []
         print(f"Your playlist's genres are {', '.join(genres)}")
 
-        albums_in_playlist = [
-            album.id
-            for album in self.music_util.get_albums(self.playlist.tracks)
-        ]
+        ids_of_albums_in_playlist = self.music_util.get_album_ids(self.playlist.tracks)
         return [
             track.uri
             for album in self._get_my_albums_with_same_genres(genres, num_albums_to_fetch)
-            if album.id not in albums_in_playlist
+            if album.id not in ids_of_albums_in_playlist
             for track in self.music_util.get_most_popular_tracks(album, num_tracks_per_album)
         ]
 

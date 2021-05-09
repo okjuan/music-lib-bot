@@ -1,5 +1,8 @@
+from models.track import Track
+
+
 class Album:
-    def __init__(self, name, id_, artists, release_date, num_tracks):
+    def __init__(self, name, id_, tracks, artists, release_date, num_tracks):
         """
         Params:
             name (str).
@@ -10,6 +13,7 @@ class Album:
         """
         self.name = name
         self.id = id_
+        self.tracks = tracks
         self.artists = artists
         self.release_date = release_date
         self.num_tracks = num_tracks
@@ -33,6 +37,10 @@ class Album:
         return Album(
             spotify_album['name'],
             spotify_album['id'],
+            [
+                Track.from_spotify_album_track(track, spotify_album['id'])
+                for track in spotify_album['tracks']['items']
+            ],
             spotify_album['artists'],
             spotify_album['release_date'],
             spotify_album['total_tracks'],
