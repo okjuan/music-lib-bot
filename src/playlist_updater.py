@@ -1,8 +1,6 @@
 from collections import defaultdict
 from random import shuffle
 
-NUM_ALBUMS_TO_FETCH = 2
-
 
 class PlaylistUpdater:
     def __init__(self, playlist, my_music_lib, music_util):
@@ -31,9 +29,9 @@ class PlaylistUpdater:
         shuffle(track_uris)
         self.my_music_lib.create_playlist(new_playlist_name, track_uris)
 
-    def add_tracks_from_my_saved_albums_with_same_genres(self, num_tracks_per_album):
+    def add_tracks_from_my_saved_albums_with_same_genres(self, num_tracks_per_album, num_albums_to_fetch):
         track_uris = self._get_tracks_from_my_saved_albums_with_same_genres(
-            num_tracks_per_album)
+            num_tracks_per_album, num_albums_to_fetch)
         if len(track_uris) == 0:
             print(f"No tracks to add to your playlist: '{self.playlist.name}'")
             return
@@ -53,7 +51,7 @@ class PlaylistUpdater:
         """Spotify weights their shuffle play feature based on how recently a song was added. This would reweight all songs evenly"""
         pass
 
-    def _get_tracks_from_my_saved_albums_with_same_genres(self, num_tracks_per_album):
+    def _get_tracks_from_my_saved_albums_with_same_genres(self, num_tracks_per_album, num_albums_to_fetch):
         """Skips albums that are already present in the playlist."""
         genres = self._get_playlist_genres()
         if len(genres) == 0:
@@ -66,8 +64,8 @@ class PlaylistUpdater:
             for album in self.music_util.get_albums(self.playlist.tracks)
         ]
         return [
-            track['uri']
-            for album in self._get_my_albums_with_same_genres(genres)
+            track.uri
+            for album in self._get_my_albums_with_same_genres(genres, num_albums_to_fetch)
             if album['id'] not in albums_in_playlist
             for track in self.music_util.get_most_popular_tracks(album, num_tracks_per_album)
         ]
@@ -78,9 +76,9 @@ class PlaylistUpdater:
             self.playlist_genres = [] if len(target_genres) == 0 else target_genres
         return self.playlist_genres
 
-    def _get_my_albums_with_same_genres(self, genres):
+    def _get_my_albums_with_same_genres(self, genres, num_albums_to_fetch):
         album_groups = self.my_music_lib.get_my_albums_grouped_by_genre(
-            NUM_ALBUMS_TO_FETCH, len(genres))
+            num_albums_to_fetch, len(genres))
         sorted_genres = sorted(genres)
         for group in album_groups:
             if sorted_genres == sorted(group['genres']):

@@ -1,4 +1,4 @@
-from track import Track
+from models.track import Track
 
 class Playlist:
     def __init__(self, id_, name, description, tracks):
@@ -13,7 +13,7 @@ class Playlist:
             spotify_playlist['name'],
             spotify_playlist['description'],
             [
-                Track.from_spotify_track(track)
+                Track.from_spotify_playlist_track(track)
                 for track in spotify_playlist['tracks']['items']
             ],
         )

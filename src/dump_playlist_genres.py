@@ -1,6 +1,6 @@
 from music_util import MusicUtil
 from my_music_lib import MyMusicLib
-from playlist import Playlist
+from models.playlist import Playlist
 from spotify_client_wrapper import SpotifyClientWrapper
 
 
@@ -11,13 +11,13 @@ def main():
 
     playlist_names = [
         "americana 4 PlaylistUpdater Test Playlist",
-        "bag of revels 4 PlaylistUpdater Test Playlist",
-        "art rock 4 PlaylistUpdater Test Playlist",
-        "between stations 4 PlaylistUpdater Test Playlist",
-        "buzz off 4 PlaylistUpdater",
-        "it's been easy 4 PlaylistUpdater Test Playlist",
-        "prize of Snell 4 PlaylistUpdater Test Playlist",
-        "velour 4 PlaylistUpdater"
+        #"bag of revels 4 PlaylistUpdater Test Playlist",
+        #"art rock 4 PlaylistUpdater Test Playlist",
+        #"between stations 4 PlaylistUpdater Test Playlist",
+        #"buzz off 4 PlaylistUpdater",
+        #"it's been easy 4 PlaylistUpdater Test Playlist",
+        #"prize of Snell 4 PlaylistUpdater Test Playlist",
+        #"velour 4 PlaylistUpdater"
     ]
     for playlist_name in playlist_names:
         playlist = my_music_lib.get_playlist_by_name(playlist_name)

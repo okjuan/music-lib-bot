@@ -1,7 +1,9 @@
 from spotipy.oauth2 import SpotifyOAuth
 import spotipy
 
-from playlist import Playlist
+from models.album import Album
+from models.playlist import Playlist
+from models.track import Track
 
 SPOTIFY_ALBUMS_API_LIMIT = 50
 SPOTIFY_ADD_TRACKS_TO_PLAYLIST_API_LIMIT = 100
@@ -61,7 +63,10 @@ class SpotifyClientWrapper:
         return albums
 
     def get_track(self, track_id):
-        return self.client.track(track_id)
+        return Track.from_spotify_track(self.client.track(track_id))
+
+    def get_album(self, album_id):
+        return Album.from_spotify_album(self.client.album(album_id))
 
     def create_playlist(self, name, description):
         user_id = self.client.me()['id']

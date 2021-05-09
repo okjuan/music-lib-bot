@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from album import Album
+from models.album import Album
 
 
 class MusicUtil:
@@ -43,7 +43,13 @@ class MusicUtil:
                 }].
         """
         if len(album_ids) == 0 or len(genre_matches) == 0:
-            return [album_ids]
+            return [
+                {
+                    "album ids": [album_id],
+                    "genres": self.get_genres_in_album(album_id)
+                }
+                for album_id in album_ids
+            ]
 
         grouped_albums = dict()
         for album_id in album_ids:
@@ -95,7 +101,7 @@ class MusicUtil:
         ]
         return sorted(
             tracks_w_metadata,
-            key=lambda track: track['popularity'],
+            key=lambda track: track.popularity,
             reverse=True
         )
 
@@ -127,6 +133,12 @@ class MusicUtil:
             for genre in genres:
                 genre_count[genre] += 1
         return dict(genre_count)
+
+    def get_genres_in_album(self, album_id):
+        genres = []
+        for artist in self.spotify_client_wrapper.get_album(album_id).artists:
+            genres.extend(self.spotify_client_wrapper.get_artist_genres(artist['id']))
+        return genres
 
     def get_artist_ids(self, spotify_playlist_id):
         playlist = self.spotify_client_wrapper.get_playlist(spotify_playlist_id)

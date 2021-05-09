@@ -115,7 +115,7 @@ class PlaylistPicker:
         print(f"Creating '{album_group['description']}' playlist from {len(album_group['albums'])} albums...")
         self.my_music_lib.create_playlist(
             album_group["description"],
-            [track['uri'] for track in tracks],
+            [track.uri for track in tracks],
             description="created by playlist_picker"
         )
         print(f"Playlist created!")
