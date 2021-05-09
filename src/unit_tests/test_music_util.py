@@ -5,7 +5,7 @@ from fixtures import mock_album, mock_artist
 from music_util import MusicUtil
 
 
-class TestMyMusicLib(unittest.TestCase):
+class TestMusicUtil(unittest.TestCase):
     def setUp(self):
         self.music_util = MusicUtil(MagicMock())
 
