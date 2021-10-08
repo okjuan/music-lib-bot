@@ -1,8 +1,8 @@
 from random import shuffle
 
-from music_util import MusicUtil
-from my_music_lib import MyMusicLib
-from spotify_client_wrapper import SpotifyClientWrapper
+from lib.music_util import MusicUtil
+from lib.my_music_lib import MyMusicLib
+from lib.spotify_client_wrapper import SpotifyClientWrapper
 
 
 SELECTION_QUIT_APP = "Quit"

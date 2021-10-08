@@ -1,7 +1,7 @@
-from music_util import MusicUtil
-from my_music_lib import MyMusicLib
+from lib.music_util import MusicUtil
+from lib.my_music_lib import MyMusicLib
 from models.playlist import Playlist
-from spotify_client_wrapper import SpotifyClientWrapper
+from lib.spotify_client_wrapper import SpotifyClientWrapper
 
 
 def main():

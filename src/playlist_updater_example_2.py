@@ -1,7 +1,7 @@
-from music_util import MusicUtil
-from my_music_lib import MyMusicLib
-from playlist_updater import PlaylistUpdater
-from spotify_client_wrapper import SpotifyClientWrapper
+from lib.music_util import MusicUtil
+from lib.my_music_lib import MyMusicLib
+from lib.playlist_updater import PlaylistUpdater
+from lib.spotify_client_wrapper import SpotifyClientWrapper
 
 NUM_TRACKS_PER_ALBUM = 5
 

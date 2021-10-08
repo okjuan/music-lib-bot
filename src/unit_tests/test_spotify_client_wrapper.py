@@ -2,7 +2,7 @@ from os import putenv
 import unittest
 
 from models.album import Album
-from spotify_client_wrapper import SpotifyClientWrapper
+from lib.spotify_client_wrapper import SpotifyClientWrapper
 
 
 class TestSpotifyClientWrapper(unittest.TestCase):
