@@ -14,7 +14,7 @@ class TestMyMusicLib(unittest.TestCase):
 
         playlist = self.my_music_lib.get_playlist_by_name(name)
 
-        self.assertEqual(playlist['name'], "Real Canadian Cheddar")
+        self.assertEqual(playlist.name, "Real Canadian Cheddar")
 
     # Spotify Web API only allows fetching 50 playlists at a time
     # This is meant to test that a playlist is found even if not in first 50 to be fetched
@@ -24,7 +24,7 @@ class TestMyMusicLib(unittest.TestCase):
 
         playlist = self.my_music_lib.get_playlist_by_name(name)
 
-        self.assertEqual(playlist['name'], "JPearson's Top of 2020")
+        self.assertEqual(playlist.name, "JPearson's Top of 2020")
 
     @unittest.skip("ported from old test")
     def test_get_playlist__does_not_exist__returns_none(self):

@@ -1,6 +1,7 @@
+from os import putenv
 import unittest
 
-from os import putenv
+from models.album import Album
 from spotify_client_wrapper import SpotifyClientWrapper
 
 
@@ -13,6 +14,14 @@ class TestSpotifyClientWrapper(unittest.TestCase):
 
     def test_add_tracks(self):
         pass
+
+    def test_get_my_albums(self):
+        num_albums_to_fetch = 10
+
+        albums = self.spotify_client_wrapper.get_my_albums(num_albums_to_fetch)
+
+        self.assertEqual(num_albums_to_fetch, len(albums))
+        self.assertEqual(Album, type(albums[0]))
 
     @unittest.skip("FIXME; and, in any case, Integration tests disabled by default")
     def test_fetch_albums__few(self):

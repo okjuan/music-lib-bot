@@ -5,7 +5,7 @@ from fixtures import mock_album, mock_artist
 from music_util import MusicUtil
 
 
-class TestMyMusicLib(unittest.TestCase):
+class TestMusicUtil(unittest.TestCase):
     def setUp(self):
         self.music_util = MusicUtil(MagicMock())
 
@@ -122,7 +122,7 @@ class TestMyMusicLib(unittest.TestCase):
 
         self.assertEqual(1, len(album_groups))
         self.assertEqual(2, len(album_groups[0]))
-        album_ids = [album['id'] for album in album_groups[0]]
+        album_ids = [album.id for album in album_groups[0]]
         self.assertIn("123", album_ids)
         self.assertIn("456", album_ids)
 
