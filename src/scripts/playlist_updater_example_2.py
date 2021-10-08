@@ -1,3 +1,8 @@
+# allows me to run:
+# $ python scripts/playlist_updater_example_2.py
+import sys
+sys.path.extend(['.', '../'])
+
 from lib.music_util import MusicUtil
 from lib.my_music_lib import MyMusicLib
 from lib.playlist_updater import PlaylistUpdater
@@ -15,11 +20,13 @@ def main():
     for playlist_name in playlist_names:
         playlist = my_music_lib.get_playlist_by_name(playlist_name)
         if playlist is None:
-            print(f"Couldn't create your playlist '{playlist_name}'")
+            print(f"Couldn't find playlist '{playlist_name}'")
             return
 
         playlist_updater = PlaylistUpdater(playlist, my_music_lib, music_util)
-        playlist_updater.duplicate_and_reduce_num_tracks_per_album(NUM_TRACKS_PER_ALBUM, f"{playlist_name} - redux")
+        new_playlist_name = f"{playlist_name} - redux"
+        playlist_updater.duplicate_and_reduce_num_tracks_per_album(NUM_TRACKS_PER_ALBUM, new_playlist_name)
+        print(f"Created playlist '{new_playlist_name}'")
 
 
 if __name__ == "__main__":

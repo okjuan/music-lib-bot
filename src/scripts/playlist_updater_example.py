@@ -1,3 +1,8 @@
+# allows me to run:
+# $ python scripts/playlist_updater_example.py
+import sys
+sys.path.extend(['.', '../'])
+
 from lib.music_util import MusicUtil
 from lib.my_music_lib import MyMusicLib
 from lib.playlist_updater import PlaylistUpdater

@@ -1,6 +1,10 @@
+# allows me to run:
+# $ python scripts/dump_playlist_genres.py
+import sys
+sys.path.extend(['.', '../'])
+
 from lib.music_util import MusicUtil
 from lib.my_music_lib import MyMusicLib
-from models.playlist import Playlist
 from lib.spotify_client_wrapper import SpotifyClientWrapper
 
 
