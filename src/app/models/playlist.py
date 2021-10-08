@@ -1,4 +1,4 @@
-from models.track import Track
+from app.models.track import Track
 
 class Playlist:
     def __init__(self, id_, name, description, tracks):

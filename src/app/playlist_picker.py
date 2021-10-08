@@ -1,8 +1,13 @@
+# allows me to run:
+# $ python app/playlist_picker.py
+import sys
+sys.path.extend(['.', '../'])
+
 from random import shuffle
 
-from lib.music_util import MusicUtil
-from lib.my_music_lib import MyMusicLib
-from lib.spotify_client_wrapper import SpotifyClientWrapper
+from app.lib.music_util import MusicUtil
+from app.lib.my_music_lib import MyMusicLib
+from app.lib.spotify_client_wrapper import SpotifyClientWrapper
 
 
 SELECTION_QUIT_APP = "Quit"

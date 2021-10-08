@@ -1,9 +1,9 @@
 from spotipy.oauth2 import SpotifyOAuth
 import spotipy
 
-from models.album import Album
-from models.playlist import Playlist
-from models.track import Track
+from app.models.album import Album
+from app.models.playlist import Playlist
+from app.models.track import Track
 
 SPOTIFY_ALBUMS_API_LIMIT = 50
 SPOTIFY_ADD_TRACKS_TO_PLAYLIST_API_LIMIT = 100

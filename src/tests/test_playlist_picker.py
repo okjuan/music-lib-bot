@@ -1,8 +1,8 @@
 import unittest
 from unittest.mock import patch, MagicMock
 
-from fixtures import mock_album, mock_artist
-from playlist_picker import PlaylistPicker
+from tests.fixtures import mock_album, mock_artist
+from app.playlist_picker import PlaylistPicker
 
 
 class TestPlaylistPicker(unittest.TestCase):

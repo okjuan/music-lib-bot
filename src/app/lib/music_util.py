@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from models.album import Album
+from app.models.album import Album
 
 
 class MusicUtil:

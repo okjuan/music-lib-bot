@@ -1,4 +1,4 @@
-from models.track import Track
+from app.models.track import Track
 
 
 class Album:

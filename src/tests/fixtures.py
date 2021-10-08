@@ -1,6 +1,6 @@
-from models.album import Album
-from models.playlist import Playlist
-from models.track import Track
+from app.models.album import Album
+from app.models.playlist import Playlist
+from app.models.track import Track
 
 def mock_album(id="", genres=[], artists=[], name=""):
     return Album(name, id, [], artists, release_date="", num_tracks=0)

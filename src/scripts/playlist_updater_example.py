@@ -3,10 +3,10 @@
 import sys
 sys.path.extend(['.', '../'])
 
-from lib.music_util import MusicUtil
-from lib.my_music_lib import MyMusicLib
-from lib.playlist_updater import PlaylistUpdater
-from lib.spotify_client_wrapper import SpotifyClientWrapper
+from app.lib.music_util import MusicUtil
+from app.lib.my_music_lib import MyMusicLib
+from app.lib.playlist_updater import PlaylistUpdater
+from app.lib.spotify_client_wrapper import SpotifyClientWrapper
 
 NUM_TRACKS_PER_ALBUM = 3
 NUM_ALBUMS_TO_FETCH = 25
