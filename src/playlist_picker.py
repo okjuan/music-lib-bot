@@ -58,17 +58,17 @@ class PlaylistPicker:
             DEFAULT_MIN_NUM_ARTISTS_PER_PLAYLIST
         )
 
-    def get_playlist_options(self, albums_by_genre):
+    def get_suggested_playlists(self, albums_by_genre):
         min_albums_per_playlist = self.get_min_albums_per_playlist()
         min_artists_per_playlist = self.get_min_artists_per_playlist()
-        criteria = lambda albums: len(albums) >= min_albums_per_playlist and self.get_num_diff_artists(albums) >= min_artists_per_playlist
+        playlist_criteria = lambda albums: len(albums) >= min_albums_per_playlist and self.get_num_diff_artists(albums) >= min_artists_per_playlist
         return [
             dict(
                 description=', '.join(album_group['genres']),
                 albums=album_group['albums']
             )
             for album_group in albums_by_genre
-            if criteria(album_group['albums'])
+            if playlist_criteria(album_group['albums'])
         ]
 
     def print_playlist_options(self, options):
@@ -120,14 +120,14 @@ class PlaylistPicker:
         )
         print(f"Playlist created!")
 
-    def launch_ui(self, options):
+    def launch_ui(self, suggested_playlists):
         while True:
-            selection = self.get_selection(options)
+            selection = self.get_selection(suggested_playlists)
             if selection is SELECTION_QUIT_APP:
                 print("Quitting...")
                 break
 
-            self.create_playlist_from_albums(options[selection])
+            self.create_playlist_from_albums(suggested_playlists[selection])
             if not self.user_wants_to_create_another_playlist():
                 break
 
@@ -174,11 +174,12 @@ class PlaylistPicker:
         return albums_by_genre
 
     def run(self):
-        options = self.get_playlist_options(self.get_albums_by_genre())
-        if len(options) == 0:
-            print("Didn't find any options to select from!")
+        albums_by_genre = self.get_albums_by_genre()
+        suggested_playlists = self.get_suggested_playlists(albums_by_genre)
+        if len(suggested_playlists) == 0:
+            print("Couldn't find any suggested playlists!")
             return
-        self.launch_ui(options)
+        self.launch_ui(suggested_playlists)
         print(f"Happy listening!")
 
 
