@@ -2,7 +2,7 @@ from app.models.track import Track
 
 
 class Album:
-    def __init__(self, name, id_, tracks, artists, release_date, num_tracks):
+    def __init__(self, name, id_, tracks, artists, release_date, num_tracks, genres=None):
         """
         Params:
             name (str).
@@ -17,7 +17,7 @@ class Album:
         self.artists = artists
         self.release_date = release_date
         self.num_tracks = num_tracks
-        self.genres = None
+        self.genres = genres
 
     def __key(self):
         return self.id

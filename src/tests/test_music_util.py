@@ -65,6 +65,83 @@ class TestMusicUtil(unittest.TestCase):
 
         self.assertEqual("unknown", genre_string)
 
+    def test__detect_genre_matches__no_matches(self):
+        mock_albums = {
+            'id1': mock_album(id='id1', genres=['hip hop']),
+            'id2': mock_album(id='id2', genres=['rock'])
+        }
+
+        albums_by_genre = self.music_util._detect_genre_matches(mock_albums)
+
+        self.assertEqual(0, len(albums_by_genre.keys()))
+
+    def test__detect_genre_matches__2_albums_1_genre(self):
+        mock_albums = {
+            'id1': mock_album(id='id1', genres=['hip hop']),
+            'id2': mock_album(id='id2', genres=['hip hop'])
+        }
+
+        genre_matches = self.music_util._detect_genre_matches(mock_albums)
+
+        self.assertEqual(sorted(['id1', 'id2']), sorted(list(genre_matches.keys())))
+        self.assertEqual(['id2'], list(genre_matches['id1'].keys()))
+        self.assertEqual(['id1'], list(genre_matches['id2'].keys()))
+        self.assertEqual(['hip hop'], list(genre_matches['id1']['id2']))
+        self.assertEqual(['hip hop'], list(genre_matches['id2']['id1']))
+
+    def test__detect_genre_matches__3_albums_1_genre(self):
+        mock_albums = {
+            'id1': mock_album(id='id1', genres=['hip hop']),
+            'id2': mock_album(id='id2', genres=['hip hop']),
+            'id3': mock_album(id='id3', genres=['hip hop']),
+        }
+
+        genre_matches = self.music_util._detect_genre_matches(mock_albums)
+
+        self.assertEqual(sorted(['id1', 'id2', 'id3']), sorted(list(genre_matches.keys())))
+        self.assertEqual(sorted(['id2', 'id3']), sorted(list(genre_matches['id1'].keys())))
+        self.assertEqual(sorted(['id1', 'id3']), sorted(list(genre_matches['id2'].keys())))
+        self.assertEqual(sorted(['id1', 'id2']), sorted(list(genre_matches['id3'].keys())))
+        self.assertEqual(sorted(['hip hop']), sorted(list(genre_matches['id1']['id2'])))
+        self.assertEqual(sorted(['hip hop']), sorted(list(genre_matches['id1']['id3'])))
+        self.assertEqual(sorted(['hip hop']), sorted(list(genre_matches['id2']['id1'])))
+        self.assertEqual(sorted(['hip hop']), sorted(list(genre_matches['id2']['id3'])))
+        self.assertEqual(sorted(['hip hop']), sorted(list(genre_matches['id3']['id1'])))
+        self.assertEqual(sorted(['hip hop']), sorted(list(genre_matches['id3']['id2'])))
+
+    def test__detect_genre_matches__2_albums_2_genres(self):
+        mock_albums = {
+            'id1': mock_album(id='id1', genres=['hip hop', 'rap']),
+            'id2': mock_album(id='id2', genres=['hip hop', 'rap'])
+        }
+
+        genre_matches = self.music_util._detect_genre_matches(mock_albums)
+
+        self.assertEqual(sorted(['id1', 'id2']), sorted(list(genre_matches.keys())))
+        self.assertEqual(['id2'], list(genre_matches['id1'].keys()))
+        self.assertEqual(['id1'], list(genre_matches['id2'].keys()))
+        self.assertEqual(sorted(['hip hop', 'rap']), sorted(list(genre_matches['id1']['id2'])))
+
+    def test__detect_genre_matches__3_albums_3_genres(self):
+        mock_albums = {
+            'id1': mock_album(id='id1', genres=['hip hop', 'rap', 'trap']),
+            'id2': mock_album(id='id2', genres=['hip hop', 'rap', 'trap']),
+            'id3': mock_album(id='id3', genres=['hip hop', 'rap', 'trap'])
+        }
+
+        genre_matches = self.music_util._detect_genre_matches(mock_albums)
+
+        self.assertEqual(sorted(['id1', 'id2', 'id3']), sorted(list(genre_matches.keys())))
+        self.assertEqual(sorted(['id2', 'id3']), sorted(list(genre_matches['id1'].keys())))
+        self.assertEqual(sorted(['id1', 'id3']), sorted(list(genre_matches['id2'].keys())))
+        self.assertEqual(sorted(['id1', 'id2']), sorted(list(genre_matches['id3'].keys())))
+        self.assertEqual(sorted(['hip hop', 'rap', 'trap']), sorted(list(genre_matches['id1']['id2'])))
+        self.assertEqual(sorted(['hip hop', 'rap', 'trap']), sorted(list(genre_matches['id1']['id3'])))
+        self.assertEqual(sorted(['hip hop', 'rap', 'trap']), sorted(list(genre_matches['id2']['id1'])))
+        self.assertEqual(sorted(['hip hop', 'rap', 'trap']), sorted(list(genre_matches['id2']['id3'])))
+        self.assertEqual(sorted(['hip hop', 'rap', 'trap']), sorted(list(genre_matches['id3']['id1'])))
+        self.assertEqual(sorted(['hip hop', 'rap', 'trap']), sorted(list(genre_matches['id3']['id2'])))
+
     @unittest.skip("needs to be fixed")
     @patch("music_lib_api.as_readable_key", return_value="unbelievable-funk")
     def test_group_albums_by_genre__single_album(self, _):
