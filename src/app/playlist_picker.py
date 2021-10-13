@@ -125,7 +125,7 @@ class PlaylistPicker:
         )
         print(f"Playlist created!")
 
-    def launch_ui(self, suggested_playlists):
+    def launch_interactive_playlist_creator(self, suggested_playlists):
         while True:
             selection = self.get_selection(suggested_playlists)
             if selection is SELECTION_QUIT_APP:
@@ -184,7 +184,7 @@ class PlaylistPicker:
         if len(suggested_playlists) == 0:
             print("Couldn't find any suggested playlists!")
             return
-        self.launch_ui(suggested_playlists)
+        self.launch_interactive_playlist_creator(suggested_playlists)
         print(f"Happy listening!")
 
 
