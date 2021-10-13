@@ -142,6 +142,41 @@ class TestMusicUtil(unittest.TestCase):
         self.assertEqual(sorted(['hip hop', 'rap', 'trap']), sorted(list(genre_matches['id3']['id1'])))
         self.assertEqual(sorted(['hip hop', 'rap', 'trap']), sorted(list(genre_matches['id3']['id2'])))
 
+    def test__group_albums__2_albums_1_genre(self):
+        album_ids= ['id1', 'id2']
+        genre_matches = {
+            'id1': {
+                'id2': ['rap']
+            },
+            'id2': {
+                'id1': ['rap']
+            },
+        }
+
+        album_groups = self.music_util._group_albums(album_ids, genre_matches)
+
+        self.assertEqual([{
+                'album ids': {'id1', 'id2'},
+                'genres': ['rap']
+            }], album_groups)
+
+    def test__group_albums__2_albums_2_genre(self):
+        album_ids= ['id1', 'id2']
+        genre_matches = {
+            'id1': {
+                'id2': ['rap', 'hip hop']
+            },
+            'id2': {
+                'id1': ['rap', 'hip hop']
+            },
+        }
+
+        album_groups = self.music_util._group_albums(album_ids, genre_matches)
+
+        self.assertEqual(1, len(album_groups))
+        self.assertEqual({'id1', 'id2'}, album_groups[0]['album ids'])
+        self.assertEqual(sorted(['rap', 'hip hop']), sorted(album_groups[0]['genres']))
+
     @unittest.skip("needs to be fixed")
     @patch("music_lib_api.as_readable_key", return_value="unbelievable-funk")
     def test_group_albums_by_genre__single_album(self, _):
