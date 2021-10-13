@@ -76,23 +76,26 @@ class PlaylistPicker:
             if playlist_criteria(album_group['albums'])
         ]
 
-    def print_playlist_options(self, options):
-        print("\nHere are your options for creating a playlist from albums in your library:")
-        for idx, album_groups in enumerate(options):
-            artists = list({artist['name'] for album in album_groups['albums'] for artist in album.artists})
-            print(f"#{idx}\n\tDescription: {album_groups['description']}\n\tNumber of albums: {len(album_groups['albums'])}\n\tArtists: {', '.join(artists)}")
+    def print_playlist_options(self, num_options, options):
+        print("\nHere are your options for creating a playlist from albums in your library.")
+        print("The options are ordered by number of albums from most to least.")
+        options.sort(
+            key=lambda album_group: len(album_group['albums']),
+            reverse=True
+        )
+        for idx, album_group in enumerate(options[:num_options]):
+            artists = list({artist['name'] for album in album_group['albums'] for artist in album.artists})
+            print(f"#{idx}\n\tDescription: {album_group['description']}\n\tNumber of albums: {len(album_group['albums'])}\n\tArtists: {', '.join(artists)}")
         print()
 
-    def get_user_selection(self, min_option, max_option):
+    def get_user_selection(self, message, min_option, max_option):
         selection = None
         while selection is None:
-            selection = self.parse_selection(min_option, max_option)
+            selection = self.parse_selection(message, min_option, max_option)
         return selection
 
-    def parse_selection(self, min_option, max_option):
-        selection = input(
-            f"Please select which playlist to create!\nEnter a number between {min_option} and {max_option} or enter '{QUIT_KEY}' to quit:\n")
-
+    def parse_selection(self, message, min_option, max_option):
+        selection = self.prompt_user(message)
         if selection.strip() == QUIT_KEY:
             return SELECTION_QUIT_APP
 
@@ -101,10 +104,20 @@ class PlaylistPicker:
             return selection_int
         return None
 
+    def get_num_options_desired(self, options):
+        if len(options) <= 10:
+            return len(options)
+
+        min_option, max_option = 1, len(options)
+        message = f"How many playlist options do you want to see?\n\t(Enter a number between {min_option} and {max_option})\n"
+        return self.get_user_selection(message, min_option, max_option)
+
     def get_selection(self, options):
-        self.print_playlist_options(options)
-        selection = self.get_user_selection(0, len(options)-1)
-        return selection
+        num_options = self.get_num_options_desired(options)
+        min_option, max_option = 0, len(options)-1
+        message = f"Please select which playlist to create!\nEnter a number between {min_option} and {num_options-1} or enter '{QUIT_KEY}' to quit:\n"
+        self.print_playlist_options(num_options, options)
+        return self.get_user_selection(message, min_option, max_option)
 
     def get_num_tracks_per_album(self):
         return self.if_none(
