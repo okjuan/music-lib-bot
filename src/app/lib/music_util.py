@@ -11,11 +11,12 @@ class MusicUtil:
         albums_by_id = dict()
         for album in albums:
             artist_ids = [artist['id'] for artist in album.artists]
-            album.set_genres([
+            genres = list(set([
                 genre
                 for artist_id in artist_ids
                 for genre in self.spotify_client_wrapper.get_artist_genres(artist_id)
-            ])
+            ]))
+            album.set_genres(genres)
             albums_by_id[album.id] = album
         return albums_by_id
 
