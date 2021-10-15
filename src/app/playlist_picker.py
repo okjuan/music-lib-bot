@@ -88,13 +88,13 @@ class PlaylistPicker:
             print(f"#{idx}\n\tDescription: {album_group['description']}\n\tNumber of albums: {len(album_group['albums'])}\n\tArtists: {', '.join(artists)}")
         print()
 
-    def get_user_selection(self, message, min_option, max_option):
+    def get_int_user_selection(self, message, min_option, max_option):
         selection = None
         while selection is None:
-            selection = self.parse_selection(message, min_option, max_option)
+            selection = self.parse_int_selection(message, min_option, max_option)
         return selection
 
-    def parse_selection(self, message, min_option, max_option):
+    def parse_int_selection(self, message, min_option, max_option):
         selection = self.prompt_user(message)
         if selection.strip() == QUIT_KEY:
             return SELECTION_QUIT_APP
@@ -110,14 +110,14 @@ class PlaylistPicker:
 
         min_option, max_option = 1, len(options)
         message = f"How many playlist options do you want to see?\n\t(Enter a number between {min_option} and {max_option})\n"
-        return self.get_user_selection(message, min_option, max_option)
+        return self.get_int_user_selection(message, min_option, max_option)
 
     def get_selection(self, options):
         num_options = self.get_num_options_desired(options)
         min_option, max_option = 0, len(options)-1
         message = f"Please select which playlist to create!\nEnter a number between {min_option} and {num_options-1} or enter '{QUIT_KEY}' to quit:\n"
         self.print_playlist_options(num_options, options)
-        return self.get_user_selection(message, min_option, max_option)
+        return self.get_int_user_selection(message, min_option, max_option)
 
     def get_num_tracks_per_album(self):
         return self.if_none(
@@ -183,7 +183,6 @@ class PlaylistPicker:
     def get_albums_by_genre(self):
         min_genres_per_group = self.get_min_genres_per_group()
         if self.look_at_entire_library():
-            # TODO test this case
             albums_by_genre = self.my_music_lib.get_all_my_albums_grouped_by_genre(
                 min_genres_per_group)
         else:
