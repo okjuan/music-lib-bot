@@ -29,7 +29,7 @@ def main():
             print(f"Couldn't find your playlist '{playlist_name}'")
             continue
 
-        genres_in_common = music_util.get_genres_in_playlist(playlist.id)
+        genres_in_common = music_util.get_common_genres_in_playlist(playlist.id)
         genre_breakdown = music_util.get_genres_by_frequency(playlist.id)
         # ref: https://stackoverflow.com/questions/613183/how-do-i-sort-a-dictionary-by-value
         sorted_genre_breakdown = {

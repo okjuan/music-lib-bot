@@ -19,7 +19,7 @@ def main():
 
     playlist_name = "PlaylistUpdater Test Playlist"
     playlist = my_music_lib.create_playlist(
-        playlist_name, ["spotify:track:4IO2X2YoXoUMv0M2rwomLC"])
+        playlist_name, ["spotify:track:7G3lxTsMfSx4yarMkfgnTC"])
     playlist = my_music_lib.get_playlist_by_id(playlist.id)
     if playlist is None:
         print(f"Couldn't create your playlist '{playlist_name}'")
