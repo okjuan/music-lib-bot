@@ -86,5 +86,13 @@ class SpotifyClientWrapper:
             )
             num_tracks_added_so_far += batch_size
 
+    def add_track_at_position(self, playlist_id, track_uri, position):
+        self.client.user_playlist_add_tracks(
+            self._get_current_user_id(),
+            playlist_id,
+            [track_uri],
+            position=position,
+        )
+
     def _get_current_user_id(self):
         return self.client.me()['id']

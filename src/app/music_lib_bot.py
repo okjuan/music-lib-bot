@@ -25,7 +25,7 @@ class MusicLibBot:
 
     # TODO: implement
     def get_num_albums_to_fetch(self):
-        return 100
+        return 5
 
     def run_playlist_updater(self):
         # TODO while True:

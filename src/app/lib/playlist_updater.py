@@ -1,5 +1,5 @@
 from collections import defaultdict
-from random import shuffle
+from random import shuffle, randint
 
 
 class PlaylistUpdater:
@@ -34,12 +34,12 @@ class PlaylistUpdater:
             num_tracks_per_album, num_albums_to_fetch)
 
         if len(track_uris) == 0:
-            print(f"Couldn't find any tracks in your library with the same exact genres as your playlist '{self.playlist.name}'")
+            print(f"Couldn't find any new tracks in your library with the same exact genres as your playlist '{self.playlist.name}'")
             print("Consider calling 'add_tracks_from_my_saved_albums_with_similar_genres' instead, which is less strict about genre matching")
             return
 
         print(f"Found {len(track_uris)} tracks with exact same genres as those already in your playlist..")
-        self.add_tracks(track_uris)
+        self.add_tracks_in_random_positions(track_uris)
 
     def add_tracks_from_my_saved_albums_with_similar_genres(self, num_tracks_per_album, num_albums_to_fetch):
         "Less strict version of add_tracks_from_my_saved_albums_with_same_genres"
@@ -47,19 +47,20 @@ class PlaylistUpdater:
             num_tracks_per_album, num_albums_to_fetch)
 
         if len(track_uris) == 0:
-            print(f"Couldn't find any tracks in your library with similar genres as those your playlist '{self.playlist.name}'")
+            print(f"Couldn't find any new tracks in your library with similar genres as those your playlist '{self.playlist.name}'")
             return
 
         print(f"Found {len(track_uris)} tracks with similar genres to those already in your playlist..")
-        self.add_tracks(track_uris)
+        self.add_tracks_in_random_positions(track_uris)
 
-    def add_tracks(self, track_uris):
-        shuffle(track_uris)
-        if len(track_uris) > 0:
-            print(f"Adding them to your playlist: '{self.playlist.name}'")
-            self.my_music_lib.add_tracks_to_playlist(self.playlist.id, track_uris)
-        else:
-            print("Not adding any songs to your playlist.")
+    def add_tracks_in_random_positions(self, track_uris):
+        if len(track_uris) == 0:
+            print("Oops, no tracks given, so I can't add them to your playlist.")
+        print(f"Adding {len(track_uris)} randomly throughout your playlist: '{self.playlist.name}'")
+        for track in track_uris:
+            random_position = randint(1, len(self.playlist.tracks)) if len(self.playlist.tracks) > 0 else 1
+            self.my_music_lib.add_track_to_playlist_at_position(
+                self.playlist.id, track, random_position)
 
     def shuffle(self):
         pass
@@ -97,13 +98,15 @@ class PlaylistUpdater:
             matching_albums_in_your_library, num_tracks_per_album)
 
     def _get_most_popular_tracks_if_albums_not_already_in_playlist(self, matching_albums_in_your_library, num_tracks_per_album):
-        ids_of_albums_in_playlist = self.music_util.get_album_ids(self.playlist.tracks)
-        return [
-            track.uri
-            for album in matching_albums_in_your_library
-            if album.id not in ids_of_albums_in_playlist
-            for track in self.music_util.get_most_popular_tracks(album, num_tracks_per_album)
-        ]
+        ids_of_albums_in_playlist, tracks = self.music_util.get_album_ids(self.playlist.tracks), []
+        for album in matching_albums_in_your_library:
+            if album.id in ids_of_albums_in_playlist:
+                print(f"Oh! Skipping album '{album.name}' because it's already in the playlist.")
+            else:
+                most_popular_tracks = self.music_util.get_most_popular_tracks(
+                    album, num_tracks_per_album)
+                tracks.extend([track.uri for track in most_popular_tracks])
+        return tracks
 
     def _get_genres_in_common_in_playlist(self):
         if self.playlist_genres is None:
