@@ -32,11 +32,28 @@ class PlaylistUpdater:
     def add_tracks_from_my_saved_albums_with_same_genres(self, num_tracks_per_album, num_albums_to_fetch):
         track_uris = self._get_tracks_from_my_saved_albums_with_same_genres(
             num_tracks_per_album, num_albums_to_fetch)
+
         if len(track_uris) == 0:
-            print(f"No tracks to add to your playlist: '{self.playlist.name}'")
+            print(f"Couldn't find any tracks in your library with the same exact genres as your playlist '{self.playlist.name}'")
+            print("Consider calling 'add_tracks_from_my_saved_albums_with_similar_genres' instead, which is less strict about genre matching")
             return
 
-        print(f"Found {len(track_uris)} tracks to add to playlist...")
+        print(f"Found {len(track_uris)} tracks with exact same genres as those already in your playlist..")
+        self.add_tracks(track_uris)
+
+    def add_tracks_from_my_saved_albums_with_similar_genres(self, num_tracks_per_album, num_albums_to_fetch):
+        "Less strict version of add_tracks_from_my_saved_albums_with_same_genres"
+        track_uris = self._get_tracks_from_my_saved_albums_with_similar_genres(
+            num_tracks_per_album, num_albums_to_fetch)
+
+        if len(track_uris) == 0:
+            print(f"Couldn't find any tracks in your library with similar genres as those your playlist '{self.playlist.name}'")
+            return
+
+        print(f"Found {len(track_uris)} tracks with similar genres to those already in your playlist..")
+        self.add_tracks(track_uris)
+
+    def add_tracks(self, track_uris):
         shuffle(track_uris)
         if len(track_uris) > 0:
             print(f"Adding them to your playlist: '{self.playlist.name}'")
@@ -53,32 +70,71 @@ class PlaylistUpdater:
 
     def _get_tracks_from_my_saved_albums_with_same_genres(self, num_tracks_per_album, num_albums_to_fetch):
         """Skips albums that are already present in the playlist."""
-        genres = self._get_playlist_genres()
+        genres = self._get_genres_in_common_in_playlist()
+        if len(genres) == 0:
+            print("There are no genres that all tracks in your playlist have in common :(")
+            return []
+        print(f"The genres that all tracks in your playlist have in common are {', '.join(genres)}")
+
+        matching_albums_in_your_library = self._get_my_albums_with_same_genres(genres, num_albums_to_fetch)
+        print(f"Found {len(matching_albums_in_your_library)} albums in your library that exactly match genres: {', '.join(genres)}")
+
+        return self._get_most_popular_tracks_if_albums_not_already_in_playlist(
+            matching_albums_in_your_library, num_tracks_per_album)
+
+    def _get_tracks_from_my_saved_albums_with_similar_genres(self, num_tracks_per_album, num_albums_to_fetch):
+        "Less strict version of _get_tracks_from_my_saved_albums_with_same_genres"
+        genres = self._get_most_common_genres()
         if len(genres) == 0:
             print("Couldn't find any genres :(")
             return []
-        print(f"Your playlist's genres are {', '.join(genres)}")
+        print(f"Your playlist's most common genres are: {', '.join(genres)}")
 
+        matching_albums_in_your_library = self._get_my_albums_with_superset_genres(genres, num_albums_to_fetch)
+        print(f"Found {len(matching_albums_in_your_library)} albums in your library that contain genres: {', '.join(genres)}")
+
+        return self._get_most_popular_tracks_if_albums_not_already_in_playlist(
+            matching_albums_in_your_library, num_tracks_per_album)
+
+    def _get_most_popular_tracks_if_albums_not_already_in_playlist(self, matching_albums_in_your_library, num_tracks_per_album):
         ids_of_albums_in_playlist = self.music_util.get_album_ids(self.playlist.tracks)
         return [
             track.uri
-            for album in self._get_my_albums_with_same_genres(genres, num_albums_to_fetch)
+            for album in matching_albums_in_your_library
             if album.id not in ids_of_albums_in_playlist
             for track in self.music_util.get_most_popular_tracks(album, num_tracks_per_album)
         ]
 
-    def _get_playlist_genres(self):
+    def _get_genres_in_common_in_playlist(self):
         if self.playlist_genres is None:
-            target_genres = self.music_util.get_genres_in_playlist(self.playlist.id)
-            self.playlist_genres = [] if len(target_genres) == 0 else target_genres
+            self.playlist_genres = self.music_util.get_common_genres_in_playlist(self.playlist.id)
+        return self.playlist_genres
+
+    def _get_most_common_genres(self):
+        "Returns top 10% most common genres. If 10% < 1 then return most common genre."
+        if self.playlist_genres is not None:
+            return self.playlist_genres
+
+        target_genres = self.music_util.get_genres_by_frequency(self.playlist.id)
+        target_genres_list = [(genre, count) for genre, count in target_genres.items()]
+        target_genres_list.sort(key=lambda pair: pair[1], reverse=True)
+        top_10_percent = max(int(len(target_genres_list)/10), 1)
+        self.playlist_genres = [genre for genre, _ in target_genres_list[:top_10_percent]]
         return self.playlist_genres
 
     def _get_my_albums_with_same_genres(self, genres, num_albums_to_fetch):
+        genre_matching_criteria = lambda playlist_genres, candidate_genres: set(playlist_genres) == set(candidate_genres)
+        return self._get_my_matching_albums(genres, num_albums_to_fetch, genre_matching_criteria)
+
+    def _get_my_albums_with_superset_genres(self, genres, num_albums_to_fetch):
+        genre_matching_criteria = lambda playlist_genres, candidate_genres: set(playlist_genres) <= set(candidate_genres)
+        return self._get_my_matching_albums(genres, num_albums_to_fetch, genre_matching_criteria)
+
+    def _get_my_matching_albums(self, genres, num_albums_to_fetch, genre_matching_criteria):
         album_groups = self.my_music_lib.get_my_albums_grouped_by_genre(
             num_albums_to_fetch, len(genres))
-        sorted_genres = sorted(genres)
         for group in album_groups:
-            if sorted_genres == sorted(group['genres']):
+            if genre_matching_criteria(genres, group['genres']):
                 print(f"Good news! I found {len(group['albums'])} album(s) matching your playlist's genres:")
                 print(self.music_util.get_albums_as_readable_list(group['albums']))
                 return group['albums']
