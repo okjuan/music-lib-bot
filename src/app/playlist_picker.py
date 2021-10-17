@@ -70,7 +70,11 @@ class PlaylistPicker:
         min_option, max_option = 1, len(options)
         message = f"How many playlist options do you want to see?\n\t(Enter a number between {min_option} and {max_option})\n"
         return self.ui.get_int_from_range(
-            message, min_option, max_option)
+            message,
+            min(max_option, MIN_PLAYLIST_SUGGESTIONS_TO_SHOW),
+            min_option,
+            max_option
+        )
 
     def get_selection(self, suggested_playlists):
         num_options = self.get_num_options_desired(suggested_playlists)
@@ -78,7 +82,7 @@ class PlaylistPicker:
         message = f"Please select which playlist to create!\nEnter a number between {min_option} and {max_option} or enter {QUIT} to quit:"
         self.give_playlist_options(num_options, suggested_playlists)
         options = [QUIT, *self._get_indices_as_list(suggested_playlists)]
-        return self.ui.get_from_options(message, options)
+        return self.ui.get_int_from_options(message, options)
 
     def _get_indices_as_list(self, list_):
         return list(range(len(list_)))
