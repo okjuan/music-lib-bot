@@ -2,12 +2,46 @@ from collections import defaultdict
 from random import shuffle, randint
 
 
+DEFAULT_NUM_TRACKS_PER_ALBUM = 3
+MIN_NUM_TRACKS_PER_ALBUM = 1
+MAX_NUM_TRACKS_PER_ALBUM = 10
+DEFAULT_NUM_ALBUMS_TO_FETCH = 50
+
+
 class PlaylistUpdater:
-    def __init__(self, playlist, my_music_lib, music_util):
+    def __init__(self, playlist, my_music_lib, music_util, ui):
         self.playlist = playlist
         self.my_music_lib = my_music_lib
         self.music_util = music_util
+        self.ui = ui
         self.playlist_genres = None
+
+    def get_num_tracks_per_album(self):
+        return self.ui.get_int_from_range(
+            f"# of tracks per album to add to playlist? default is {DEFAULT_NUM_TRACKS_PER_ALBUM}",
+            DEFAULT_NUM_TRACKS_PER_ALBUM,
+            MIN_NUM_TRACKS_PER_ALBUM,
+            MAX_NUM_TRACKS_PER_ALBUM
+        )
+
+    def get_num_albums_to_fetch(self):
+        return self.ui.get_int(
+            f"# of albums to fetch from your library? default is {DEFAULT_NUM_ALBUMS_TO_FETCH}",
+            DEFAULT_NUM_ALBUMS_TO_FETCH
+        )
+
+    def should_continue(self):
+        return self.ui.get_yes_or_no("Make more changes? y or no - default is 'n'", False)
+
+    def run(self):
+        while True:
+            num_tracks_per_album = self.get_num_tracks_per_album()
+            num_albums_to_fetch = self.get_num_albums_to_fetch()
+            self.add_tracks_from_my_saved_albums_with_similar_genres(
+                num_tracks_per_album, num_albums_to_fetch)
+            if not self.should_continue():
+                break
+        self.ui.tell_user("See ya next time!")
 
     def duplicate_and_reduce_num_tracks_per_album(self, num_tracks_per_album, new_playlist_name):
         tracks_by_album = defaultdict(list)
