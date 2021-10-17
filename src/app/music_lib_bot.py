@@ -9,6 +9,7 @@ from app.lib.my_music_lib import MyMusicLib
 from app.lib.playlist_updater import PlaylistUpdater
 from app.lib.spotify_client_wrapper import SpotifyClientWrapper
 from app.lib.ui import ConsoleUI
+from app.playlist_picker import PlaylistPicker
 
 
 DEFAULT_NUM_TRACKS_PER_ALBUM = 3
@@ -62,12 +63,27 @@ class MusicLibBot:
                 break
         self.ui.tell_user("See ya next time!")
 
+    def run_playlist_creator(self):
+        PlaylistPicker(self.my_music_lib, self.music_util, self.ui).run()
+
+    def run(self):
+        apps = {
+            "a": self.run_playlist_updater,
+            "b": self.run_playlist_creator,
+        }
+        selection = self.ui.get_string_from_options(
+            "What app do you want to use? Pick an option:\n\t'a' - Playlist Updater\n\t'b' - Playlist Creator",
+            ["a", "b"]
+        )
+        apps[selection]()
+
+
 def main():
     spotify_client_wrapper = SpotifyClientWrapper()
     music_util = MusicUtil(spotify_client_wrapper)
     my_music_lib = MyMusicLib(spotify_client_wrapper, music_util)
     ui = ConsoleUI()
-    MusicLibBot(my_music_lib, music_util, ui).run_playlist_updater()
+    MusicLibBot(my_music_lib, music_util, ui).run()
 
 
 if __name__ == "__main__":

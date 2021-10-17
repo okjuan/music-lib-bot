@@ -11,6 +11,12 @@ class ConsoleUI:
     def get_string(self, prompt):
         return self._prompt_user(prompt)
 
+    def get_string_from_options(self, message, options):
+        user_selection = None
+        while user_selection is None:
+            user_selection = self._get_string_from_options(message, options)
+        return user_selection
+
     def get_int_from_options(self, message, options):
         user_selection = None
         while user_selection is None:
@@ -23,6 +29,10 @@ class ConsoleUI:
     def _get_int_from_options(self, message, options):
         criteria = lambda int_: int_ in options
         return self._get_int_if_meets_criteria(message, criteria)
+
+    def _get_string_from_options(self, message, options):
+        criteria = lambda string_: string_ in options
+        return self._get_string_if_meets_criteria(message, criteria)
 
     def get_int_from_range(self, message, default, min_, max_):
         criteria = lambda int_: int_ >= min_ and int_ <= max_
@@ -40,6 +50,12 @@ class ConsoleUI:
         selection_int = self._parse_int(selection)
         if selection_int is not None and meets_criteria(selection_int):
             return selection_int
+        return None
+
+    def _get_string_if_meets_criteria(self, message, meets_criteria):
+        selection = self._prompt_user(message)
+        if selection is not None and meets_criteria(selection):
+            return selection
         return None
 
     def _parse_yes_or_no(self, input_str):
