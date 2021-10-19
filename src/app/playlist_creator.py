@@ -1,5 +1,5 @@
 # allows me to run:
-# $ python app/playlist_picker.py
+# $ python app/playlist_creator.py
 import sys
 sys.path.extend(['.', '../'])
 
@@ -21,7 +21,7 @@ DEFAULT_MIN_NUM_ARTISTS_PER_PLAYLIST = 4
 DEFAULT_MIN_GENRES_PER_PLAYLIST = 4
 MIN_PLAYLIST_SUGGESTIONS_TO_SHOW = 10
 
-class PlaylistPicker:
+class PlaylistCreator:
     def __init__(self, music_lib_bot_helper, my_music_lib, music_util, ui):
         self.music_lib_bot_helper = music_lib_bot_helper
         self.my_music_lib = my_music_lib
@@ -104,7 +104,7 @@ class PlaylistPicker:
         self.my_music_lib.create_playlist(
             album_group["description"],
             [track.uri for track in tracks],
-            description="created by playlist_picker"
+            description="created by playlist_creator"
         )
         self.ui.tell_user(f"Playlist created!")
 
@@ -208,7 +208,7 @@ class PlaylistPicker:
                 ["a", "b", "q"]
             )
             if selection == 'q':
-                self.ui.tell_user(f"Thanks for using Playlist Picker, see ya later!")
+                self.ui.tell_user(f"Thanks for using Playlist Creator, see ya later!")
                 break
             options[selection]()
 
@@ -219,7 +219,7 @@ def main():
     music_util = MusicUtil(spotify_client_wrapper)
     my_music_lib = MyMusicLib(spotify_client_wrapper, music_util)
     ui = ConsoleUI()
-    PlaylistPicker(my_music_lib, music_util, ui).run()
+    PlaylistCreator(my_music_lib, music_util, ui).run()
 
 
 if __name__ == "__main__":

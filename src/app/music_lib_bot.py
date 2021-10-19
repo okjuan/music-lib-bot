@@ -10,7 +10,7 @@ from app.lib.music_lib_bot_helper import MusicLibBotHelper
 from app.playlist_updater import PlaylistUpdater
 from app.lib.spotify_client_wrapper import SpotifyClientWrapper
 from app.lib.ui import ConsoleUI
-from app.playlist_picker import PlaylistPicker
+from app.playlist_creator import PlaylistCreator
 
 
 class MusicLibBot:
@@ -28,7 +28,7 @@ class MusicLibBot:
         ).run()
 
     def run_playlist_creator(self):
-        PlaylistPicker(
+        PlaylistCreator(
             MusicLibBotHelper(self.my_music_lib, self.ui),
             self.my_music_lib,
             self.music_util,
@@ -37,12 +37,12 @@ class MusicLibBot:
 
     def run(self):
         apps = {
-            "a": self.run_playlist_updater,
-            "b": self.run_playlist_creator,
+            "a": self.run_playlist_creator,
+            "b": self.run_playlist_updater,
         }
         while True:
             selection = self.ui.get_string_from_options(
-                "What app do you want to use? Pick an option:\n\t'a' - Playlist Updater\n\t'b' - Playlist Creator\n\t'q' - quit",
+                "What app do you want to use? Pick an option:\n\t'a' - Playlist Creator\n\t'b' - Playlist Updater\n\t'q' - quit",
                 ["a", "b", "q"]
             )
             if selection == 'q':
