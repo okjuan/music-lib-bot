@@ -1,5 +1,4 @@
-from collections import defaultdict
-from random import shuffle, randint
+from random import randint
 
 
 DEFAULT_NUM_TRACKS_PER_ALBUM = 3
@@ -9,8 +8,8 @@ DEFAULT_NUM_ALBUMS_TO_FETCH = 50
 
 
 class PlaylistUpdater:
-    def __init__(self, playlist, my_music_lib, music_util, ui):
-        self.playlist = playlist
+    def __init__(self, music_lib_bot_helper, my_music_lib, music_util, ui):
+        self.playlist = music_lib_bot_helper.get_playlist_name_from_user()
         self.my_music_lib = my_music_lib
         self.music_util = music_util
         self.ui = ui
@@ -42,26 +41,6 @@ class PlaylistUpdater:
             if not self.should_continue():
                 break
         self.ui.tell_user(f"Thanks for using Playlist Updater, catch ya next time.")
-
-    def duplicate_and_reduce_num_tracks_per_album(self, num_tracks_per_album, new_playlist_name):
-        tracks_by_album = defaultdict(list)
-        for track in self.playlist.tracks:
-            tracks_by_album[track.album_id].append(track)
-
-        most_popular_tracks_per_album = []
-        # TODO: use music_util.get_tracks_most_popular_first(album) ?
-        for _, tracks in tracks_by_album.items():
-            tracks_sorted_by_popularity = sorted(
-                tracks, key=lambda track: track.popularity, reverse=True)
-            most_popular_tracks_per_album.extend(
-                tracks_sorted_by_popularity[:num_tracks_per_album])
-
-        print("total tracks", len(self.playlist.tracks))
-        print("new set of tracks", len(most_popular_tracks_per_album))
-
-        track_uris = [track.id for track in most_popular_tracks_per_album]
-        shuffle(track_uris)
-        self.my_music_lib.create_playlist(new_playlist_name, track_uris)
 
     def add_tracks_from_my_saved_albums_with_same_genres(self, num_tracks_per_album, num_albums_to_fetch):
         track_uris = self._get_tracks_from_my_saved_albums_with_same_genres(

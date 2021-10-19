@@ -3,6 +3,7 @@
 import sys
 sys.path.extend(['.', '../'])
 
+from collections import defaultdict
 from random import shuffle
 
 from app.lib.music_util import MusicUtil
@@ -21,7 +22,8 @@ DEFAULT_MIN_GENRES_PER_PLAYLIST = 4
 MIN_PLAYLIST_SUGGESTIONS_TO_SHOW = 10
 
 class PlaylistPicker:
-    def __init__(self, my_music_lib, music_util, ui):
+    def __init__(self, music_lib_bot_helper, my_music_lib, music_util, ui):
+        self.music_lib_bot_helper = music_lib_bot_helper
         self.my_music_lib = my_music_lib
         self.music_util = music_util
         self.ui = ui
@@ -158,14 +160,58 @@ class PlaylistPicker:
                 self.get_num_albums_to_fetch(), min_genres_per_group)
         return albums_by_genre
 
-    def run(self):
+    def create_playlist_based_on_existing_playlist(self):
+        playlist_name = self.music_lib_bot_helper.get_playlist_name_from_user()
+        new_playlist_name = self.ui.get_string("What should your new playlist be called?")
+        num_tracks_per_album = self.ui.get_int(
+            f"How many tracks per album do you want in your new playlist? default is {DEFAULT_NUM_TRACKS_PER_ALBUM}",
+            DEFAULT_NUM_TRACKS_PER_ALBUM
+        )
+        self.duplicate_and_reduce_num_tracks_per_album(
+            playlist_name, new_playlist_name, num_tracks_per_album)
+
+    def create_playlist_from_albums_with_matching_genres_in_library(self):
         albums_by_genre = self.get_albums_by_genre()
         suggested_playlists = self.get_suggested_playlists(albums_by_genre)
         if len(suggested_playlists) == 0:
             self.ui.tell_user("Couldn't find any suggested playlists!")
             return
         self.launch_interactive_playlist_creator(suggested_playlists)
-        self.ui.tell_user(f"Thanks for using Playlist Picker, see ya later!")
+
+    def duplicate_and_reduce_num_tracks_per_album(self, playlist, new_playlist_name, num_tracks_per_album):
+        tracks_by_album = defaultdict(list)
+        for track in playlist.tracks:
+            tracks_by_album[track.album_id].append(track)
+
+        most_popular_tracks_per_album = []
+        # TODO: use music_util.get_tracks_most_popular_first(album) ?
+        for _, tracks in tracks_by_album.items():
+            tracks_sorted_by_popularity = sorted(
+                tracks, key=lambda track: track.popularity, reverse=True)
+            most_popular_tracks_per_album.extend(
+                tracks_sorted_by_popularity[:num_tracks_per_album])
+
+        self.ui.tell_user(f"Created your new playlist '{new_playlist_name}' containing {len(most_popular_tracks_per_album)} tracks!")
+
+        track_uris = [track.id for track in most_popular_tracks_per_album]
+        shuffle(track_uris)
+        self.my_music_lib.create_playlist(new_playlist_name, track_uris)
+
+    def run(self):
+        options = {
+            "a": self.create_playlist_from_albums_with_matching_genres_in_library,
+            "b": self.create_playlist_based_on_existing_playlist,
+        }
+        while True:
+            selection = self.ui.get_string_from_options(
+                "What do you want to do? Pick an option:\n\t'a' - Create a playlist from albums in your library that have matching genres\n\t'b' - Duplicate a playlist full of albums, reduce its tracks per album, and reshuffle the order.\n\t'q' - quit",
+                ["a", "b", "q"]
+            )
+            if selection == 'q':
+                self.ui.tell_user(f"Thanks for using Playlist Picker, see ya later!")
+                break
+            options[selection]()
+
 
 
 def main():

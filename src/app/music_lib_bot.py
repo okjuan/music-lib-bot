@@ -6,6 +6,7 @@ sys.path.extend(['.', '../'])
 
 from app.lib.music_util import MusicUtil
 from app.lib.my_music_lib import MyMusicLib
+from app.lib.music_lib_bot_helper import MusicLibBotHelper
 from app.playlist_updater import PlaylistUpdater
 from app.lib.spotify_client_wrapper import SpotifyClientWrapper
 from app.lib.ui import ConsoleUI
@@ -18,20 +19,21 @@ class MusicLibBot:
         self.music_util = music_util
         self.ui = ui
 
-    def _get_playlist(self):
-        playlist = None
-        while playlist is None:
-            playlist_name = self.ui.get_string("What's the name of your playlist?")
-            playlist = self.my_music_lib.get_playlist_by_name(playlist_name)
-            if playlist is None:
-                self.ui.tell_user(f"I couldn't find '{playlist_name}' in your playlists.")
-        return playlist
-
     def run_playlist_updater(self):
-        PlaylistUpdater(self._get_playlist(), self.my_music_lib, self.music_util, self.ui).run()
+        PlaylistUpdater(
+            MusicLibBotHelper(self.my_music_lib, self.ui),
+            self.my_music_lib,
+            self.music_util,
+            self.ui
+        ).run()
 
     def run_playlist_creator(self):
-        PlaylistPicker(self.my_music_lib, self.music_util, self.ui).run()
+        PlaylistPicker(
+            MusicLibBotHelper(self.my_music_lib, self.ui),
+            self.my_music_lib,
+            self.music_util,
+            self.ui
+        ).run()
 
     def run(self):
         apps = {
