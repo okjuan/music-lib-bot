@@ -41,7 +41,7 @@ class PlaylistUpdater:
                 num_tracks_per_album, num_albums_to_fetch)
             if not self.should_continue():
                 break
-        self.ui.tell_user("See ya next time!")
+        self.ui.tell_user(f"Thanks for using Playlist Updater, catch ya next time.")
 
     def duplicate_and_reduce_num_tracks_per_album(self, num_tracks_per_album, new_playlist_name):
         tracks_by_album = defaultdict(list)

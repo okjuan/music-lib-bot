@@ -38,11 +38,15 @@ class MusicLibBot:
             "a": self.run_playlist_updater,
             "b": self.run_playlist_creator,
         }
-        selection = self.ui.get_string_from_options(
-            "What app do you want to use? Pick an option:\n\t'a' - Playlist Updater\n\t'b' - Playlist Creator",
-            ["a", "b"]
-        )
-        apps[selection]()
+        while True:
+            selection = self.ui.get_string_from_options(
+                "What app do you want to use? Pick an option:\n\t'a' - Playlist Updater\n\t'b' - Playlist Creator\n\t'q' - quit",
+                ["a", "b", "q"]
+            )
+            if selection == 'q':
+                self.ui.tell_user("Happy listening!")
+                break
+            apps[selection]()
 
 
 def main():

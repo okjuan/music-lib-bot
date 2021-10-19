@@ -165,7 +165,7 @@ class PlaylistPicker:
             self.ui.tell_user("Couldn't find any suggested playlists!")
             return
         self.launch_interactive_playlist_creator(suggested_playlists)
-        self.ui.tell_user(f"Happy listening!")
+        self.ui.tell_user(f"Thanks for using Playlist Picker, see ya later!")
 
 
 def main():
