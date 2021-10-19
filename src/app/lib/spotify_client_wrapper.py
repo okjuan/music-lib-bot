@@ -69,19 +69,30 @@ class SpotifyClientWrapper:
         return Album.from_spotify_album(self.client.album(album_id))
 
     def create_playlist(self, name, description):
-        user_id = self.client.me()['id']
+        user_id = self._get_current_user_id()
         playlist = self.client.user_playlist_create(
             user_id, name, public=False, description=description)
         return Playlist.from_spotify_playlist(playlist)
 
     def add_tracks(self, playlist_id, track_uris):
-        items, num_tracks_added_so_far, num_tracks_to_add = [], 0, len(track_uris)
+        num_tracks_added_so_far, num_tracks_to_add = 0, len(track_uris)
         while num_tracks_added_so_far < num_tracks_to_add:
             num_items_left_to_fetch = num_tracks_to_add - num_tracks_added_so_far
             batch_size = num_items_left_to_fetch if num_items_left_to_fetch <= SPOTIFY_ADD_TRACKS_TO_PLAYLIST_API_LIMIT else SPOTIFY_ADD_TRACKS_TO_PLAYLIST_API_LIMIT
             self.client.user_playlist_add_tracks(
-                self.client.me()['id'],
+                self._get_current_user_id(),
                 playlist_id,
                 track_uris[num_tracks_added_so_far:num_tracks_added_so_far+batch_size],
             )
             num_tracks_added_so_far += batch_size
+
+    def add_track_at_position(self, playlist_id, track_uri, position):
+        self.client.user_playlist_add_tracks(
+            self._get_current_user_id(),
+            playlist_id,
+            [track_uri],
+            position=position,
+        )
+
+    def _get_current_user_id(self):
+        return self.client.me()['id']

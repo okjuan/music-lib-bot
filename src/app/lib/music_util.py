@@ -116,7 +116,7 @@ class MusicUtil:
     def get_album_ids(self, tracks):
         return list(set([track.album_id for track in tracks]))
 
-    def get_genres_in_playlist(self, spotify_playlist_id):
+    def get_common_genres_in_playlist(self, spotify_playlist_id):
         artist_ids = self.get_artist_ids(spotify_playlist_id)
         if len(artist_ids) == 0:
             return []

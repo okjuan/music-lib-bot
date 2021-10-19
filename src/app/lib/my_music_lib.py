@@ -44,3 +44,6 @@ class MyMusicLib:
 
     def add_tracks_to_playlist(self, playlist_id, track_uris):
         self.spotify_client_wrapper.add_tracks(playlist_id, track_uris)
+
+    def add_track_to_playlist_at_position(self, playlist_id, track_uri, position):
+        self.spotify_client_wrapper.add_track_at_position(playlist_id, track_uri, position)
