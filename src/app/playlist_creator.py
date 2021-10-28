@@ -171,14 +171,21 @@ class PlaylistCreator:
         self.duplicate_and_reduce_num_tracks_per_album(
             playlist_name, new_playlist_name, num_tracks_per_album)
 
-    def create_playlist_from_an_artists_discography(self):
-        artist_name = self.ui.get_string("What artist are you interested?")
+    def _get_artist_from_user(self):
+        artist_name = self.ui.get_string("What artist interests you?")
         matching_artists = self.spotify_client.get_matching_artists(artist_name)
         if matching_artists == []:
             self.ui.tell_user(f"Sorry, I couldn't find an artist by the name '{artist_name}'")
-            return
+            return None
         artist = self.music_util.get_most_popular_artist(matching_artists)
         self.ui.tell_user(f"I found: {artist.name}, with genres {artist.genres}, with popularity {artist.popularity}")
+        return artist
+
+    def create_playlist_from_an_artists_discography(self):
+        artist = self._get_artist_from_user()
+        if artist is None:
+            return
+        return
 
     def create_playlist_from_albums_with_matching_genres_in_library(self):
         albums_by_genre = self.get_albums_by_genre()
