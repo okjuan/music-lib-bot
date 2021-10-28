@@ -50,6 +50,27 @@ class SpotifyClientWrapper:
     def get_artist_genres(self, artist_id):
         return self.client.artist(artist_id)['genres']
 
+    def get_artist_albums(self, artist_id):
+        def album_fetcher(offset=0):
+            return self.client.artist_albums(
+                artist_id, album_type="album", offset=offset)
+        albums_metadata = self._fetch_in_batches(album_fetcher)
+        return [
+            self.get_album(album['id'])
+            for album in albums_metadata
+        ]
+
+    def _fetch_in_batches(self, fetch_func):
+        results = fetch_func()
+        num_results_fetched = len(results["items"])
+        items = results["items"]
+        while num_results_fetched < results["total"]:
+            offset = num_results_fetched
+            results = fetch_func(offset=offset)
+            num_results_fetched += len(results["items"])
+            items.extend(results["items"])
+        return items
+
     def get_my_albums(self, max_albums_to_fetch):
         print(f"Fetching recently saved albums...")
         albums, albums_fetched_so_far = [], 0

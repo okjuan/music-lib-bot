@@ -185,7 +185,9 @@ class PlaylistCreator:
         artist = self._get_artist_from_user()
         if artist is None:
             return
-        return
+        albums = self.spotify_client.get_artist_albums(artist.id)
+        self.ui.tell_user(f"I found these albums: {', '.join([album.name for album in albums])}")
+        return albums
 
     def create_playlist_from_albums_with_matching_genres_in_library(self):
         albums_by_genre = self.get_albums_by_genre()
