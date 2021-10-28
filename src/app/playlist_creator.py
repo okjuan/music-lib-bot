@@ -186,7 +186,19 @@ class PlaylistCreator:
         if artist is None:
             return
         albums = self.spotify_client.get_artist_albums(artist.id)
-        self.ui.tell_user(f"I found these albums: {', '.join([album.name for album in albums])}")
+        self.ui.tell_user(f"I found {len(albums)} albums!")
+        num_tracks_per_album = self.ui.get_int_from_options(
+            "How many tracks do you want from each album?", [1, 2, 3, 4, 5])
+        tracks = self.music_util.get_most_popular_tracks_from_each(
+            albums, num_tracks_per_album)
+        playlist_title = f"{artist.name} in a Nutshell"
+        self.ui.tell_user(f"Creating '{playlist_title}' playlist...")
+        self.my_music_lib.create_playlist(
+            playlist_title,
+            [track.uri for track in tracks],
+            description="created by playlist_creator"
+        )
+        self.ui.tell_user(f"Playlist created!")
         return albums
 
     def create_playlist_from_albums_with_matching_genres_in_library(self):
