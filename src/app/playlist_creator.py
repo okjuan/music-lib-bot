@@ -173,10 +173,11 @@ class PlaylistCreator:
 
     def create_playlist_from_an_artists_discography(self):
         artist_name = self.ui.get_string("What artist are you interested?")
-        artist = self.spotify_client.get_most_popular_artist_by_name(artist_name)
-        if artist is None:
+        matching_artists = self.spotify_client.get_matching_artists(artist_name)
+        if matching_artists == []:
             self.ui.tell_user(f"Sorry, I couldn't find an artist by the name '{artist_name}'")
             return
+        artist = self.music_util.get_most_popular_artist(matching_artists)
         self.ui.tell_user(f"I found: {artist.name}, with genres {artist.genres}, with popularity {artist.popularity}")
 
     def create_playlist_from_albums_with_matching_genres_in_library(self):

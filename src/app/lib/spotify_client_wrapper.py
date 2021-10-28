@@ -16,14 +16,12 @@ class SpotifyClientWrapper:
         auth = SpotifyOAuth(scope=SPOTIFY_SCOPES)
         self.client = spotipy.Spotify(auth_manager=auth)
 
-    def get_most_popular_artist_by_name(self, name):
-        artists = self._search_artist(name)
-        return None if len(artists) == 0 else artists[0]
-
-    def _search_artist(self, name):
-        results = self.client.search(q=f"artist:{name}", type="artist")
-        items = results["artists"]["items"]
-        return [Artist.from_spotify_artist(item) for item in items]
+    def get_matching_artists(self, artist_name):
+        results = self.client.search(q=f"artist:{artist_name}", type="artist")
+        return [
+            Artist.from_spotify_artist(item)
+            for item in results["artists"]["items"]
+        ]
 
     def get_current_user_playlist_by_name(self, name):
         playlist_id = self.search_current_user_playlists(name)

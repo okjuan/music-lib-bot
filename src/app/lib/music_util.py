@@ -1,7 +1,5 @@
 from collections import defaultdict
 
-from app.models.album import Album
-
 
 class MusicUtil:
     def __init__(self, spotify_client_wrapper):
@@ -105,6 +103,20 @@ class MusicUtil:
             key=lambda track: track.popularity,
             reverse=True
         )
+
+    def get_most_popular_artist(self, artists):
+        """
+        Params:
+            artists ([Artist]).
+        """
+        if len(artists) == 0:
+            return None
+
+        most_popular_artist = artists[0]
+        for artist in artists[1:]:
+            if artist.popularity > most_popular_artist.popularity:
+                most_popular_artist = artist
+        return most_popular_artist
 
     def get_albums_as_readable_list(self, albums):
         artist_names_to_str = lambda artists: ', '.join([artist['name'] for artist in artists])

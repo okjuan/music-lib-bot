@@ -1,13 +1,39 @@
 import unittest
 from unittest.mock import patch, MagicMock
 
-from tests.fixtures import mock_album, mock_artist
+from tests.fixtures import mock_album, mock_artist, mock_artist_dict
 from app.lib.music_util import MusicUtil
 
 
 class TestMusicUtil(unittest.TestCase):
     def setUp(self):
         self.music_util = MusicUtil(MagicMock())
+
+    def test_get_most_popular_artist__empty(self):
+        artists = []
+
+        most_popular_artist = self.music_util.get_most_popular_artist(artists)
+
+        self.assertIsNone(most_popular_artist)
+
+    def test_get_most_popular_artist__single_artist(self):
+        artists = [mock_artist(name="jimmy reed")]
+
+        most_popular_artist = self.music_util.get_most_popular_artist(artists)
+
+        self.assertEqual("jimmy reed", most_popular_artist.name)
+
+    def test_get_most_popular_artist__multiple_artists(self):
+        artists = [
+            mock_artist(name="jimmy reed", popularity=1),
+            mock_artist(name="howlin' wolf", popularity=3),
+            mock_artist(name="junior wells", popularity=2),
+        ]
+
+        most_popular_artist = self.music_util.get_most_popular_artist(artists)
+
+        self.assertEqual("howlin' wolf", most_popular_artist.name)
+        self.assertEqual(3, most_popular_artist.popularity)
 
     def test_get_albums_as_readable_list__empty(self):
         albums = []
@@ -17,7 +43,7 @@ class TestMusicUtil(unittest.TestCase):
         self.assertEqual("", albums_as_readable_str)
 
     def test_get_albums_as_readable_list__one_album(self):
-        artist = mock_artist(name="mock artist")
+        artist = mock_artist_dict(name="mock artist")
         album = mock_album(artists=[artist], name="mock album")
         albums = [album]
 
@@ -26,7 +52,7 @@ class TestMusicUtil(unittest.TestCase):
         self.assertEqual("- mock album by mock artist", albums_as_readable_str)
 
     def test_get_albums_as_readable_list__multiple_artists(self):
-        artist1, artist2 = mock_artist(name="mock artist 1"), mock_artist(name="mock artist 2")
+        artist1, artist2 = mock_artist_dict(name="mock artist 1"), mock_artist_dict(name="mock artist 2")
         album = mock_album(artists=[artist1, artist2], name="mock album")
         albums = [album]
 
@@ -35,7 +61,7 @@ class TestMusicUtil(unittest.TestCase):
         self.assertEqual("- mock album by mock artist 1, mock artist 2", albums_as_readable_str)
 
     def test_get_albums_as_readable_list__multiple_albums(self):
-        artist = mock_artist(name="mock artist")
+        artist = mock_artist_dict(name="mock artist")
         album1 = mock_album(artists=[artist], name="mock album 1")
         album2 = mock_album(artists=[artist], name="mock album 2")
         albums = [album1, album2]
