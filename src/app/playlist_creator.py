@@ -22,7 +22,8 @@ DEFAULT_MIN_GENRES_PER_PLAYLIST = 4
 MIN_PLAYLIST_SUGGESTIONS_TO_SHOW = 10
 
 class PlaylistCreator:
-    def __init__(self, music_lib_bot_helper, my_music_lib, music_util, ui):
+    def __init__(self, spotify_client, music_lib_bot_helper, my_music_lib, music_util, ui):
+        self.spotify_client = spotify_client
         self.music_lib_bot_helper = music_lib_bot_helper
         self.my_music_lib = my_music_lib
         self.music_util = music_util
@@ -170,6 +171,14 @@ class PlaylistCreator:
         self.duplicate_and_reduce_num_tracks_per_album(
             playlist_name, new_playlist_name, num_tracks_per_album)
 
+    def create_playlist_from_an_artists_discography(self):
+        artist_name = self.ui.get_string("What artist are you interested?")
+        artist = self.spotify_client.get_most_popular_artist_by_name(artist_name)
+        if artist is None:
+            self.ui.tell_user(f"Sorry, I couldn't find an artist by the name '{artist_name}'")
+            return
+        self.ui.tell_user(f"I found: {artist.name}, with genres {artist.genres}, with popularity {artist.popularity}")
+
     def create_playlist_from_albums_with_matching_genres_in_library(self):
         albums_by_genre = self.get_albums_by_genre()
         suggested_playlists = self.get_suggested_playlists(albums_by_genre)
@@ -199,7 +208,7 @@ class PlaylistCreator:
 
     def run(self):
         options = {
-            "a": lambda: None,
+            "a": self.create_playlist_from_an_artists_discography,
             "b": self.create_playlist_from_albums_with_matching_genres_in_library,
             "c": self.create_playlist_based_on_existing_playlist,
         }
@@ -220,7 +229,12 @@ def main():
     music_util = MusicUtil(spotify_client_wrapper)
     my_music_lib = MyMusicLib(spotify_client_wrapper, music_util)
     ui = ConsoleUI()
-    PlaylistCreator(my_music_lib, music_util, ui).run()
+    PlaylistCreator(
+        spotify_client_wrapper,
+        my_music_lib,
+        music_util,
+        ui
+    ).run()
 
 
 if __name__ == "__main__":

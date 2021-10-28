@@ -8,7 +8,12 @@ from app.playlist_creator import PlaylistCreator
 class TestPlaylistCreator(unittest.TestCase):
     def setUp(self):
         self.playlist_creator = PlaylistCreator(
-            MagicMock(), MagicMock(), MagicMock(), MagicMock())
+            MagicMock(),
+            MagicMock(),
+            MagicMock(),
+            MagicMock(),
+            MagicMock()
+        )
 
     def test_get_num_diff_artists(self):
         albums = []
