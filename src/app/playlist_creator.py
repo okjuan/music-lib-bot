@@ -199,13 +199,14 @@ class PlaylistCreator:
 
     def run(self):
         options = {
-            "a": self.create_playlist_from_albums_with_matching_genres_in_library,
-            "b": self.create_playlist_based_on_existing_playlist,
+            "a": lambda: None,
+            "b": self.create_playlist_from_albums_with_matching_genres_in_library,
+            "c": self.create_playlist_based_on_existing_playlist,
         }
         while True:
             selection = self.ui.get_string_from_options(
-                "What do you want to do? Pick an option:\n\t'a' - Create a playlist from albums in your library that have matching genres\n\t'b' - Duplicate a playlist full of albums, reduce its tracks per album, and reshuffle the order.\n\t'q' - quit",
-                ["a", "b", "q"]
+                "What kind of playlist do you want to create? Pick an option:\n\t'a' - From an artist's whole discography \n\t'b' - From albums in your library that have matching genres\n\t'c' - Duplicate a playlist full of albums, reduce its tracks per album, and reshuffle the order.\n\t'q' - quit",
+                ["a", "b", "c", "q"]
             )
             if selection == 'q':
                 self.ui.tell_user(f"Thanks for using Playlist Creator, see ya later!")
