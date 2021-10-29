@@ -55,10 +55,8 @@ class SpotifyClientWrapper:
             return self.client.artist_albums(
                 artist_id, album_type="album", offset=offset)
         albums_metadata = self._fetch_in_batches(album_fetcher)
-        return [
-            self.get_album(album['id'])
-            for album in albums_metadata
-        ]
+        return self.get_albums(
+            [album['id'] for album in albums_metadata])
 
     def _fetch_in_batches(self, fetch_func):
         results = fetch_func()
@@ -96,6 +94,13 @@ class SpotifyClientWrapper:
 
     def get_album(self, album_id):
         return Album.from_spotify_album(self.client.album(album_id))
+
+    def get_albums(self, album_ids):
+        albums = self.client.albums(album_ids)
+        return [
+            Album.from_spotify_album(album)
+            for album in albums["albums"]
+        ]
 
     def create_playlist(self, name, description):
         user_id = self._get_current_user_id()
