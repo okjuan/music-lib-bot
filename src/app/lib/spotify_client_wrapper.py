@@ -28,10 +28,27 @@ class SpotifyClientWrapper:
         if playlist_id is None:
             return None
 
-        return self.get_playlist(playlist_id)
+        playlist = self.get_playlist(playlist_id)
+        return playlist
 
     def get_playlist(self, playlist_id):
-        return Playlist.from_spotify_playlist(self.client.playlist(playlist_id))
+        playlist = Playlist.from_spotify_playlist(
+            self.client.playlist(playlist_id))
+        playlist.tracks = self._get_playlist_tracks(playlist.id)
+        return playlist
+
+    def _get_playlist_tracks(self, playlist_id):
+        def track_fetcher(offset=0):
+            return self.client.playlist_tracks(
+                playlist_id, offset=offset)
+
+        playlist_track_metadata = self._fetch_in_batches(track_fetcher)
+        # TODO: fetch full info via calls to self.client.tracks(track_ids)
+        # problem is that it needs to be done in batches too
+        return [
+            Track.from_spotify_playlist_track(track)
+            for track in playlist_track_metadata
+        ]
 
     def search_current_user_playlists(self, playlist_name):
         "Returns playlist ID or None if not found."
