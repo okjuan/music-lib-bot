@@ -154,7 +154,7 @@ class MusicUtil:
         return genres
 
     def get_artist_ids(self, spotify_playlist_id):
-        playlist = self.spotify_client_wrapper.get_current_user_playlist(spotify_playlist_id)
+        playlist = self.spotify_client_wrapper.get_playlist(spotify_playlist_id)
         return list({
             artist['id']
             for track in playlist.tracks

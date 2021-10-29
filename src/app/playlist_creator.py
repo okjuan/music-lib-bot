@@ -162,14 +162,14 @@ class PlaylistCreator:
         return albums_by_genre
 
     def create_playlist_based_on_existing_playlist(self):
-        playlist_name = self.music_lib_bot_helper.get_playlist_name_from_user()
+        playlist = self.music_lib_bot_helper.get_playlist_from_user()
         new_playlist_name = self.ui.get_string("What should your new playlist be called?")
         num_tracks_per_album = self.ui.get_int(
             f"How many tracks per album do you want in your new playlist? default is {DEFAULT_NUM_TRACKS_PER_ALBUM}",
             DEFAULT_NUM_TRACKS_PER_ALBUM
         )
         self.duplicate_and_reduce_num_tracks_per_album(
-            playlist_name, new_playlist_name, num_tracks_per_album)
+            playlist, new_playlist_name, num_tracks_per_album)
 
     def _get_artist_from_user(self):
         artist_name = self.ui.get_string("What artist interests you?")

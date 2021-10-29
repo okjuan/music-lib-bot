@@ -28,9 +28,9 @@ class SpotifyClientWrapper:
         if playlist_id is None:
             return None
 
-        return self.get_current_user_playlist(playlist_id)
+        return self.get_playlist(playlist_id)
 
-    def get_current_user_playlist(self, playlist_id):
+    def get_playlist(self, playlist_id):
         return Playlist.from_spotify_playlist(self.client.playlist(playlist_id))
 
     def search_current_user_playlists(self, playlist_name):
