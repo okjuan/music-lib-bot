@@ -94,15 +94,23 @@ class MusicUtil:
         return tracks
 
     def get_tracks_most_popular_first(self, album):
-        tracks_w_metadata = [
-            self.spotify_client_wrapper.get_track(track.uri)
-            for track in album.tracks
-        ]
+        tracks = self._get_track_popularity_if_absent(album.tracks)
         return sorted(
-            tracks_w_metadata,
+            tracks,
             key=lambda track: track.popularity,
             reverse=True
         )
+
+    def _get_track_popularity_if_absent(self, tracks):
+        tracks_with_popularity, track_uris_popularity_missing = [], []
+        for track in tracks:
+            if track.popularity is None:
+                track_uris_popularity_missing.append(track.uri)
+            else:
+                tracks_with_popularity.append(track)
+        tracks_with_popularity.extend(
+            self.spotify_client_wrapper.get_tracks(track_uris_popularity_missing))
+        return tracks_with_popularity
 
     def get_most_popular_artist(self, artists):
         """

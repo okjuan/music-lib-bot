@@ -110,15 +110,37 @@ class SpotifyClientWrapper:
     def get_track(self, track_id):
         return Track.from_spotify_track(self.client.track(track_id))
 
+    def get_tracks(self, track_ids):
+        def track_fetcher(track_ids):
+            results = self.client.tracks(track_ids)
+            return results['tracks']
+        tracks = self._fetch_in_batches(track_ids, track_fetcher)
+        return [
+            Track.from_spotify_track(track)
+            for track in tracks
+        ]
+
     def get_album(self, album_id):
         return Album.from_spotify_album(self.client.album(album_id))
 
     def get_albums(self, album_ids):
-        albums = self.client.albums(album_ids)
+        def album_fetcher(album_ids):
+            results = self.client.albums(album_ids)
+            return results['albums']
+        albums = self._fetch_in_batches(album_ids, album_fetcher)
         return [
             Album.from_spotify_album(album)
-            for album in albums["albums"]
+            for album in albums
         ]
+
+    def _fetch_in_batches(self, item_ids, fetch_items):
+        batch_size = min(20, len(item_ids))
+        fetched_items = []
+        for batch_start_index in range(0, len(item_ids), batch_size):
+            batch_end_index = min(batch_start_index+batch_size, len(item_ids))
+            fetched_items.extend(
+                fetch_items(item_ids[batch_start_index:batch_end_index]))
+        return fetched_items
 
     def create_playlist(self, name, description):
         user_id = self._get_current_user_id()
