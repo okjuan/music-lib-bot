@@ -194,6 +194,10 @@ class PlaylistCreator:
             self.ui.tell_user("Quitting because I don't have any albums to work with!")
             return
 
+        self.ui.tell_user(f"Out of the total {len(albums)} number of albums...")
+        albums = self.music_util.filter_out_duplicates_demos_and_live_albums(albums)
+        self.ui.tell_user(f"Only {len(albums)} are essential; the rest are duplicates, demos, and live albums.")
+
         num_tracks_per_album = self.ui.get_int_from_options(
             "How many tracks do you want from each album?", [1, 2, 3, 4, 5])
 

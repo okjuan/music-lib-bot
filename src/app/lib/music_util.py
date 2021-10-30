@@ -175,3 +175,23 @@ class MusicUtil:
     def get_chronological_discography(self, artist):
         albums = self.spotify_client_wrapper.get_artist_albums(artist.id)
         return self.order_albums_chronologically(albums)
+
+    def is_live(self, album):
+        return "Live" in album.name or "live" in album.name
+
+    def is_a_demo(self, album):
+        return "Demo" in album.name and "demo" in album.name
+
+    def filter_out_demos_and_live_albums(self, albums):
+        return [
+            album
+            for album in albums
+            if (
+                not self.is_a_demo(album) and
+                not self.is_live(album)
+            )
+        ]
+
+    def filter_out_duplicates_demos_and_live_albums(self, albums):
+        albums = self.filter_out_demos_and_live_albums(albums)
+        return albums
