@@ -83,7 +83,7 @@ class MusicUtil:
 
     def get_most_popular_tracks(self, album, num_tracks):
         # get track popularity all together in one call
-        all_tracks = self._get_track_popularity_if_absent(album)
+        all_tracks = self._get_track_popularity_if_absent(album.tracks)
         all_tracks = self.get_tracks_most_popular_first(album)
         return all_tracks[:min(num_tracks, len(all_tracks))]
 
@@ -194,15 +194,33 @@ class MusicUtil:
             )
         ]
 
+    def _strip_metadata_in_parentheses(self, album_name):
+        """
+        Assumptions:
+            - Parentheses contain metadata depending on where they occur
+                - If parentheses occur at the beginning of name, they don't contain metadata
+                - Otherwise, they contain metadata
+            - If at all, only 1 set of parentheses occurs
+            - Parentheses are balanced
+        """
+        album_name = album_name.strip()
+        if "(" in album_name:
+            open_paren_idx = album_name.index("(")
+            if open_paren_idx > 0:
+                tokens = album_name.split("(")
+                album_name = tokens[0].strip()
+        return album_name
+
     def filter_out_duplicates(self, albums, album_tie_breaker):
         albums_by_name = dict()
         for album in albums:
-            album_name = album.name.strip()
-            if album_name in albums_by_name:
-                albums_by_name[album_name] = album_tie_breaker(
-                    album, albums_by_name[album_name])
+            normalized_album_name = self._strip_metadata_in_parentheses(
+                album.name.strip())
+            if normalized_album_name in albums_by_name:
+                albums_by_name[normalized_album_name] = album_tie_breaker(
+                    album, albums_by_name[normalized_album_name])
             else:
-                albums_by_name[album_name] = album
+                albums_by_name[normalized_album_name] = album
         return albums_by_name.values()
 
     def filter_out_duplicates_demos_and_live_albums(self, albums):
