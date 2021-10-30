@@ -9,18 +9,18 @@ class Album:
             name (str).
             id (str).
             artists ([dict]).
-            release_date (str): in ISO format e.g. '1967-03-12'
+            release_date (datetime).
             num_tracks (int).
         """
         self.name = name
         self.id = id_
         self.tracks = tracks
         self.artists = artists
-        self.release_date = self._parse_date(release_date)
+        self.release_date = release_date
         self.num_tracks = num_tracks
         self.genres = genres
 
-    def _parse_date(self, spotify_release_date):
+    def _parse_date(spotify_release_date):
         """For Herbie Hancock alone, I've seen these release_dates:
         - "1999-01-01"
         - "2009"
@@ -60,6 +60,6 @@ class Album:
                 for track in spotify_album['tracks']['items']
             ],
             spotify_album['artists'],
-            spotify_album['release_date'],
+            Album._parse_date(spotify_album['release_date']),
             spotify_album['total_tracks'],
         )
