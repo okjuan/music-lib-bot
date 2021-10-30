@@ -82,6 +82,8 @@ class MusicUtil:
         ]
 
     def get_most_popular_tracks(self, album, num_tracks):
+        # get track popularity all together in one call
+        all_tracks = self._get_track_popularity_if_absent(album)
         all_tracks = self.get_tracks_most_popular_first(album)
         return all_tracks[:min(num_tracks, len(all_tracks))]
 
@@ -108,8 +110,9 @@ class MusicUtil:
                 track_uris_popularity_missing.append(track.uri)
             else:
                 tracks_with_popularity.append(track)
-        tracks_with_popularity.extend(
-            self.spotify_client_wrapper.get_tracks(track_uris_popularity_missing))
+        if len(track_uris_popularity_missing) > 0:
+            tracks_with_popularity.extend(
+                self.spotify_client_wrapper.get_tracks(track_uris_popularity_missing))
         return tracks_with_popularity
 
     def get_most_popular_artist(self, artists):
