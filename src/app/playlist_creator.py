@@ -181,23 +181,27 @@ class PlaylistCreator:
         self.ui.tell_user(f"I found: {artist.name}, with genres {artist.genres}, with popularity {artist.popularity}")
         return artist
 
-    def _get_chronological_discography_for_artist_of_users_choice(self):
+    def _get_discography_for_artist_of_users_choice(self):
         artist = self._get_artist_from_user()
         if artist is None:
             return None
-        return self.music_util.get_chronological_discography(artist)
+        albums = self.music_util.get_discography(artist)
+        if albums is None or albums == []:
+            return None
+        return albums
 
     # TODO: should I be reusing/reappropriating create_playlist_from_albums()?
     def create_playlist_from_an_artists_discography(self):
-        albums = self._get_chronological_discography_for_artist_of_users_choice()
-        if albums is None or albums == []:
-            self.ui.tell_user("Quitting because I don't have any albums to work with!")
+        albums = self._get_discography_for_artist_of_users_choice()
+        if albums is None:
+            self.ui.tell_user("Aborting because I don't have any albums to work with!")
             return
 
         self.ui.tell_user(f"Out of the total {len(albums)} number of albums...")
         albums = self.music_util.filter_out_duplicates_demos_and_live_albums(albums)
         self.ui.tell_user(f"Only {len(albums)} are essential; the rest are duplicates, demos, and live albums.")
 
+        albums = self.music_util.order_albums_chronologically(albums)
         num_tracks_per_album = self.ui.get_int_from_options(
             "How many tracks do you want from each album?", [1, 2, 3, 4, 5])
 

@@ -175,9 +175,8 @@ class MusicUtil:
     def order_albums_chronologically(self, albums):
         return sorted(albums, key=lambda album: album.release_date)
 
-    def get_chronological_discography(self, artist):
-        albums = self.spotify_client_wrapper.get_artist_albums(artist.id)
-        return self.order_albums_chronologically(albums)
+    def get_discography(self, artist):
+        return self.spotify_client_wrapper.get_artist_albums(artist.id)
 
     def is_live(self, album):
         return "Live" in album.name or "live" in album.name
