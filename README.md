@@ -1,7 +1,12 @@
 ![Spotify Playlist](https://github.com/okjuan/music-lib-bot/raw/master/imgs/sample3.png)
 
 ### What is this?
-An interactive app that looks at your recently saved albums on Spotify, groups them by their genres, and lets you select which groups to make into Spotify playlists.
+An interactive app for creating and updating your Spotify playlists. It does stuff like this:
+- Look at your recently saved albums
+- Group albums by genres
+- Let you select a playlist to create from a list of options
+- Create a chronological playlist from an artist's discrography
+- Create a shuffled playlist based on an existing playlist full of albums
 
 ### Pre-requisites
 - Python 3.6 or greater
