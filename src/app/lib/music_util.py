@@ -194,6 +194,19 @@ class MusicUtil:
             )
         ]
 
+    def filter_out_duplicates(self, albums, album_tie_breaker):
+        albums_by_name = dict()
+        for album in albums:
+            album_name = album.name.strip()
+            if album_name in albums_by_name:
+                albums_by_name[album_name] = album_tie_breaker(
+                    album, albums_by_name[album_name])
+            else:
+                albums_by_name[album_name] = album
+        return albums_by_name.values()
+
     def filter_out_duplicates_demos_and_live_albums(self, albums):
         albums = self.filter_out_demos_and_live_albums(albums)
-        return albums
+        def prefer_most_popular(album1, album2):
+            return album1 if album1.popularity > album2.popularity else album2
+        return self.filter_out_duplicates(albums, prefer_most_popular)

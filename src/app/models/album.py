@@ -3,7 +3,7 @@ from datetime import datetime
 
 
 class Album:
-    def __init__(self, name, id_, tracks, artists, release_date, num_tracks, genres=None):
+    def __init__(self, name, id_, tracks, artists, release_date, num_tracks, genres=None, popularity=None):
         """
         Params:
             name (str).
@@ -11,6 +11,8 @@ class Album:
             artists ([dict]).
             release_date (datetime).
             num_tracks (int).
+            genres ([str]), optional.
+            popularity (int) in range [0, 100], optional.
         """
         self.name = name
         self.id = id_
@@ -19,6 +21,7 @@ class Album:
         self.release_date = release_date
         self.num_tracks = num_tracks
         self.genres = genres
+        self.popularity = popularity
 
     def _parse_date(spotify_release_date):
         """For Herbie Hancock alone, I've seen these release_dates:
@@ -51,6 +54,9 @@ class Album:
     def set_genres(self, genres):
         self.genres = genres
 
+    def set_popularity(self, popularity):
+        self.popularity = popularity
+
     def from_spotify_album(spotify_album):
         return Album(
             spotify_album['name'],
@@ -62,4 +68,5 @@ class Album:
             spotify_album['artists'],
             Album._parse_date(spotify_album['release_date']),
             spotify_album['total_tracks'],
+            popularity=spotify_album['popularity'],
         )
