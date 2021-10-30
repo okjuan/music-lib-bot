@@ -168,3 +168,10 @@ class MusicUtil:
             for track in playlist.tracks
             for artist in track.artists
         })
+
+    def order_albums_chronologically(self, albums):
+        return sorted(albums, key=lambda album: album.release_date)
+
+    def get_chronological_discography(self, artist):
+        albums = self.spotify_client_wrapper.get_artist_albums(artist.id)
+        return self.order_albums_chronologically(albums)

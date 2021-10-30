@@ -181,23 +181,37 @@ class PlaylistCreator:
         self.ui.tell_user(f"I found: {artist.name}, with genres {artist.genres}, with popularity {artist.popularity}")
         return artist
 
-    def create_playlist_from_an_artists_discography(self):
+    def _get_chronological_discography_for_artist_of_users_choice(self):
         artist = self._get_artist_from_user()
         if artist is None:
+            return None
+        return self.music_util.get_chronological_discography(artist)
+
+    # TODO: should I be reusing/reappropriating create_playlist_from_albums()?
+    def create_playlist_from_an_artists_discography(self):
+        albums = self._get_chronological_discography_for_artist_of_users_choice()
+        if albums is None or albums == []:
+            self.ui.tell_user("Quitting because I don't have any albums to work with!")
             return
-        albums = self.spotify_client.get_artist_albums(artist.id)
-        self.ui.tell_user(f"I found {len(albums)} albums!")
+
         num_tracks_per_album = self.ui.get_int_from_options(
             "How many tracks do you want from each album?", [1, 2, 3, 4, 5])
-        tracks = self.music_util.get_most_popular_tracks_from_each(
-            albums, num_tracks_per_album)
-        playlist_title = f"{artist.name} in a Nutshell"
+
+        # NOTE: do list comprehension here to ensure album order is preserved
+        tracks = [
+            track
+            for album in albums
+            for track in self.music_util.get_most_popular_tracks(album, num_tracks_per_album)
+        ]
+
+        playlist_title = self.ui.get_string("What do you want to call your playlist?")
         self.ui.tell_user(f"Creating '{playlist_title}' playlist...")
         self.my_music_lib.create_playlist(
             playlist_title,
             [track.uri for track in tracks],
             description="created by playlist_creator"
         )
+
         self.ui.tell_user(f"Playlist created!")
         return albums
 
