@@ -42,7 +42,7 @@ class SpotifyClientWrapper:
             return self.client.playlist_tracks(
                 playlist_id, offset=offset)
 
-        playlist_track_metadata = self._fetch_in_batches(track_fetcher)
+        playlist_track_metadata = self._fetch_until_all_items_returned(track_fetcher)
         # TODO: fetch full info via calls to self.client.tracks(track_ids)
         # problem is that it needs to be done in batches too
         return [
@@ -71,11 +71,12 @@ class SpotifyClientWrapper:
         def album_fetcher(offset=0):
             return self.client.artist_albums(
                 artist_id, album_type="album", offset=offset)
-        albums_metadata = self._fetch_in_batches(album_fetcher)
+        albums_metadata = self._fetch_until_all_items_returned(album_fetcher)
         return self.get_albums(
             [album['id'] for album in albums_metadata])
 
-    def _fetch_in_batches(self, fetch_func):
+    def _fetch_until_all_items_returned(self, fetch_func):
+        "Assumes JSON structure that Spotify uses in their HTTP responses"
         results = fetch_func()
         num_results_fetched = len(results["items"])
         items = results["items"]
