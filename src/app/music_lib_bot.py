@@ -14,7 +14,8 @@ from app.playlist_creator import PlaylistCreator
 
 
 class MusicLibBot:
-    def __init__(self, my_music_lib, music_util, ui):
+    def __init__(self, spotify_client, my_music_lib, music_util, ui):
+        self.spotify_client = spotify_client
         self.my_music_lib = my_music_lib
         self.music_util = music_util
         self.ui = ui
@@ -29,6 +30,7 @@ class MusicLibBot:
 
     def run_playlist_creator(self):
         PlaylistCreator(
+            self.spotify_client,
             MusicLibBotHelper(self.my_music_lib, self.ui),
             self.my_music_lib,
             self.music_util,
@@ -56,7 +58,7 @@ def main():
     music_util = MusicUtil(spotify_client_wrapper)
     my_music_lib = MyMusicLib(spotify_client_wrapper, music_util)
     ui = ConsoleUI()
-    MusicLibBot(my_music_lib, music_util, ui).run()
+    MusicLibBot(spotify_client_wrapper, my_music_lib, music_util, ui).run()
 
 
 if __name__ == "__main__":

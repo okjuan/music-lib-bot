@@ -1,13 +1,125 @@
 import unittest
 from unittest.mock import patch, MagicMock
 
-from tests.fixtures import mock_album, mock_artist
+from tests.fixtures import mock_album, mock_artist, mock_artist_dict
 from app.lib.music_util import MusicUtil
 
 
 class TestMusicUtil(unittest.TestCase):
     def setUp(self):
         self.music_util = MusicUtil(MagicMock())
+
+    def test_is_a_demo__basic_scenario__matches(self):
+        album = mock_album(name="The Witmark Demos: 1962-1964 (The Bootleg Series Vol. 9)")
+
+        is_demo = self.music_util.is_a_demo(album)
+
+        self.assertTrue(is_demo)
+
+    def test_is_a_demo__ignores_partial_word_match(self):
+        album = mock_album(name="Sin Miedo (del Amory Otros Demonios) ∞ [Deluxe Version]")
+
+        is_demo = self.music_util.is_a_demo(album)
+
+        self.assertFalse(is_demo)
+
+    def test_is_a_bootleg__basic_scenario__matches(self):
+        album = mock_album(name="The Bootleg Series Volumes 1-3 (Rare and Unreleased) 1961-1991")
+
+        is_bootleg = self.music_util.is_a_bootleg(album)
+
+        self.assertTrue(is_bootleg)
+
+    def test_is_a_bootleg__ignores_partial_word_match(self):
+        album = mock_album(name="Bootlegging the Bootleggers")
+
+        is_bootleg = self.music_util.is_a_bootleg(album)
+
+        self.assertFalse(is_bootleg)
+
+    def test_is_live__in_parentheses__matches(self):
+        album = mock_album(name="An Evening With Herbie Hancock & Chick Corea In Concert (Live)")
+
+        is_live = self.music_util.is_live(album)
+
+        self.assertTrue(is_live)
+
+    def test_is_live__in_brackets__matches(self):
+        album = mock_album(
+            name="Miles in Montreux (feat. Rich Margitza, Adam Holzman, Benny Rietveld) [Live]")
+
+        is_live = self.music_util.is_live(album)
+
+        self.assertTrue(is_live)
+
+    def test_is_live__ignores_word_in_title(self):
+        # Example 1
+        album = mock_album(name="LONG.LIVE.A$AP")
+
+        is_live = self.music_util.is_live(album)
+
+        self.assertFalse(is_live)
+
+        # Example 2
+        album = mock_album(name="Live Through This")
+
+        is_live = self.music_util.is_live(album)
+
+        self.assertFalse(is_live)
+
+    def test__strip_metadata_in_parentheses_or_brackets__removes(self):
+        # Example 1
+        album_name = "Collectors' Items (RVG Remaster)"
+
+        stripped_album_name = self.music_util._strip_metadata_in_parentheses_or_brackets(
+            album_name)
+
+        self.assertEqual("Collectors' Items", stripped_album_name)
+
+        # Example 2
+        album_name = "Collectors' Items [RVG Remaster]"
+
+        stripped_album_name = self.music_util._strip_metadata_in_parentheses_or_brackets(
+            album_name)
+
+        self.assertEqual("Collectors' Items", stripped_album_name)
+
+    def test_filter_out_duplicates__capitalization(self):
+        albums = [
+            mock_album(name="Porgy and Bess"),
+            mock_album(name="Porgy And Bess")
+        ]
+        choose_arbitrary_album = lambda album1, album2: album1
+
+        albums = self.music_util.filter_out_duplicates(albums, choose_arbitrary_album)
+
+        self.assertEqual(1, len(albums))
+
+    def test_get_most_popular_artist__empty(self):
+        artists = []
+
+        most_popular_artist = self.music_util.get_most_popular_artist(artists)
+
+        self.assertIsNone(most_popular_artist)
+
+    def test_get_most_popular_artist__single_artist(self):
+        artists = [mock_artist(name="jimmy reed")]
+
+        most_popular_artist = self.music_util.get_most_popular_artist(artists)
+
+        self.assertEqual("jimmy reed", most_popular_artist.name)
+
+    def test_get_most_popular_artist__multiple_artists(self):
+        artists = [
+            mock_artist(name="jimmy reed", popularity=1),
+            mock_artist(name="howlin' wolf", popularity=3),
+            mock_artist(name="junior wells", popularity=2),
+        ]
+
+        most_popular_artist = self.music_util.get_most_popular_artist(artists)
+
+        self.assertEqual("howlin' wolf", most_popular_artist.name)
+        self.assertEqual(3, most_popular_artist.popularity)
 
     def test_get_albums_as_readable_list__empty(self):
         albums = []
@@ -17,7 +129,7 @@ class TestMusicUtil(unittest.TestCase):
         self.assertEqual("", albums_as_readable_str)
 
     def test_get_albums_as_readable_list__one_album(self):
-        artist = mock_artist(name="mock artist")
+        artist = mock_artist_dict(name="mock artist")
         album = mock_album(artists=[artist], name="mock album")
         albums = [album]
 
@@ -26,7 +138,7 @@ class TestMusicUtil(unittest.TestCase):
         self.assertEqual("- mock album by mock artist", albums_as_readable_str)
 
     def test_get_albums_as_readable_list__multiple_artists(self):
-        artist1, artist2 = mock_artist(name="mock artist 1"), mock_artist(name="mock artist 2")
+        artist1, artist2 = mock_artist_dict(name="mock artist 1"), mock_artist_dict(name="mock artist 2")
         album = mock_album(artists=[artist1, artist2], name="mock album")
         albums = [album]
 
@@ -35,7 +147,7 @@ class TestMusicUtil(unittest.TestCase):
         self.assertEqual("- mock album by mock artist 1, mock artist 2", albums_as_readable_str)
 
     def test_get_albums_as_readable_list__multiple_albums(self):
-        artist = mock_artist(name="mock artist")
+        artist = mock_artist_dict(name="mock artist")
         album1 = mock_album(artists=[artist], name="mock album 1")
         album2 = mock_album(artists=[artist], name="mock album 2")
         albums = [album1, album2]

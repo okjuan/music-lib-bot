@@ -3,7 +3,7 @@ class MusicLibBotHelper:
         self.my_music_lib = my_music_lib
         self.ui = ui
 
-    def get_playlist_name_from_user(self):
+    def get_playlist_from_user(self):
         playlist = None
         while playlist is None:
             playlist_name = self.ui.get_string("What's the name of your playlist?")

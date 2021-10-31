@@ -9,7 +9,7 @@ DEFAULT_NUM_ALBUMS_TO_FETCH = 50
 
 class PlaylistUpdater:
     def __init__(self, music_lib_bot_helper, my_music_lib, music_util, ui):
-        self.playlist = music_lib_bot_helper.get_playlist_name_from_user()
+        self.playlist = music_lib_bot_helper.get_playlist_from_user()
         self.my_music_lib = my_music_lib
         self.music_util = music_util
         self.ui = ui
