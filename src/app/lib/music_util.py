@@ -1,4 +1,5 @@
 from collections import defaultdict
+from re import match
 
 
 class MusicUtil:
@@ -179,43 +180,69 @@ class MusicUtil:
         return self.spotify_client_wrapper.get_artist_albums(artist.id)
 
     def is_live(self, album):
-        return "Live" in album.name or "live" in album.name
+        # '(?i)' is a flag that enables cap insensitivity
+        # '[\(\[]' and '[\)\]]' are opening and closing braces; e.g. (Live), [Live]
+        regular_expression = "(?i).*[\(\[]live[\)\]].*"
+        return match(regular_expression, album.name) is not None
+
+    def is_a_bootleg(self, album):
+        # '(?i)' is a flag that enables cap insensitivity
+        # '([^a-z]|$)' means that either there is a non-alphabetical char or string ends
+        # 's?' means bootleg may be plural
+        # the expression aims to match the isolated word "bootleg"
+        # avoiding substring matches e.g. as in "bootleggers"
+        regular_expression = "(?i).*[^a-z]bootlegs?([^a-z]|$).*"
+        return match(regular_expression, album.name) is not None
 
     def is_a_demo(self, album):
-        return "Demo" in album.name and "demo" in album.name
+        # '(?i)' is a flag that enables cap insensitivity
+        # '([^a-z]|$)' means that either there is a non-alphabetical char or string ends
+        # 's?' means demo may be plural
+        # the expression aims to match the isolated word "demo"
+        # avoiding substring matches e.g. as in "demon"
+        regular_expression = "(?i).*[^a-z]demos?([^a-z]|$).*"
+        return match(regular_expression, album.name) is not None
 
-    def filter_out_demos_and_live_albums(self, albums):
+    def filter_out_demos_bootlegs_and_live_albums(self, albums):
         return [
             album
             for album in albums
             if (
                 not self.is_a_demo(album) and
+                not self.is_a_bootleg(album) and
                 not self.is_live(album)
             )
         ]
 
-    def _strip_metadata_in_parentheses(self, album_name):
-        """
+    def _strip_metadata_in_parentheses_or_brackets(self, album_name):
+        """(Parentheses) and [Brackets]
         Assumptions:
             - Parentheses contain metadata depending on where they occur
                 - If parentheses occur at the beginning of name, they don't contain metadata
                 - Otherwise, they contain metadata
             - If at all, only 1 set of parentheses occurs
             - Parentheses are balanced
+            - All of the above, applied also to [brackets]
         """
-        album_name = album_name.strip()
-        if "(" in album_name:
-            open_paren_idx = album_name.index("(")
+        without_parenthesized_substring = self._strip_metadata_between(
+            album_name.strip(), "(", ")")
+        return self._strip_metadata_between(
+            without_parenthesized_substring, "[", "]")
+
+    # TODO: replace with more concise regular expression implementation
+    def _strip_metadata_between(self, str_, opening_token, closing_token):
+        if opening_token in str_:
+            open_paren_idx = str_.index(closing_token)
             if open_paren_idx > 0:
-                tokens = album_name.split("(")
-                album_name = tokens[0].strip()
-        return album_name
+                tokens = str_.split(opening_token)
+                str_ = tokens[0].strip()
+        return str_
 
     def filter_out_duplicates(self, albums, album_tie_breaker):
         albums_by_name = dict()
         for album in albums:
-            normalized_album_name = self._strip_metadata_in_parentheses(
-                album.name.strip())
+            normalized_album_name = self._strip_metadata_in_parentheses_or_brackets(
+                album.name.strip().lower())
             if normalized_album_name in albums_by_name:
                 albums_by_name[normalized_album_name] = album_tie_breaker(
                     album, albums_by_name[normalized_album_name])
@@ -224,7 +251,7 @@ class MusicUtil:
         return albums_by_name.values()
 
     def filter_out_duplicates_demos_and_live_albums(self, albums):
-        albums = self.filter_out_demos_and_live_albums(albums)
+        albums = self.filter_out_demos_bootlegs_and_live_albums(albums)
         def prefer_most_popular(album1, album2):
             return album1 if album1.popularity > album2.popularity else album2
         return self.filter_out_duplicates(albums, prefer_most_popular)

@@ -9,6 +9,92 @@ class TestMusicUtil(unittest.TestCase):
     def setUp(self):
         self.music_util = MusicUtil(MagicMock())
 
+    def test_is_a_demo__basic_scenario__matches(self):
+        album = mock_album(name="The Witmark Demos: 1962-1964 (The Bootleg Series Vol. 9)")
+
+        is_demo = self.music_util.is_a_demo(album)
+
+        self.assertTrue(is_demo)
+
+    def test_is_a_demo__ignores_partial_word_match(self):
+        album = mock_album(name="Sin Miedo (del Amory Otros Demonios) ∞ [Deluxe Version]")
+
+        is_demo = self.music_util.is_a_demo(album)
+
+        self.assertFalse(is_demo)
+
+    def test_is_a_bootleg__basic_scenario__matches(self):
+        album = mock_album(name="The Bootleg Series Volumes 1-3 (Rare and Unreleased) 1961-1991")
+
+        is_bootleg = self.music_util.is_a_bootleg(album)
+
+        self.assertTrue(is_bootleg)
+
+    def test_is_a_bootleg__ignores_partial_word_match(self):
+        album = mock_album(name="Bootlegging the Bootleggers")
+
+        is_bootleg = self.music_util.is_a_bootleg(album)
+
+        self.assertFalse(is_bootleg)
+
+    def test_is_live__in_parentheses__matches(self):
+        album = mock_album(name="An Evening With Herbie Hancock & Chick Corea In Concert (Live)")
+
+        is_live = self.music_util.is_live(album)
+
+        self.assertTrue(is_live)
+
+    def test_is_live__in_brackets__matches(self):
+        album = mock_album(
+            name="Miles in Montreux (feat. Rich Margitza, Adam Holzman, Benny Rietveld) [Live]")
+
+        is_live = self.music_util.is_live(album)
+
+        self.assertTrue(is_live)
+
+    def test_is_live__ignores_word_in_title(self):
+        # Example 1
+        album = mock_album(name="LONG.LIVE.A$AP")
+
+        is_live = self.music_util.is_live(album)
+
+        self.assertFalse(is_live)
+
+        # Example 2
+        album = mock_album(name="Live Through This")
+
+        is_live = self.music_util.is_live(album)
+
+        self.assertFalse(is_live)
+
+    def test__strip_metadata_in_parentheses_or_brackets__removes(self):
+        # Example 1
+        album_name = "Collectors' Items (RVG Remaster)"
+
+        stripped_album_name = self.music_util._strip_metadata_in_parentheses_or_brackets(
+            album_name)
+
+        self.assertEqual("Collectors' Items", stripped_album_name)
+
+        # Example 2
+        album_name = "Collectors' Items [RVG Remaster]"
+
+        stripped_album_name = self.music_util._strip_metadata_in_parentheses_or_brackets(
+            album_name)
+
+        self.assertEqual("Collectors' Items", stripped_album_name)
+
+    def test_filter_out_duplicates__capitalization(self):
+        albums = [
+            mock_album(name="Porgy and Bess"),
+            mock_album(name="Porgy And Bess")
+        ]
+        choose_arbitrary_album = lambda album1, album2: album1
+
+        albums = self.music_util.filter_out_duplicates(albums, choose_arbitrary_album)
+
+        self.assertEqual(1, len(albums))
+
     def test_get_most_popular_artist__empty(self):
         artists = []
 
