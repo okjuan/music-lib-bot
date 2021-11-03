@@ -9,6 +9,27 @@ class TestMusicUtil(unittest.TestCase):
     def setUp(self):
         self.music_util = MusicUtil(MagicMock())
 
+    def test_is_same_album_name__with_metadata_in_parentheses__returns_true(self):
+        album, album_expand_edition = "The Prisoner", "The Prisoner (Expanded Edition)"
+
+        is_same = self.music_util.is_same_album_name(album, album_expand_edition)
+
+        self.assertTrue(is_same)
+
+    def test_is_same_album_name__case_difference__returns_true(self):
+        album, album_expand_edition = "the prisoner", "The Prisoner"
+
+        is_same = self.music_util.is_same_album_name(album, album_expand_edition)
+
+        self.assertTrue(is_same)
+
+    def test_is_same_album_name__one_character_differs__returns_false(self):
+        album, album_expand_edition = "The Prisoners", "The Prisoner"
+
+        is_same = self.music_util.is_same_album_name(album, album_expand_edition)
+
+        self.assertFalse(is_same)
+
     def test_is_a_demo__basic_scenario__matches(self):
         album = mock_album(name="The Witmark Demos: 1962-1964 (The Bootleg Series Vol. 9)")
 

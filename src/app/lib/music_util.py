@@ -238,11 +238,17 @@ class MusicUtil:
                 str_ = tokens[0].strip()
         return str_
 
+    def is_same_album_name(self, album_name_1, album_name_2):
+        return self._normalize_album_name(album_name_1) == self._normalize_album_name(album_name_2)
+
+    def _normalize_album_name(self, album_name):
+        return self._strip_metadata_in_parentheses_or_brackets(
+                album_name.strip().lower())
+
     def filter_out_duplicates(self, albums, album_tie_breaker):
         albums_by_name = dict()
         for album in albums:
-            normalized_album_name = self._strip_metadata_in_parentheses_or_brackets(
-                album.name.strip().lower())
+            normalized_album_name = self._normalize_album_name(album.name)
             if normalized_album_name in albums_by_name:
                 albums_by_name[normalized_album_name] = album_tie_breaker(
                     album, albums_by_name[normalized_album_name])
@@ -255,3 +261,14 @@ class MusicUtil:
         def prefer_most_popular(album1, album2):
             return album1 if album1.popularity > album2.popularity else album2
         return self.filter_out_duplicates(albums, prefer_most_popular)
+
+    def get_album_by_artist(self, album_name, artist):
+        "Returns list of matching albums"
+        matching_artists = self.spotify_client_wrapper.get_matching_artists(artist)
+        artist = self.get_most_popular_artist(matching_artists)
+        albums = self.spotify_client_wrapper.get_artist_albums(artist.id)
+        return [
+            album
+            for album in albums
+            if self.is_same_album_name(album_name, album.name)
+        ]
