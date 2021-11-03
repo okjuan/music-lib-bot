@@ -8,8 +8,11 @@ class ConsoleUI:
             default
         )
 
-    def get_string(self, prompt):
-        return self._prompt_user(prompt)
+    def get_non_empty_string(self, prompt):
+        str_ = ""
+        while len(str_) == 0:
+            str_ = self._prompt_user(prompt)
+        return str_
 
     def get_string_from_options(self, message, options):
         user_selection = None

@@ -163,7 +163,7 @@ class PlaylistCreator:
 
     def create_playlist_based_on_existing_playlist(self):
         playlist = self.music_lib_bot_helper.get_playlist_from_user()
-        new_playlist_name = self.ui.get_string("What should your new playlist be called?")
+        new_playlist_name = self.ui.get_non_empty_string("What should your new playlist be called?")
         num_tracks_per_album = self.ui.get_int(
             f"How many tracks per album do you want in your new playlist? default is {DEFAULT_NUM_TRACKS_PER_ALBUM}",
             DEFAULT_NUM_TRACKS_PER_ALBUM
@@ -172,7 +172,7 @@ class PlaylistCreator:
             playlist, new_playlist_name, num_tracks_per_album)
 
     def _get_artist_from_user(self):
-        artist_name = self.ui.get_string("What artist interests you?")
+        artist_name = self.ui.get_non_empty_string("What artist interests you?")
         matching_artists = self.spotify_client.get_matching_artists(artist_name)
         if matching_artists == []:
             self.ui.tell_user(f"Sorry, I couldn't find an artist by the name '{artist_name}'")
@@ -212,7 +212,8 @@ class PlaylistCreator:
             for track in self.music_util.get_most_popular_tracks(album, num_tracks_per_album)
         ]
 
-        playlist_title = self.ui.get_string("What do you want to call your playlist?")
+        playlist_title = self.ui.get_non_empty_string(
+            "What do you want to call your playlist?")
         self.ui.tell_user(f"Creating '{playlist_title}' playlist...")
         self.my_music_lib.create_playlist(
             playlist_title,
