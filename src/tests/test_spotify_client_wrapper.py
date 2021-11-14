@@ -23,27 +23,17 @@ class TestSpotifyClientWrapper(unittest.TestCase):
         self.assertEqual(num_albums_to_fetch, len(albums))
         self.assertEqual(Album, type(albums[0]))
 
-    @unittest.skip("FIXME; and, in any case, Integration tests disabled by default")
-    def test_fetch_albums__few(self):
-        album_to_fetch = 10
+    def test_get_artist_albums(self):
+        artist_id = "74ASZWbe4lXaubB36ztrGX" # Bob Dylan
 
-        albums = self.spotify_client_wrapper.get_my_albums(album_to_fetch)
+        albums = self.spotify_client_wrapper.get_artist_albums(artist_id)
 
-        self.assertEqual(10, len(albums))
+        self.assertIn("Rough and Rowdy Ways", [album.name for album in albums])
 
-    @unittest.skip("FIXME; and, in any case, Integration tests disabled by default")
-    def test_fetch_albums__many(self):
-        album_to_fetch = 101
+    def test__get_playlist_tracks(self):
+        playlist_id = "04Ajor0wgmBWSGKRLyR4nw" # playlist 'test__get_playlist_tracks'
 
-        albums = self.spotify_client_wrapper.get_my_albums(album_to_fetch)
+        tracks = self.spotify_client_wrapper._get_playlist_tracks(playlist_id)
 
-        self.assertEqual(101, len(albums))
-
-    @unittest.skip("FIXME; and, in any case, Integration tests disabled by default")
-    def test_fetch_albums__more_than_possible__returns_max(self):
-        album_to_fetch = 1000
-
-        albums = self.spotify_client_wrapper.get_my_albums(album_to_fetch)
-
-        self.assertGreater(1000, len(albums))
-        self.assertLess(0, len(albums))
+        self.assertIn("Fast Fuse", [track.name for track in tracks])
+        self.assertLess(100, len(tracks))

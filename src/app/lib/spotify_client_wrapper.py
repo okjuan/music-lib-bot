@@ -39,8 +39,9 @@ class SpotifyClientWrapper:
 
     def _get_playlist_tracks(self, playlist_id):
         def track_fetcher(offset=0):
-            return self.client.playlist_tracks(
+            results = self.client.playlist_tracks(
                 playlist_id, offset=offset)
+            return results['items'], results['total']
 
         playlist_track_metadata = self._fetch_until_all_items_returned(track_fetcher)
         # TODO: fetch full info via calls to self.client.tracks(track_ids)
@@ -69,43 +70,40 @@ class SpotifyClientWrapper:
 
     def get_artist_albums(self, artist_id):
         def album_fetcher(offset=0):
-            return self.client.artist_albums(
+            results = self.client.artist_albums(
                 artist_id, album_type="album", offset=offset)
+            return results['items'], results['total']
         albums_metadata = self._fetch_until_all_items_returned(album_fetcher)
         return self.get_albums(
             [album['id'] for album in albums_metadata])
 
     def _fetch_until_all_items_returned(self, fetch_func):
-        "Assumes JSON structure that Spotify uses in their HTTP responses"
-        results = fetch_func()
-        num_results_fetched = len(results["items"])
-        items = results["items"]
-        while num_results_fetched < results["total"]:
+        """
+        Params:
+            fetch_func (func): optional param 'offset',
+                returns a 2-tuple where:
+                - ([dict]) 1st item is the fetched items
+                - (int) 2nd item is the total items
+        """
+        all_items, total = fetch_func()
+        num_results_fetched = len(all_items)
+        while num_results_fetched < total:
             offset = num_results_fetched
-            results = fetch_func(offset=offset)
-            num_results_fetched += len(results["items"])
-            items.extend(results["items"])
-        return items
+            items, total = fetch_func(offset=offset)
+            num_results_fetched += len(items)
+            all_items.extend(items)
+        return all_items
 
     def get_my_albums(self, max_albums_to_fetch):
-        print(f"Fetching recently saved albums...")
-        albums, albums_fetched_so_far = [], 0
-        while albums_fetched_so_far < max_albums_to_fetch:
-            max_batch_size = max_albums_to_fetch - albums_fetched_so_far
-
-            batch_size = max_batch_size if max_batch_size <= SPOTIFY_ALBUMS_API_LIMIT else SPOTIFY_ALBUMS_API_LIMIT
-            results = self.client.current_user_saved_albums(
-                limit=batch_size, offset=albums_fetched_so_far)
-
-            if len(results['items']) == 0:
-                print(f"No albums left to fetch...")
-                break
-
-            albums.extend([album['album'] for album in results['items']])
-            albums_fetched_so_far += batch_size
-
-        print(f"Fetched {len(albums)} albums...")
-        return [Album.from_spotify_album(album) for album in albums]
+        def my_album_fetcher(offset=0):
+            results = self.client.current_user_saved_albums(offset=offset)
+            num_results = len(results['items'])
+            items = results['items'][:min(num_results, max_albums_to_fetch)]
+            albums = [item['album'] for item in items]
+            return albums, max_albums_to_fetch
+        albums_metadata = self._fetch_until_all_items_returned(my_album_fetcher)
+        return self.get_albums(
+            [album['id'] for album in albums_metadata])
 
     def get_track(self, track_id):
         return Track.from_spotify_track(self.client.track(track_id))
