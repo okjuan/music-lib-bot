@@ -226,10 +226,15 @@ class PlaylistCreator:
 
     def create_playlist_from_albums_with_matching_genres_in_library(self):
         albums_by_genre = self.get_albums_by_genre()
+        if len(albums_by_genre) == 0:
+            self.ui.tell_user("Couldn't match the albums into groups.. the genres didn't match :/")
+            return
+
         suggested_playlists = self.get_suggested_playlists(albums_by_genre)
         if len(suggested_playlists) == 0:
             self.ui.tell_user("Couldn't find any suggested playlists!")
             return
+
         self.launch_interactive_playlist_creator(suggested_playlists)
 
     def duplicate_and_reduce_num_tracks_per_album(self, playlist, new_playlist_name, num_tracks_per_album):
