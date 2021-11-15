@@ -24,7 +24,7 @@ class SpotifyClientWrapper:
         ]
 
     def get_current_user_playlist_by_name(self, name):
-        playlist_id = self.search_current_user_playlists(name)
+        playlist_id = self.find_current_user_playlist(name)
         if playlist_id is None:
             return None
 
@@ -51,7 +51,7 @@ class SpotifyClientWrapper:
             for track in playlist_track_metadata
         ]
 
-    def search_current_user_playlists(self, playlist_name):
+    def find_current_user_playlist(self, playlist_name):
         "Returns playlist ID or None if not found."
         num_playlists_fetched = 0
         while True:

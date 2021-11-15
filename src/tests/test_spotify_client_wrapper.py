@@ -37,3 +37,11 @@ class TestSpotifyClientWrapper(unittest.TestCase):
 
         self.assertIn("Fast Fuse", [track.name for track in tracks])
         self.assertLess(100, len(tracks))
+
+    def test_find_current_user_playlist(self):
+        playlist_name = "Test Playlist: test_find_current_user_playlist"
+
+        playlist_id = self.spotify_client_wrapper.find_current_user_playlist(
+            playlist_name)
+
+        self.assertEqual("62y1x73aOCl7F52EcAfHbP", playlist_id)
