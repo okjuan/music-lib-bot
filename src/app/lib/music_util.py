@@ -42,36 +42,43 @@ class MusicUtil:
         list_.sort()
         return ", ".join(list_) if len(list_) > 0 else "unknown"
 
+    def _group_each_album_by_itself(self, album_ids):
+        """
+        Returns:
+            ([dict]):
+                e.g. [{
+                    'album ids': {'3tb57GFYfkABviRejjp1lh'},
+                    'genres': {'rock', 'punk'}
+                }].
+        """
+        genres_by_album_ids = self.get_genres_by_album_ids(list(album_ids))
+        return [
+            {
+                "album ids": {album_id},
+                "genres": set(genres)
+            }
+            for album_id, genres in genres_by_album_ids.items()
+        ]
+
     def _group_albums(self, album_ids, genre_matches):
         """
         Returns:
             grouped_albums ([dict]):
                 e.g. [{
                     'album ids': {'3tb57GFYfkABviRejjp1lh'},
-                    'genres': ['rock', 'punk']
+                    'genres': {'rock', 'punk'}
                 }].
         """
         if len(album_ids) == 0 or len(genre_matches) == 0:
-            genres_by_album_ids = self.get_genres_by_album_ids(list(album_ids))
-            return [
-                {
-                    "album ids": [album_id],
-                    "genres": genres
-                }
-                for album_id, genres in genres_by_album_ids.items()
-            ]
+            return self._group_each_album_by_itself(album_ids)
 
-        grouped_albums = dict()
+        grouped_albums = defaultdict(lambda: defaultdict(set))
         for album_id in album_ids:
             for matching_album_id, genres_matched_on in genre_matches[album_id].items():
                 group_key = self._as_readable_key(genres_matched_on)
-                if group_key not in grouped_albums:
-                    grouped_albums[group_key] = {
-                        "album ids": set(),
-                        "genres": genres_matched_on
-                    }
                 grouped_albums[group_key]["album ids"].add(album_id)
                 grouped_albums[group_key]["album ids"].add(matching_album_id)
+                grouped_albums[group_key]["genres"] = genres_matched_on
         return list(grouped_albums.values())
 
     def get_genres_by_album_ids(self, album_ids):
@@ -94,7 +101,7 @@ class MusicUtil:
         album_groups = self._group_albums(albums_by_id.keys(), genre_matches)
         return [
             {
-                "genres": group['genres'],
+                "genres": list(group['genres']),
                 "albums": [albums_by_id[album_id] for album_id in group["album ids"]]
             }
             for group in album_groups
