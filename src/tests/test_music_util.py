@@ -1,13 +1,76 @@
 import unittest
 from unittest.mock import patch, MagicMock
 
-from tests.fixtures import mock_album, mock_artist, mock_artist_dict
+from tests.fixtures import mock_album, mock_artist, mock_playlist, mock_track
 from app.lib.music_util import MusicUtil
 
 
 class TestMusicUtil(unittest.TestCase):
     def setUp(self):
-        self.music_util = MusicUtil(MagicMock())
+        self.mock_spotify_client = MagicMock()
+        self.music_util = MusicUtil(self.mock_spotify_client)
+
+    def test_get_artist_ids(self):
+        mock_artists = [mock_artist(id="mock-id-123")]
+        mock_tracks = [mock_track(artists=mock_artists)]
+        self.mock_spotify_client.get_playlist = MagicMock(
+            return_value=mock_playlist(tracks=mock_tracks))
+
+        artist_ids = self.music_util.get_artist_ids("mock_playlist_id")
+
+        self.assertEqual(["mock-id-123"], artist_ids)
+
+    def test_get_genres_in_album(self):
+        album_id = "6YabPKtZAjxwyWbuO9p4ZD" # Highway 61 Revisited
+        self.mock_spotify_client.get_album = MagicMock(
+            return_value=mock_album(artists=[mock_artist(id="mock-id")]))
+        def mock_get_artist_genres(artist_id):
+            if artist_id == "mock-id":
+                return ["space-folk"]
+            raise ValueError("unexpected artist ID")
+        self.mock_spotify_client.get_artist_genres = MagicMock(
+            side_effect=mock_get_artist_genres)
+
+        genres = self.music_util.get_genres_in_album(album_id)
+
+        self.assertEqual(["space-folk"], genres)
+
+    def test__add_artist_genres__single_album_single_genre(self):
+        self.mock_spotify_client.get_artist_genres = MagicMock(return_value = ["jazz"])
+        mock_albums = [mock_album(
+            genres=[], artists=[mock_artist(id="mock-artist-id")], id="mock-album-id")]
+
+        albums_with_genres = self.music_util._add_artist_genres(mock_albums)
+
+        self.assertEqual(albums_with_genres["mock-album-id"].genres, ["jazz"])
+
+    def test__add_artist_genres__multiple_albums_multiple_genres(self):
+        mock_albums = [
+            mock_album(
+                genres=[],
+                artists=[mock_artist(id="mock-artist-id-1")],
+                id="mock-album-id-1"
+            ),
+            mock_album(
+                genres=[],
+                artists=[mock_artist(id="mock-artist-id-2")],
+                id="mock-album-id-2"
+            ),
+        ]
+        def mock_get_artist_genres(artist_id):
+            if artist_id == "mock-artist-id-1":
+                return ["jazz"]
+            elif artist_id == "mock-artist-id-2":
+                return ["rock", "prog rock"]
+            raise ValueError("unexpected artist ID")
+        self.mock_spotify_client.get_artist_genres = MagicMock(
+            side_effect = mock_get_artist_genres)
+
+        albums_with_genres = self.music_util._add_artist_genres(mock_albums)
+
+        self.assertEqual(albums_with_genres["mock-album-id-1"].genres, ["jazz"])
+        self.assertEqual(
+            sorted(albums_with_genres["mock-album-id-2"].genres), ["prog rock", "rock"])
 
     def test_is_same_album_name__with_metadata_in_parentheses__returns_true(self):
         album, album_expand_edition = "The Prisoner", "The Prisoner (Expanded Edition)"
@@ -150,7 +213,7 @@ class TestMusicUtil(unittest.TestCase):
         self.assertEqual("", albums_as_readable_str)
 
     def test_get_albums_as_readable_list__one_album(self):
-        artist = mock_artist_dict(name="mock artist")
+        artist = mock_artist(name="mock artist")
         album = mock_album(artists=[artist], name="mock album")
         albums = [album]
 
@@ -159,7 +222,7 @@ class TestMusicUtil(unittest.TestCase):
         self.assertEqual("- mock album by mock artist", albums_as_readable_str)
 
     def test_get_albums_as_readable_list__multiple_artists(self):
-        artist1, artist2 = mock_artist_dict(name="mock artist 1"), mock_artist_dict(name="mock artist 2")
+        artist1, artist2 = mock_artist(name="mock artist 1"), mock_artist(name="mock artist 2")
         album = mock_album(artists=[artist1, artist2], name="mock album")
         albums = [album]
 
@@ -168,7 +231,7 @@ class TestMusicUtil(unittest.TestCase):
         self.assertEqual("- mock album by mock artist 1, mock artist 2", albums_as_readable_str)
 
     def test_get_albums_as_readable_list__multiple_albums(self):
-        artist = mock_artist_dict(name="mock artist")
+        artist = mock_artist(name="mock artist")
         album1 = mock_album(artists=[artist], name="mock album 1")
         album2 = mock_album(artists=[artist], name="mock album 2")
         albums = [album1, album2]

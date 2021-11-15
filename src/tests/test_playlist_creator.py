@@ -1,7 +1,7 @@
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock
 
-from tests.fixtures import mock_album, mock_artist_dict
+from tests.fixtures import mock_album, mock_artist
 from app.playlist_creator import PlaylistCreator
 
 
@@ -23,7 +23,7 @@ class TestPlaylistCreator(unittest.TestCase):
         self.assertEqual(0, num)
 
     def test_get_num_diff_artists__single__counts(self):
-        albums = [mock_album(artists=[mock_artist_dict()])]
+        albums = [mock_album(artists=[mock_artist()])]
 
         num = self.playlist_creator.get_num_diff_artists(albums)
 
@@ -31,8 +31,8 @@ class TestPlaylistCreator(unittest.TestCase):
 
     def test_get_num_diff_artists__duplicate__counts_once(self):
         albums = [
-            mock_album(artists=[mock_artist_dict(id="123")]),
-            mock_album(artists=[mock_artist_dict(id="123")]),
+            mock_album(artists=[mock_artist(id="123")]),
+            mock_album(artists=[mock_artist(id="123")]),
         ]
 
         num = self.playlist_creator.get_num_diff_artists(albums)
@@ -41,8 +41,8 @@ class TestPlaylistCreator(unittest.TestCase):
 
     def test_get_num_diff_artists__diff_ids__counts_both(self):
         albums = [
-            mock_album(artists=[mock_artist_dict(id="123")]),
-            mock_album(artists=[mock_artist_dict(id="456")]),
+            mock_album(artists=[mock_artist(id="123")]),
+            mock_album(artists=[mock_artist(id="456")]),
         ]
 
         num = self.playlist_creator.get_num_diff_artists(albums)

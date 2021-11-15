@@ -63,7 +63,7 @@ class PlaylistCreator:
             reverse=True
         )
         for idx, album_group in enumerate(options[:num_options]):
-            artists = list({artist['name'] for album in album_group['albums'] for artist in album.artists})
+            artists = list({artist.name for album in album_group['albums'] for artist in album.artists})
             self.ui.tell_user(f"#{idx}\n\tDescription: {album_group['description']}\n\tNumber of albums: {len(album_group['albums'])}\n\tArtists: {', '.join(artists)}")
 
     def get_num_options_desired(self, options):
@@ -122,7 +122,7 @@ class PlaylistCreator:
 
     def get_num_diff_artists(self, albums):
         return len({
-            artist['id']
+            artist.id
             for album in albums
             for artist in album.artists
         })

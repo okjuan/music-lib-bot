@@ -7,9 +7,18 @@ class MusicUtil:
         self.spotify_client_wrapper = spotify_client_wrapper
 
     def _add_artist_genres(self, albums):
+        """
+        Params:
+            albums ([Album]).
+
+        Returns:
+            albums_by_id (dict):
+                key (string): album ID.
+                value (Album).
+        """
         albums_by_id = dict()
         for album in albums:
-            artist_ids = [artist['id'] for artist in album.artists]
+            artist_ids = [artist.id for artist in album.artists]
             genres = list(set([
                 genre
                 for artist_id in artist_ids
@@ -131,7 +140,14 @@ class MusicUtil:
         return most_popular_artist
 
     def get_albums_as_readable_list(self, albums):
-        artist_names_to_str = lambda artists: ', '.join([artist['name'] for artist in artists])
+        """
+        Params:
+            albums ([Album]).
+
+        Returns:
+            (str): e.g. "- Bringing It All Back Home by Bob Dylan"
+        """
+        artist_names_to_str = lambda artists: ', '.join([artist.name for artist in artists])
         return '\n'.join([
             f"- {album.name} by {artist_names_to_str(album.artists)}"
             for album in albums
@@ -160,15 +176,18 @@ class MusicUtil:
         return dict(genre_count)
 
     def get_genres_in_album(self, album_id):
+        "album_id (str) -> [str] e.g. ['rock', 'prog rock']."
         genres = []
-        for artist in self.spotify_client_wrapper.get_album(album_id).artists:
-            genres.extend(self.spotify_client_wrapper.get_artist_genres(artist['id']))
+        album = self.spotify_client_wrapper.get_album(album_id)
+        for artist in album.artists:
+            genres.extend(self.spotify_client_wrapper.get_artist_genres(artist.id))
         return genres
 
     def get_artist_ids(self, spotify_playlist_id):
+        "spotify_playlist_id (str) -> [set] where each element is an artist id (str)"
         playlist = self.spotify_client_wrapper.get_playlist(spotify_playlist_id)
         return list({
-            artist['id']
+            artist.id
             for track in playlist.tracks
             for artist in track.artists
         })

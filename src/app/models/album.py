@@ -1,4 +1,5 @@
 from app.models.track import Track
+from app.models.artist import Artist
 from datetime import datetime
 
 
@@ -65,7 +66,10 @@ class Album:
                 Track.from_spotify_album_track(track, spotify_album['id'])
                 for track in spotify_album['tracks']['items']
             ],
-            spotify_album['artists'],
+            [
+                Artist.from_spotify_album_artist(artist)
+                for artist in spotify_album['artists']
+            ],
             Album._parse_date(spotify_album['release_date']),
             spotify_album['total_tracks'],
             popularity=spotify_album['popularity'],

@@ -1,3 +1,6 @@
+from app.models.artist import Artist
+
+
 class Track:
     def __init__(self, name, id_, uri, album_id, artists, disc_number, duration_ms, popularity, track_number):
         self.name = name
@@ -27,7 +30,10 @@ class Track:
             spotify_track['id'],
             spotify_track['uri'],
             spotify_track['album']['id'],
-            spotify_track['artists'],
+            [
+                Artist.from_spotify_track_artist(artist)
+                for artist in spotify_track['artists']
+            ],
             spotify_track['disc_number'],
             spotify_track['duration_ms'],
             spotify_track['popularity'],
@@ -40,7 +46,10 @@ class Track:
             spotify_track['id'],
             spotify_track['uri'],
             album_id,
-            spotify_track['artists'],
+            [
+                Artist.from_spotify_album_track_artist(artist)
+                for artist in spotify_track['artists']
+            ],
             spotify_track['disc_number'],
             spotify_track['duration_ms'],
             None,

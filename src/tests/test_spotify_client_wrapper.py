@@ -2,6 +2,7 @@ from os import putenv
 import unittest
 
 from app.models.album import Album
+from app.models.artist import Artist
 from app.lib.spotify_client_wrapper import SpotifyClientWrapper
 
 
@@ -22,6 +23,7 @@ class TestSpotifyClientWrapper(unittest.TestCase):
 
         self.assertEqual(num_albums_to_fetch, len(albums))
         self.assertEqual(Album, type(albums[0]))
+        self.assertEqual(Artist, type(albums[0].artists[0]))
 
     def test_get_artist_albums(self):
         artist_id = "74ASZWbe4lXaubB36ztrGX" # Bob Dylan
