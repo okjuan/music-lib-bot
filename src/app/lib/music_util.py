@@ -52,12 +52,13 @@ class MusicUtil:
                 }].
         """
         if len(album_ids) == 0 or len(genre_matches) == 0:
+            genres_by_album_ids = self.get_genres_by_album_ids(list(album_ids))
             return [
                 {
                     "album ids": [album_id],
-                    "genres": self.get_genres_in_album(album_id)
+                    "genres": genres
                 }
-                for album_id in album_ids
+                for album_id, genres in genres_by_album_ids.items()
             ]
 
         grouped_albums = dict()
@@ -72,6 +73,15 @@ class MusicUtil:
                 grouped_albums[group_key]["album ids"].add(album_id)
                 grouped_albums[group_key]["album ids"].add(matching_album_id)
         return list(grouped_albums.values())
+
+    def get_genres_by_album_ids(self, album_ids):
+        "album_ids ([str]) -> genres_by_album_id (dict) with key (str) album ID, value ([str]) genres"
+        genres_by_album_ids = defaultdict(list)
+        for album in self.spotify_client_wrapper.get_albums(album_ids):
+            for artist in album.artists:
+                genres_by_album_ids[album.id].extend(
+                    self.spotify_client_wrapper.get_artist_genres(artist.id))
+        return genres_by_album_ids
 
     def group_albums_by_genre(self, albums, min_genres_per_group):
         """
@@ -174,14 +184,6 @@ class MusicUtil:
             for genre in genres:
                 genre_count[genre] += 1
         return dict(genre_count)
-
-    def get_genres_in_album(self, album_id):
-        "album_id (str) -> [str] e.g. ['rock', 'prog rock']."
-        genres = []
-        album = self.spotify_client_wrapper.get_album(album_id)
-        for artist in album.artists:
-            genres.extend(self.spotify_client_wrapper.get_artist_genres(artist.id))
-        return genres
 
     def get_artist_ids(self, spotify_playlist_id):
         "spotify_playlist_id (str) -> [set] where each element is an artist id (str)"

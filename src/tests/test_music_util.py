@@ -20,20 +20,36 @@ class TestMusicUtil(unittest.TestCase):
 
         self.assertEqual(["mock-id-123"], artist_ids)
 
-    def test_get_genres_in_album(self):
-        album_id = "6YabPKtZAjxwyWbuO9p4ZD" # Highway 61 Revisited
-        self.mock_spotify_client.get_album = MagicMock(
-            return_value=mock_album(artists=[mock_artist(id="mock-id")]))
+    def test_get_genres_by_album_ids(self):
+        album_ids = [
+            "6YabPKtZAjxwyWbuO9p4ZD", # Highway 61 Revisited
+            "2xG5VLMFnDKhjJhsiJDcGm", # I Walk The Line
+        ]
+        mock_albums = [
+            mock_album(
+                id="bob-dylan-album-id",
+                artists=[mock_artist(id="bob-dylan-id")]
+            ),
+            mock_album(
+                id="johnny-cash-album-id",
+                artists=[mock_artist(id="johnny-cash-id")]
+            ),
+        ]
+        self.mock_spotify_client.get_albums = MagicMock(
+            return_value=mock_albums)
         def mock_get_artist_genres(artist_id):
-            if artist_id == "mock-id":
-                return ["space-folk"]
+            if artist_id == "bob-dylan-id":
+                return ["folk rock"]
+            elif artist_id == "johnny-cash-id":
+                return ["country folk"]
             raise ValueError("unexpected artist ID")
         self.mock_spotify_client.get_artist_genres = MagicMock(
             side_effect=mock_get_artist_genres)
 
-        genres = self.music_util.get_genres_in_album(album_id)
+        genres_by_album_id = self.music_util.get_genres_by_album_ids(album_ids)
 
-        self.assertEqual(["space-folk"], genres)
+        self.assertEqual(["folk rock"], genres_by_album_id["bob-dylan-album-id"])
+        self.assertEqual(["country folk"], genres_by_album_id["johnny-cash-album-id"])
 
     def test__add_artist_genres__single_album_single_genre(self):
         self.mock_spotify_client.get_artist_genres = MagicMock(return_value = ["jazz"])

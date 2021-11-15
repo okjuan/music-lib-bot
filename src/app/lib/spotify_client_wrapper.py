@@ -105,9 +105,6 @@ class SpotifyClientWrapper:
         return self.get_albums(
             [album['id'] for album in albums_metadata])
 
-    def get_track(self, track_id):
-        return Track.from_spotify_track(self.client.track(track_id))
-
     def get_tracks(self, track_ids):
         def track_fetcher(track_ids):
             results = self.client.tracks(track_ids)
@@ -117,9 +114,6 @@ class SpotifyClientWrapper:
             Track.from_spotify_track(track)
             for track in tracks
         ]
-
-    def get_album(self, album_id):
-        return Album.from_spotify_album(self.client.album(album_id))
 
     def get_albums(self, album_ids):
         def album_fetcher(album_ids):
