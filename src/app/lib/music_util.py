@@ -62,7 +62,7 @@ class MusicUtil:
                     }
                 grouped_albums[group_key]["album ids"].add(album_id)
                 grouped_albums[group_key]["album ids"].add(matching_album_id)
-        return [group for _, group in grouped_albums.items()]
+        return list(grouped_albums.values())
 
     def group_albums_by_genre(self, albums, min_genres_per_group):
         """
