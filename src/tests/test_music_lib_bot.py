@@ -2,30 +2,29 @@ import unittest
 from unittest.mock import MagicMock
 
 from tests.fixtures import mock_album, mock_artist
-from app.playlist_creator import PlaylistCreator
+from app.music_lib_bot import MusicLibBot
 
 
-class TestPlaylistCreator(unittest.TestCase):
+class TestMusicLibBot(unittest.TestCase):
     def setUp(self):
-        self.playlist_creator = PlaylistCreator(
+        self.music_lib_bot = MusicLibBot(
             MagicMock(),
             MagicMock(),
             MagicMock(),
             MagicMock(),
-            MagicMock()
         )
 
     def test_get_num_diff_artists(self):
         albums = []
 
-        num = self.playlist_creator.get_num_diff_artists(albums)
+        num = self.music_lib_bot.get_num_diff_artists(albums)
 
         self.assertEqual(0, num)
 
     def test_get_num_diff_artists__single__counts(self):
         albums = [mock_album(artists=[mock_artist()])]
 
-        num = self.playlist_creator.get_num_diff_artists(albums)
+        num = self.music_lib_bot.get_num_diff_artists(albums)
 
         self.assertEqual(1, num)
 
@@ -35,7 +34,7 @@ class TestPlaylistCreator(unittest.TestCase):
             mock_album(artists=[mock_artist(id="123")]),
         ]
 
-        num = self.playlist_creator.get_num_diff_artists(albums)
+        num = self.music_lib_bot.get_num_diff_artists(albums)
 
         self.assertEqual(1, num)
 
@@ -45,7 +44,7 @@ class TestPlaylistCreator(unittest.TestCase):
             mock_album(artists=[mock_artist(id="456")]),
         ]
 
-        num = self.playlist_creator.get_num_diff_artists(albums)
+        num = self.music_lib_bot.get_num_diff_artists(albums)
 
         self.assertEqual(2, num)
 
