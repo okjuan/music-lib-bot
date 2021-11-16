@@ -252,14 +252,15 @@ class MusicLibBot:
         }
         menu = [
             "What d'ya wanna do? Pick an option:",
+            "---",
             "Create a playlist:",
             "'a' - from an artist's discography",
             "'b' - from a playlist full of albums.",
             "'c' - (interactive) from albums in your library that have matching genres.",
-            "",
+            "---",
             "Update a playlist:",
             "'d' - Add tracks to my playlist from my saved albums with similar genres",
-            "",
+            "---",
             "'q' - quit",
         ]
         options = ["a", "b", "c", "d", "q"]
