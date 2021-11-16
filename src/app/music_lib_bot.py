@@ -24,6 +24,13 @@ class MusicLibBot:
         self.my_music_lib = my_music_lib
         self.music_util = music_util
         self.ui = ui
+        self.playlist_creator = PlaylistCreator(
+            self.spotify_client,
+            MusicLibBotHelper(self.my_music_lib, self.ui),
+            self.my_music_lib,
+            self.music_util,
+            self.ui.tell_user,
+        )
 
     def run_playlist_updater(self):
         while True:
@@ -42,15 +49,6 @@ class MusicLibBot:
 
     def user_wants_to_continue(self):
         return self.ui.get_yes_or_no("Make more changes? y or no - default is 'n'", False)
-
-    def run_playlist_creator(self):
-        PlaylistCreator(
-            self.spotify_client,
-            MusicLibBotHelper(self.my_music_lib, self.ui),
-            self.my_music_lib,
-            self.music_util,
-            self.ui
-        ).run()
 
     def get_playlist_from_user(self):
         playlist = None
@@ -76,25 +74,50 @@ class MusicLibBot:
             DEFAULT_NUM_ALBUMS_TO_FETCH
         )
 
+    def _get_artist_from_user(self):
+        artist_name = self.ui.get_non_empty_string("What artist interests you?")
+        matching_artists = self.spotify_client.get_matching_artists(artist_name)
+        if matching_artists == []:
+            self.ui.tell_user(f"Sorry, I couldn't find an artist by the name '{artist_name}'")
+            return None
+        artist = self.music_util.get_most_popular_artist(matching_artists)
+        self.ui.tell_user(f"I found: {artist.name}, with genres {artist.genres}, with popularity {artist.popularity}")
+        return artist
+
+    def _get_create_playlist_from_an_artists_discography_callback(self):
+        get_num_tracks_per_album = lambda: self.ui.get_int_from_options(
+                "How many tracks do you want from each album?", [1, 2, 3, 4, 5])
+        get_new_playlist_name = lambda: self.ui.get_non_empty_string(
+            "What do you want to call your playlist?")
+        def callback():
+            self.playlist_creator.create_playlist_from_an_artists_discography(
+                self._get_artist_from_user,
+                get_num_tracks_per_album,
+                get_new_playlist_name,
+            )
+        return callback
+
     def run(self):
-        apps = {
-            "a": self.run_playlist_creator,
-            "b": self.run_playlist_updater,
+        functions = {
+            "a": self.playlist_creator.run,
+            "b": self._get_create_playlist_from_an_artists_discography_callback(),
+            "c": self.run_playlist_updater,
         }
         menu = [
-            "What app do you want to use? Pick an option:",
+            "Whadya wanna do? Pick an option:",
             "'a' - Playlist Creator",
-            "'b' - Add Tracks to My Playlist from My Saved Albums with Similar Genres",
+            "'b' - Create playlist from an artist's discography",
+            "'c' - Add tracks to my playlist from my saved albums with similar genres",
             "'q' - quit",
         ]
-        options = ["a", "b", "q"]
+        options = ["a", "b", "c", "q"]
         while True:
             selection = self.ui.get_string_from_options(
                 "\n\t".join(menu), options)
             if selection == 'q':
                 self.ui.tell_user("Happy listening!")
                 break
-            apps[selection]()
+            functions[selection]()
 
 
 def main():

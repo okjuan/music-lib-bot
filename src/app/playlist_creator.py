@@ -22,12 +22,12 @@ DEFAULT_MIN_GENRES_PER_PLAYLIST = 4
 MIN_PLAYLIST_SUGGESTIONS_TO_SHOW = 10
 
 class PlaylistCreator:
-    def __init__(self, spotify_client, music_lib_bot_helper, my_music_lib, music_util, ui):
+    def __init__(self, spotify_client, music_lib_bot_helper, my_music_lib, music_util, info_logger):
         self.spotify_client = spotify_client
         self.music_lib_bot_helper = music_lib_bot_helper
         self.my_music_lib = my_music_lib
         self.music_util = music_util
-        self.ui = ui
+        self.info_logger = info_logger
 
     def get_min_albums_per_playlist(self):
         return self.ui.get_int(
@@ -171,18 +171,8 @@ class PlaylistCreator:
         self.duplicate_and_reduce_num_tracks_per_album(
             playlist, new_playlist_name, num_tracks_per_album)
 
-    def _get_artist_from_user(self):
-        artist_name = self.ui.get_non_empty_string("What artist interests you?")
-        matching_artists = self.spotify_client.get_matching_artists(artist_name)
-        if matching_artists == []:
-            self.ui.tell_user(f"Sorry, I couldn't find an artist by the name '{artist_name}'")
-            return None
-        artist = self.music_util.get_most_popular_artist(matching_artists)
-        self.ui.tell_user(f"I found: {artist.name}, with genres {artist.genres}, with popularity {artist.popularity}")
-        return artist
-
-    def _get_discography_for_artist_of_users_choice(self):
-        artist = self._get_artist_from_user()
+    def _get_discography(self, get_artist):
+        artist = get_artist()
         if artist is None:
             return None
         albums = self.music_util.get_discography(artist)
@@ -191,37 +181,36 @@ class PlaylistCreator:
         return albums
 
     # TODO: should I be reusing/reappropriating create_playlist_from_albums()?
-    def create_playlist_from_an_artists_discography(self):
-        albums = self._get_discography_for_artist_of_users_choice()
+    # TODO: break down this function. It's too long!
+    def create_playlist_from_an_artists_discography(self, get_artist, get_num_tracks_per_album, get_new_playlist_name):
+        albums = self._get_discography(get_artist)
         if albums is None:
-            self.ui.tell_user("Aborting because I don't have any albums to work with!")
             return
 
-        self.ui.tell_user(f"Out of the total {len(albums)} number of albums...")
+        self.info_logger(f"Out of the total {len(albums)} number of albums...")
         albums = self.music_util.filter_out_duplicates_demos_and_live_albums(albums)
-        self.ui.tell_user(f"Only {len(albums)} are essential; the rest are duplicates, demos, and live albums.")
+        self.info_logger(f"Only {len(albums)} are essential; the rest are duplicates, demos, and live albums.")
 
         albums = self.music_util.order_albums_chronologically(albums)
-        num_tracks_per_album = self.ui.get_int_from_options(
-            "How many tracks do you want from each album?", [1, 2, 3, 4, 5])
 
         # NOTE: do list comprehension here to ensure album order is preserved
+        num_tracks_per_album = get_num_tracks_per_album()
         tracks = [
             track
             for album in albums
-            for track in self.music_util.get_most_popular_tracks(album, num_tracks_per_album)
+            for track in self.music_util.get_most_popular_tracks(
+                album, num_tracks_per_album)
         ]
 
-        playlist_title = self.ui.get_non_empty_string(
-            "What do you want to call your playlist?")
-        self.ui.tell_user(f"Creating '{playlist_title}' playlist...")
+        playlist_title = get_new_playlist_name()
+        self.info_logger(f"Creating '{playlist_title}' playlist...")
         self.my_music_lib.create_playlist(
             playlist_title,
             [track.uri for track in tracks],
             description="created by playlist_creator"
         )
 
-        self.ui.tell_user(f"Playlist created!")
+        self.info_logger(f"Playlist created!")
         return albums
 
     def create_playlist_from_albums_with_matching_genres_in_library(self):
@@ -258,14 +247,13 @@ class PlaylistCreator:
 
     def run(self):
         options = {
-            "a": self.create_playlist_from_an_artists_discography,
-            "b": self.create_playlist_from_albums_with_matching_genres_in_library,
-            "c": self.create_playlist_based_on_existing_playlist,
+            "a": self.create_playlist_from_albums_with_matching_genres_in_library,
+            "b": self.create_playlist_based_on_existing_playlist,
         }
         while True:
             selection = self.ui.get_string_from_options(
-                "What kind of playlist do you want to create? Pick an option:\n\t'a' - From an artist's whole discography \n\t'b' - From albums in your library that have matching genres\n\t'c' - Duplicate a playlist full of albums, reduce its tracks per album, and reshuffle the order.\n\t'q' - quit",
-                ["a", "b", "c", "q"]
+                "What kind of playlist do you want to create? Pick an option:\n\t'a' - From albums in your library that have matching genres\n\t'b' - Duplicate a playlist full of albums, reduce its tracks per album, and reshuffle the order.\n\t'q' - quit",
+                ["a", "b", "q"]
             )
             if selection == 'q':
                 self.ui.tell_user(f"Thanks for using Playlist Creator, see ya later!")
