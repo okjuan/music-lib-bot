@@ -27,9 +27,9 @@ class PlaylistCreator:
         )
         self.info_logger(f"Playlist created!")
 
-    def create_playlist_based_on_existing_playlist(self, playlist, get_new_playlist_name, get_num_tracks_per_album):
+    def create_playlist_based_on_existing_playlist(self, get_playlist, get_new_playlist_name, get_num_tracks_per_album):
         self.duplicate_and_reduce_num_tracks_per_album(
-            playlist, get_new_playlist_name, get_num_tracks_per_album)
+            get_playlist, get_new_playlist_name, get_num_tracks_per_album)
 
     def _get_discography(self, get_artist):
         artist = get_artist()
@@ -73,8 +73,9 @@ class PlaylistCreator:
         self.info_logger(f"Playlist created!")
         return albums
 
-    def duplicate_and_reduce_num_tracks_per_album(self, playlist, get_new_playlist_name, get_num_tracks_per_album):
+    def duplicate_and_reduce_num_tracks_per_album(self, get_playlist, get_new_playlist_name, get_num_tracks_per_album):
         tracks_by_album = defaultdict(list)
+        playlist = get_playlist()
         for track in playlist.tracks:
             tracks_by_album[track.album_id].append(track)
 
