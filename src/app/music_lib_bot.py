@@ -97,20 +97,40 @@ class MusicLibBot:
             )
         return callback
 
+    def _get_create_playlist_based_on_existing_playlist_callback(self):
+        get_new_playlist_name = lambda: self.ui.get_non_empty_string(
+            "What should your new playlist be called?")
+        get_num_tracks_per_album = lambda: self.ui.get_int(
+            f"How many tracks per album? default is {DEFAULT_NUM_TRACKS_PER_ALBUM}",
+            DEFAULT_NUM_TRACKS_PER_ALBUM
+        )
+        def callback():
+            self.playlist_creator.create_playlist_based_on_existing_playlist(
+                get_new_playlist_name,
+                get_num_tracks_per_album,
+            )
+        return callback
+
     def run(self):
         functions = {
             "a": self.playlist_creator.run,
             "b": self._get_create_playlist_from_an_artists_discography_callback(),
-            "c": self.run_playlist_updater,
+            "c": self._get_create_playlist_based_on_existing_playlist_callback(),
+            "d": self.run_playlist_updater,
         }
         menu = [
-            "Whadya wanna do? Pick an option:",
+            "What d'ya wanna do? Pick an option:",
+            "Create a playlist:",
             "'a' - Playlist Creator",
             "'b' - Create playlist from an artist's discography",
-            "'c' - Add tracks to my playlist from my saved albums with similar genres",
+            "'c' - Duplicate a playlist full of albums, reduce its tracks per album, and reshuffle the order.",
+            "",
+            "Update a playlist:",
+            "'d' - Add tracks to my playlist from my saved albums with similar genres",
+            "",
             "'q' - quit",
         ]
-        options = ["a", "b", "c", "q"]
+        options = ["a", "b", "c", "d", "q"]
         while True:
             selection = self.ui.get_string_from_options(
                 "\n\t".join(menu), options)
