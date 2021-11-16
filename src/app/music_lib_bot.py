@@ -81,11 +81,16 @@ class MusicLibBot:
             "a": self.run_playlist_creator,
             "b": self.run_playlist_updater,
         }
+        menu = [
+            "What app do you want to use? Pick an option:",
+            "'a' - Playlist Creator",
+            "'b' - Add Tracks to My Playlist from My Saved Albums with Similar Genres",
+            "'q' - quit",
+        ]
+        options = ["a", "b", "q"]
         while True:
             selection = self.ui.get_string_from_options(
-                "What app do you want to use? Pick an option:\n\t'a' - Playlist Creator\n\t'b' - Add Tracks to My Playlist from My Saved Albums with Similar Genres\n\t'q' - quit",
-                ["a", "b", "q"]
-            )
+                "\n\t".join(menu), options)
             if selection == 'q':
                 self.ui.tell_user("Happy listening!")
                 break
