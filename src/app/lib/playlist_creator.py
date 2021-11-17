@@ -72,12 +72,9 @@ class PlaylistCreator:
         for track in playlist.tracks:
             tracks_by_album[track.album_id].append(track)
 
-        most_popular_tracks_per_album = []
-        # TODO: use music_util.get_tracks_most_popular_first(album) ?
-        num_tracks_per_album = get_num_tracks_per_album()
+        most_popular_tracks_per_album, num_tracks_per_album = [], get_num_tracks_per_album()
         for _, tracks in tracks_by_album.items():
-            tracks_sorted_by_popularity = sorted(
-                tracks, key=lambda track: track.popularity, reverse=True)
+            tracks_sorted_by_popularity = self.music_util.get_most_popular_first(tracks)
             most_popular_tracks_per_album.extend(
                 tracks_sorted_by_popularity[:num_tracks_per_album])
 

@@ -123,7 +123,10 @@ class MusicUtil:
         return tracks
 
     def get_tracks_most_popular_first(self, album):
-        tracks = self._get_track_popularity_if_absent(album.tracks)
+        return self.get_most_popular_first(album.tracks)
+
+    def get_most_popular_first(self, tracks):
+        tracks = self._get_track_popularity_if_absent(tracks)
         return sorted(
             tracks,
             key=lambda track: track.popularity,
