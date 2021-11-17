@@ -17,11 +17,7 @@ class PlaylistUpdater:
         print(f"Found {len(track_uris)} tracks with exact same genres as those already in your playlist..")
         self.my_music_lib.add_tracks_in_random_positions(track_uris)
 
-    def add_tracks_from_my_saved_albums_with_similar_genres(self, num_tracks_per_album, num_albums_to_fetch):
-        self.add_tracks_from_my_saved_albums_with_similar_genres(
-            lambda: num_tracks_per_album, lambda: num_albums_to_fetch)
-
-    def add_tracks_from_my_saved_albums_with_similar_genres__lazy(self, get_num_tracks_per_album, get_num_albums_to_fetch):
+    def add_tracks_from_my_saved_albums_with_similar_genres(self, get_num_tracks_per_album, get_num_albums_to_fetch):
         "Less strict version of add_tracks_from_my_saved_albums_with_same_genres"
         track_uris = self._get_tracks_from_my_saved_albums_with_similar_genres(
             get_num_tracks_per_album, get_num_albums_to_fetch)

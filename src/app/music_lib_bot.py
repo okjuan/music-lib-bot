@@ -44,7 +44,7 @@ class MusicLibBot:
                 self.my_music_lib,
                 self.music_util,
             )
-            playlist_updater.add_tracks_from_my_saved_albums_with_similar_genres__lazy(
+            playlist_updater.add_tracks_from_my_saved_albums_with_similar_genres(
                 self.get_num_tracks_per_album, self.get_num_albums_to_fetch)
 
             if not self.user_wants_to_continue():
