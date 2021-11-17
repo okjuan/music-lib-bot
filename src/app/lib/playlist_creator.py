@@ -1,8 +1,3 @@
-# allows me to run:
-# $ python app/playlist_creator.py
-import sys
-sys.path.extend(['.', '../'])
-
 from collections import defaultdict
 from random import shuffle
 

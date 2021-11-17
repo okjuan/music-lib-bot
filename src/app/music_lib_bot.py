@@ -1,15 +1,15 @@
 # allows me to run:
-# $ python scripts/music_lib_bot.py
+# $ python app/music_lib_bot.py
 import sys
 
 sys.path.extend(['.', '../'])
 
 from app.lib.music_util import MusicUtil
 from app.lib.my_music_lib import MyMusicLib
-from app.playlist_updater import PlaylistUpdater
+from app.lib.playlist_creator import PlaylistCreator
+from app.lib.playlist_updater import PlaylistUpdater
 from app.lib.spotify_client_wrapper import SpotifyClientWrapper
 from app.lib.ui import ConsoleUI
-from app.playlist_creator import PlaylistCreator
 
 QUIT = -1
 DEFAULT_LOOK_AT_ENTIRE_LIBRARY = False
