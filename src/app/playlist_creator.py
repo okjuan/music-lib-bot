@@ -94,7 +94,3 @@ class PlaylistCreator:
         track_uris = [track.id for track in most_popular_tracks_per_album]
         shuffle(track_uris)
         self.my_music_lib.create_playlist(new_playlist_name, track_uris)
-
-
-if __name__ == "__main__":
-    main()

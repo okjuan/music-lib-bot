@@ -1,12 +1,6 @@
 from random import randint
 
 
-DEFAULT_NUM_TRACKS_PER_ALBUM = 3
-MIN_NUM_TRACKS_PER_ALBUM = 1
-MAX_NUM_TRACKS_PER_ALBUM = 10
-DEFAULT_NUM_ALBUMS_TO_FETCH = 50
-
-
 class PlaylistUpdater:
     def __init__(self, playlist, my_music_lib, music_util):
         self.playlist = playlist
