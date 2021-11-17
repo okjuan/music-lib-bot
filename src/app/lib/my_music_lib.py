@@ -1,3 +1,6 @@
+from random import randint
+
+
 # To prevent fetching a copious amount of albums and overwhelming memory
 MAX_ALBUMS_TO_FETCH = 1000
 
@@ -47,3 +50,12 @@ class MyMusicLib:
 
     def add_track_to_playlist_at_position(self, playlist_id, track_uri, position):
         self.spotify_client_wrapper.add_track_at_position(playlist_id, track_uri, position)
+
+    def add_tracks_in_random_positions(self, playlist, track_uris):
+        if len(track_uris) == 0:
+            print("Oops, no tracks given, so I can't add them to your playlist.")
+        print(f"Adding {len(track_uris)} randomly throughout your playlist: '{playlist.name}'")
+        for track in track_uris:
+            random_position = randint(1, len(playlist.tracks)) if len(playlist.tracks) > 0 else 1
+            self.add_track_to_playlist_at_position(
+                self.playlist.id, track, random_position)

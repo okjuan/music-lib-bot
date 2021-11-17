@@ -1,6 +1,3 @@
-from random import randint
-
-
 class PlaylistUpdater:
     def __init__(self, playlist, my_music_lib, music_util):
         self.playlist = playlist
@@ -18,7 +15,7 @@ class PlaylistUpdater:
             return
 
         print(f"Found {len(track_uris)} tracks with exact same genres as those already in your playlist..")
-        self.add_tracks_in_random_positions(track_uris)
+        self.my_music_lib.add_tracks_in_random_positions(track_uris)
 
     def add_tracks_from_my_saved_albums_with_similar_genres(self, num_tracks_per_album, num_albums_to_fetch):
         self.add_tracks_from_my_saved_albums_with_similar_genres(
@@ -34,16 +31,7 @@ class PlaylistUpdater:
             return
 
         print(f"Found {len(track_uris)} tracks with similar genres to those already in your playlist..")
-        self.add_tracks_in_random_positions(track_uris)
-
-    def add_tracks_in_random_positions(self, track_uris):
-        if len(track_uris) == 0:
-            print("Oops, no tracks given, so I can't add them to your playlist.")
-        print(f"Adding {len(track_uris)} randomly throughout your playlist: '{self.playlist.name}'")
-        for track in track_uris:
-            random_position = randint(1, len(self.playlist.tracks)) if len(self.playlist.tracks) > 0 else 1
-            self.my_music_lib.add_track_to_playlist_at_position(
-                self.playlist.id, track, random_position)
+        self.my_music_lib.add_tracks_in_random_positions(track_uris)
 
     def _get_tracks_from_my_saved_albums_with_same_genres(self, get_num_tracks_per_album, get_num_albums_to_fetch):
         """Skips albums that are already present in the playlist."""
