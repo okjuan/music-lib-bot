@@ -232,7 +232,6 @@ class MusicLibBot:
         return self.ui.get_int_from_options(message, options)
 
     def give_playlist_options(self, num_options, options):
-        # TODO: remove/replace \n, \t chars, etc.
         self.ui.tell_user("\nHere are your options for creating a playlist from albums in your library.")
         self.ui.tell_user("The options are ordered by number of albums from most to least.")
         options.sort(

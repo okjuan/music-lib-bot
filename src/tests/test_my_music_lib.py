@@ -38,7 +38,6 @@ class TestMyMusicLib(unittest.TestCase):
     def test_get_my_albums_by_genres(self):
         min_genres_per_group = 1
 
-        # TODO: update to expect album_groups in new format:
         # - old format: {'rock, dance rock': [Album]}
         # - new format: [{genres: ['rock', 'dance rock'], albums: [Album]}]
         album_groups = self.my_music_lib.get_my_albums_grouped_by_genre(10, min_genres_per_group)

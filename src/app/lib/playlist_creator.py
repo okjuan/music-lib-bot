@@ -35,8 +35,6 @@ class PlaylistCreator:
             return None
         return albums
 
-    # TODO: should I be reusing/reappropriating create_playlist_from_albums()?
-    # TODO: break down this function. It's too long!
     def create_playlist_from_an_artists_discography(self, get_artist, get_num_tracks_per_album, get_new_playlist_name):
         albums = self._get_discography(get_artist)
         if albums is None:

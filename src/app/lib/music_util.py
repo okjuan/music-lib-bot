@@ -257,7 +257,6 @@ class MusicUtil:
         return self._strip_metadata_between(
             without_parenthesized_substring, "[", "]")
 
-    # TODO: replace with more concise regular expression implementation
     def _strip_metadata_between(self, str_, opening_token, closing_token):
         if opening_token in str_:
             open_paren_idx = str_.index(closing_token)

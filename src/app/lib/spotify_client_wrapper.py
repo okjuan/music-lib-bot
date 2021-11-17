@@ -44,8 +44,6 @@ class SpotifyClientWrapper:
             return results['items'], results['total']
 
         playlist_track_metadata = self._fetch_until_all_items_returned(track_fetcher)
-        # TODO: fetch full info via calls to self.client.tracks(track_ids)
-        # problem is that it needs to be done in batches too
         return [
             Track.from_spotify_playlist_track(track)
             for track in playlist_track_metadata
