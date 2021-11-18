@@ -302,3 +302,19 @@ class MusicUtil:
             for album in albums
             if self.is_same_album_name(album_name, album.name)
         ]
+
+    def populate_track_audio_features(self, playlist):
+        """Fetches and sets track.audio_features for each track in the playlist.
+
+        Params:
+            playlist (Playlist).
+        """
+        audio_features_by_track_ids = self.spotify_client_wrapper.get_audio_features_by_track_id([
+            track.uri
+            for track in playlist.tracks
+            if track.audio_features is None
+        ])
+        for track in playlist.tracks:
+            if track.id in audio_features_by_track_ids:
+                track.set_audio_features(
+                    audio_features_by_track_ids[track.id])

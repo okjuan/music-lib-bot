@@ -2,6 +2,7 @@ from spotipy.oauth2 import SpotifyOAuth
 import spotipy
 
 from app.models.album import Album
+from app.models.audio_features import AudioFeatures
 from app.models.artist import Artist
 from app.models.playlist import Playlist
 from app.models.track import Track
@@ -160,3 +161,10 @@ class SpotifyClientWrapper:
 
     def _get_current_user_id(self):
         return self.client.me()['id']
+
+    def get_audio_features_by_track_id(self, track_ids):
+        return {
+            track_audio_features["id"]: AudioFeatures.from_spotify_audio_features(
+                track_audio_features)
+            for track_audio_features in self.client.audio_features(track_ids)
+        }

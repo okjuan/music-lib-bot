@@ -2,7 +2,7 @@ from app.models.artist import Artist
 
 
 class Track:
-    def __init__(self, name, id_, uri, album_id, artists, disc_number, duration_ms, popularity, track_number):
+    def __init__(self, name, id_, uri, album_id, artists, disc_number, duration_ms, popularity, track_number, audio_features=None):
         self.name = name
         self.id = id_
         self.uri = uri
@@ -12,6 +12,10 @@ class Track:
         self.duration_ms = duration_ms
         self.popularity = popularity
         self.track_number = track_number
+        self.audio_features = audio_features
+
+    def set_audio_features(self, audio_features):
+        self.audio_features = audio_features
 
     def from_spotify_playlist_track(spotify_playlist_track):
         """
