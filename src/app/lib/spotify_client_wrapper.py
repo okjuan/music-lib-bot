@@ -10,6 +10,8 @@ from app.models.track import Track
 SPOTIFY_ALBUMS_API_LIMIT = 50
 SPOTIFY_ADD_TRACKS_TO_PLAYLIST_API_LIMIT = 100
 SPOTIFY_SCOPES = "user-library-read,playlist-modify-private,playlist-modify-private,playlist-read-private,playlist-read-collaborative"
+RECOMMENDATION_SEED_LIMIT = 5
+RECOMMENDATIONS_LIMIT = 100
 
 
 class SpotifyClientWrapper:
@@ -168,3 +170,28 @@ class SpotifyClientWrapper:
                 track_audio_features)
             for track_audio_features in self.client.audio_features(track_ids)
         }
+
+    def get_recommendations_based_on_tracks(self, track_ids, num_recommendations, min_audio_features,
+     max_audio_features):
+        """
+        Params:
+            tracks_ids ([str]): max length is 5.
+            num_recommendations (int): max is 100.
+            min_audio_features (AudioFeatures).
+            max_audio_features (AudioFeatures).
+        """
+        if len(track_ids) > RECOMMENDATION_SEED_LIMIT:
+            track_ids = track_ids[:RECOMMENDATION_SEED_LIMIT]
+        if num_recommendations > RECOMMENDATIONS_LIMIT:
+            num_recommendations = RECOMMENDATIONS_LIMIT
+
+        results = self.client.recommendations(
+            seed_tracks=track_ids,
+            limit=num_recommendations,
+            min_danceability=min_audio_features.danceability,
+            max_danceability=max_audio_features.danceability,
+        )
+        return [
+            Track.from_spotify_track(track)
+            for track in results['tracks']
+        ]
