@@ -18,7 +18,7 @@ def main():
     playlist_creator = PlaylistCreator(
         spotify_client_wrapper, my_music_lib, music_util, print)
     playlist = playlist_stats.get_playlist_with_track_audio_features(
-        "buzz off mate")
+        "buzz off mate - test copy")
     audio_features_min, audio_features_max = playlist_stats.get_audio_feature_representative_range(
         playlist)
     playlist_creator.add_recommended_songs_in_audio_feature_ranges(

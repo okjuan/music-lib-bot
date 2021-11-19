@@ -92,8 +92,7 @@ class PlaylistCreator:
             audio_feature_range (2-tuple of AudioFeatures): min and max values, inclusive.
             get_num_songs_to_add (lambda): takes 0 params, returns int.
         """
-        # TODO: avoid adding dups
-        recommended_tracks = self.spotify_client.get_recommendations_based_on_tracks(
+        recommended_tracks = self.music_util.get_recommendations_based_on_tracks(
             [track.id for track in playlist.tracks],
             get_num_songs_to_add(),
             min_audio_features,

@@ -318,3 +318,51 @@ class MusicUtil:
             if track.id in audio_features_by_track_ids:
                 track.set_audio_features(
                     audio_features_by_track_ids[track.id])
+
+    def get_recommendations_based_on_tracks(self, track_ids, num_recommendations, min_audio_features,
+     max_audio_features):
+        """
+        Params:
+            tracks_ids ([str]): max length is 5.
+            num_recommendations (int): max is 100.
+            min_audio_features (AudioFeatures).
+            max_audio_features (AudioFeatures).
+        """
+        # TODO: avoid adding dups to playlist
+        # TODO: de-dup recommendations
+        # TODO: popularity
+        recommendations_with_count = self._get_recommendations_based_on_tracks_in_batches(
+            track_ids, min_audio_features, max_audio_features)
+        most_recommended_tracks = sorted(
+            list(recommendations_with_count.items()),
+            key=lambda track_count_tuple: track_count_tuple[1],
+            reverse=True,
+        )
+        num_recommendations = min(num_recommendations, len(most_recommended_tracks))
+        return [
+            track_count_tuple[0]
+            for track_count_tuple in most_recommended_tracks[:num_recommendations]
+        ]
+
+    def _get_recommendations_based_on_tracks_in_batches(self, track_ids, min_audio_features, max_audio_features):
+        """
+        Params:
+            tracks_ids ([str]): max length is 5.
+            min_audio_features (AudioFeatures).
+            max_audio_features (AudioFeatures).
+
+        Returns:
+            recommendations_with_count (dict):
+        """
+        recommendation_limit = self.spotify_client_wrapper.get_recommendation_seed_limit()
+        recommendations_with_count = defaultdict(int)
+        for min_index in range(0, len(track_ids), recommendation_limit):
+            max_index = min(min_index+recommendation_limit, len(track_ids))
+            recommendations = self.spotify_client_wrapper.get_recommendations_based_on_tracks(
+                track_ids[min_index:max_index],
+                min_audio_features,
+                max_audio_features
+            )
+            for track in recommendations:
+                recommendations_with_count[track] += 1
+        return recommendations_with_count

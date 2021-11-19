@@ -171,23 +171,19 @@ class SpotifyClientWrapper:
             for track_audio_features in self.client.audio_features(track_ids)
         }
 
-    def get_recommendations_based_on_tracks(self, track_ids, num_recommendations, min_audio_features,
-     max_audio_features):
+    def get_recommendations_based_on_tracks(self, track_ids, min_audio_features, max_audio_features):
         """
         Params:
             tracks_ids ([str]): max length is 5.
-            num_recommendations (int): max is 100.
             min_audio_features (AudioFeatures).
             max_audio_features (AudioFeatures).
         """
         if len(track_ids) > RECOMMENDATION_SEED_LIMIT:
             track_ids = track_ids[:RECOMMENDATION_SEED_LIMIT]
-        if num_recommendations > RECOMMENDATIONS_LIMIT:
-            num_recommendations = RECOMMENDATIONS_LIMIT
 
         results = self.client.recommendations(
             seed_tracks=track_ids,
-            limit=num_recommendations,
+            limit=RECOMMENDATIONS_LIMIT,
             min_danceability=min_audio_features.danceability,
             max_danceability=max_audio_features.danceability,
         )
@@ -195,3 +191,6 @@ class SpotifyClientWrapper:
             Track.from_spotify_track(track)
             for track in results['tracks']
         ]
+
+    def get_recommendation_seed_limit(self):
+        return RECOMMENDATION_SEED_LIMIT
