@@ -376,5 +376,6 @@ class MusicUtil:
             recommendations = self.spotify_client_wrapper.get_recommendations_based_on_tracks(
                 track_ids[min_index:max_index], recommendation_criteria)
             for track in recommendations:
-                recommendations_with_count[track] += 1
+                if track.id not in track_ids:
+                    recommendations_with_count[track] += 1
         return recommendations_with_count
