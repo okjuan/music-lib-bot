@@ -27,6 +27,9 @@ class PlaylistStats:
         self.music_util.populate_track_audio_features(playlist)
         return playlist
 
+    def get_popularity_representative_range(self, playlist):
+        return 0, 100
+
     def get_audio_feature_representative_range(self, playlist):
         """
         Params:
@@ -75,7 +78,7 @@ class PlaylistStats:
                 MAX_KEY_VALUE,
                 loudness_max,
                 MAX_MODE_VALUE,
-                speechiness_min,
+                speechiness_max,
                 acousticness_max,
                 instrumentalness_max,
                 liveness_max,

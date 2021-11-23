@@ -84,19 +84,3 @@ class PlaylistCreator:
         track_uris = [track.id for track in most_popular_tracks_per_album]
         shuffle(track_uris)
         self.my_music_lib.create_playlist(new_playlist_name, track_uris)
-
-    def add_recommended_songs_in_audio_feature_ranges(self, playlist, min_audio_features, max_audio_features, get_num_songs_to_add):
-        """
-        Params:
-            playlist (Playlist).
-            audio_feature_range (2-tuple of AudioFeatures): min and max values, inclusive.
-            get_num_songs_to_add (lambda): takes 0 params, returns int.
-        """
-        recommended_tracks = self.music_util.get_recommendations_based_on_tracks(
-            [track.id for track in playlist.tracks],
-            get_num_songs_to_add(),
-            min_audio_features,
-            max_audio_features,
-        )
-        self.spotify_client.add_tracks(
-            playlist.id, [track.id for track in recommended_tracks])

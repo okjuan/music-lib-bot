@@ -171,12 +171,11 @@ class SpotifyClientWrapper:
             for track_audio_features in self.client.audio_features(track_ids)
         }
 
-    def get_recommendations_based_on_tracks(self, track_ids, min_audio_features, max_audio_features):
+    def get_recommendations_based_on_tracks(self, track_ids, recommendation_criteria):
         """
         Params:
             tracks_ids ([str]): max length is 5.
-            min_audio_features (AudioFeatures).
-            max_audio_features (AudioFeatures).
+            recommendation_criteria (RecommendationCriteria).
         """
         if len(track_ids) > RECOMMENDATION_SEED_LIMIT:
             track_ids = track_ids[:RECOMMENDATION_SEED_LIMIT]
@@ -184,8 +183,28 @@ class SpotifyClientWrapper:
         results = self.client.recommendations(
             seed_tracks=track_ids,
             limit=RECOMMENDATIONS_LIMIT,
-            min_danceability=min_audio_features.danceability,
-            max_danceability=max_audio_features.danceability,
+            min_danceability=recommendation_criteria.danceability_range[0],
+            max_danceability=recommendation_criteria.danceability_range[1],
+            min_energy=recommendation_criteria.energy_range[0],
+            max_energy=recommendation_criteria.energy_range[1],
+            min_loudness=recommendation_criteria.loudness_range[0],
+            max_loudness=recommendation_criteria.loudness_range[1],
+            min_speechiness=recommendation_criteria.speechiness_range[0],
+            max_speechiness=recommendation_criteria.speechiness_range[1],
+            min_acousticness=recommendation_criteria.acousticness_range[0],
+            max_acousticness=recommendation_criteria.acousticness_range[1],
+            min_instrumentalness=recommendation_criteria.instrumentalness_range[0],
+            max_instrumentalness=recommendation_criteria.instrumentalness_range[1],
+            min_liveness=recommendation_criteria.liveness_range[0],
+            max_liveness=recommendation_criteria.liveness_range[1],
+            min_valence=recommendation_criteria.valence_range[0],
+            max_valence=recommendation_criteria.valence_range[1],
+            min_tempo=recommendation_criteria.tempo_range[0],
+            max_tempo=recommendation_criteria.tempo_range[1],
+            min_duration_ms=int(recommendation_criteria.duration_ms_range[0]),
+            max_duration_ms=int(recommendation_criteria.duration_ms_range[1]),
+            min_popularity=recommendation_criteria.popularity_range[0],
+            max_popularity=recommendation_criteria.popularity_range[1],
         )
         return [
             Track.from_spotify_track(track)

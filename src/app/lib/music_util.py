@@ -1,6 +1,8 @@
 from collections import defaultdict
 from re import match
 
+from app.models.recommendation_criteria import RecommendationCriteria
+
 
 class MusicUtil:
     def __init__(self, spotify_client_wrapper):
@@ -319,37 +321,50 @@ class MusicUtil:
                 track.set_audio_features(
                     audio_features_by_track_ids[track.id])
 
-    def get_recommendations_based_on_tracks(self, track_ids, num_recommendations, min_audio_features,
-     max_audio_features):
+    def get_recommendations_based_on_tracks(self, track_ids, num_recommendations, recommendation_criteria):
         """
         Params:
             tracks_ids ([str]): max length is 5.
             num_recommendations (int): max is 100.
-            min_audio_features (AudioFeatures).
-            max_audio_features (AudioFeatures).
+            recommendation_criteria (RecommendationCriteria).
         """
         # TODO: avoid adding dups to playlist
         # TODO: de-dup recommendations
         # TODO: popularity
         recommendations_with_count = self._get_recommendations_based_on_tracks_in_batches(
-            track_ids, min_audio_features, max_audio_features)
+            track_ids, recommendation_criteria)
+        print(f"Found {len(recommendations_with_count)} recommendations.")
         most_recommended_tracks = sorted(
             list(recommendations_with_count.items()),
             key=lambda track_count_tuple: track_count_tuple[1],
             reverse=True,
         )
+        print(f"Whittled down to {len(recommendations_with_count)} recommendations.")
         num_recommendations = min(num_recommendations, len(most_recommended_tracks))
         return [
             track_count_tuple[0]
             for track_count_tuple in most_recommended_tracks[:num_recommendations]
         ]
 
-    def _get_recommendations_based_on_tracks_in_batches(self, track_ids, min_audio_features, max_audio_features):
+    def make_recommendation_criteria(self, audio_features_min, audio_features_max, popularity_min, popularity_max):
+        """
+        Params:
+            audio_features_min (AudioFeatures).
+            audio_features_max (AudioFeatures).
+            popularity_min (int): in [0, 100].
+            popularity_max (int): in [0, 100].
+        """
+        recommendation_criteria = RecommendationCriteria.from_audio_features_min_max_ranges(
+            audio_features_min, audio_features_max)
+        recommendation_criteria.set_popularity_min_max_range(
+            popularity_min, popularity_max)
+        return recommendation_criteria
+
+    def _get_recommendations_based_on_tracks_in_batches(self, track_ids, recommendation_criteria):
         """
         Params:
             tracks_ids ([str]): max length is 5.
-            min_audio_features (AudioFeatures).
-            max_audio_features (AudioFeatures).
+            recommendation_criteria (RecommendationCriteria).
 
         Returns:
             recommendations_with_count (dict):
@@ -359,10 +374,7 @@ class MusicUtil:
         for min_index in range(0, len(track_ids), recommendation_limit):
             max_index = min(min_index+recommendation_limit, len(track_ids))
             recommendations = self.spotify_client_wrapper.get_recommendations_based_on_tracks(
-                track_ids[min_index:max_index],
-                min_audio_features,
-                max_audio_features
-            )
+                track_ids[min_index:max_index], recommendation_criteria)
             for track in recommendations:
                 recommendations_with_count[track] += 1
         return recommendations_with_count

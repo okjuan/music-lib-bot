@@ -1,8 +1,10 @@
 class PlaylistUpdater:
-    def __init__(self, playlist, my_music_lib, music_util):
+    def __init__(self, playlist, my_music_lib, music_util, spotify_client, info_logger):
         self.playlist = playlist
         self.my_music_lib = my_music_lib
         self.music_util = music_util
+        self.spotify_client = spotify_client
+        self.info_logger = info_logger
         self.playlist_genres = None
 
     def add_tracks_from_my_saved_albums_with_same_genres(self, get_num_tracks_per_album, get_num_albums_to_fetch):
@@ -28,6 +30,24 @@ class PlaylistUpdater:
 
         print(f"Found {len(track_uris)} tracks with similar genres to those already in your playlist..")
         self.my_music_lib.add_tracks_in_random_positions(track_uris)
+
+    def add_recommended_songs(self, playlist, recommendation_criteria, get_num_songs_to_add):
+        """
+        Params:
+            playlist (Playlist).
+            recommendation_criteria (RecommendationCriteria).
+            get_num_songs_to_add (lambda): takes 0 params, returns int.
+        """
+        self.info_logger("Getting recommendations..")
+        recommended_tracks = self.music_util.get_recommendations_based_on_tracks(
+            [track.id for track in playlist.tracks],
+            get_num_songs_to_add(),
+            recommendation_criteria,
+        )
+        self.info_logger(f"Got {len(recommended_tracks)} recommended tracks")
+        self.info_logger("Adding tracks to the playlist..")
+        self.spotify_client.add_tracks(
+            playlist.id, [track.id for track in recommended_tracks])
 
     def _get_tracks_from_my_saved_albums_with_same_genres(self, get_num_tracks_per_album, get_num_albums_to_fetch):
         """Skips albums that are already present in the playlist."""
