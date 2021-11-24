@@ -8,7 +8,7 @@ from app.lib.music_util import MusicUtil
 class TestMusicUtil(unittest.TestCase):
     def setUp(self):
         self.mock_spotify_client = MagicMock()
-        self.music_util = MusicUtil(self.mock_spotify_client)
+        self.music_util = MusicUtil(self.mock_spotify_client, MagicMock())
 
     def test_populate_popularity_if_absent__no_popularity__populates(self):
         tracks_without_popularity = [mock_track(popularity=None)]

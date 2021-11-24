@@ -6,7 +6,8 @@ from app.lib.my_music_lib import MyMusicLib
 
 class TestMyMusicLib(unittest.TestCase):
     def setUp(self):
-        self.my_music_lib = MyMusicLib(MagicMock(), MagicMock())
+        self.my_music_lib = MyMusicLib(
+            MagicMock(), MagicMock(), MagicMock())
 
     @unittest.skip("ported from old test")
     def test_get_playlist(self):

@@ -12,8 +12,8 @@ from app.lib.spotify_client_wrapper import SpotifyClientWrapper
 
 def main():
     spotify_client_wrapper = SpotifyClientWrapper()
-    music_util = MusicUtil(spotify_client_wrapper)
-    my_music_lib = MyMusicLib(spotify_client_wrapper, music_util)
+    music_util = MusicUtil(spotify_client_wrapper, print)
+    my_music_lib = MyMusicLib(spotify_client_wrapper, music_util, print)
     playlist_stats = PlaylistStats(my_music_lib, music_util, print)
 
     target_playlist = "kremwerk"

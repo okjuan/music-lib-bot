@@ -274,9 +274,9 @@ class MusicLibBot:
 
 def main():
     spotify_client_wrapper = SpotifyClientWrapper()
-    music_util = MusicUtil(spotify_client_wrapper)
-    my_music_lib = MyMusicLib(spotify_client_wrapper, music_util)
     ui = ConsoleUI()
+    music_util = MusicUtil(spotify_client_wrapper, ui.tell_user)
+    my_music_lib = MyMusicLib(spotify_client_wrapper, music_util, ui.tell_user)
     MusicLibBot(spotify_client_wrapper, my_music_lib, music_util, ui).run()
 
 

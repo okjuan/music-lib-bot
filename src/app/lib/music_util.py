@@ -5,8 +5,9 @@ from app.models.recommendation_criteria import RecommendationCriteria
 
 
 class MusicUtil:
-    def __init__(self, spotify_client_wrapper):
+    def __init__(self, spotify_client_wrapper, info_logger):
         self.spotify_client_wrapper = spotify_client_wrapper
+        self.info_logger = info_logger
 
     def _add_artist_genres(self, albums):
         """
@@ -333,13 +334,13 @@ class MusicUtil:
         """
         recommendations_with_count = self._get_recommendations_based_on_tracks_in_batches(
             track_ids, recommendation_criteria)
-        print(f"Found {len(recommendations_with_count)} recommendations.")
+        self.info_logger(f"Found {len(recommendations_with_count)} recommendations.")
         most_recommended_tracks = sorted(
             list(recommendations_with_count.items()),
             key=lambda track_count_tuple: track_count_tuple[1],
             reverse=True,
         )
-        print(f"Whittled down to {len(recommendations_with_count)} recommendations.")
+        self.info_logger(f"Whittled down to {len(recommendations_with_count)} recommendations.")
         num_recommendations = min(num_recommendations, len(most_recommended_tracks))
         return [
             track_count_tuple[0]

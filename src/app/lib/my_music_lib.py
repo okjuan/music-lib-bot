@@ -6,9 +6,10 @@ MAX_ALBUMS_TO_FETCH = 1000
 
 
 class MyMusicLib:
-    def __init__(self, spotify_client_wrapper, music_util):
+    def __init__(self, spotify_client_wrapper, music_util, info_logger):
         self.spotify_client_wrapper = spotify_client_wrapper
         self.music_util = music_util
+        self.info_logger = info_logger
 
     def get_playlist_by_name(self, name):
         return self.spotify_client_wrapper.get_current_user_playlist_by_name(name)
@@ -31,10 +32,10 @@ class MyMusicLib:
         if len(albums) == 0:
             return []
 
-        print(f"Grouping {len(albums)} albums...")
+        self.info_logger(f"Grouping {len(albums)} albums...")
         albums_by_genre = self.music_util.group_albums_by_genre(albums, min_genres_per_group)
 
-        print(f"Matched into {len(albums_by_genre)} groups...")
+        self.info_logger(f"Matched into {len(albums_by_genre)} groups...")
         return albums_by_genre
 
     def get_all_my_albums_grouped_by_genre(self, min_genres_per_group):
@@ -53,8 +54,8 @@ class MyMusicLib:
 
     def add_tracks_in_random_positions(self, playlist, track_uris):
         if len(track_uris) == 0:
-            print("Oops, no tracks given, so I can't add them to your playlist.")
-        print(f"Adding {len(track_uris)} randomly throughout your playlist: '{playlist.name}'")
+            self.info_logger("Oops, no tracks given, so I can't add them to your playlist.")
+        self.info_logger(f"Adding {len(track_uris)} randomly throughout your playlist: '{playlist.name}'")
         for track in track_uris:
             random_position = randint(1, len(playlist.tracks)) if len(playlist.tracks) > 0 else 1
             self.add_track_to_playlist_at_position(
