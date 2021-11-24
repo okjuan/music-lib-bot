@@ -333,7 +333,6 @@ class MusicUtil:
         """
         # TODO: avoid adding dups to playlist
         # TODO: de-dup recommendations
-        # TODO: popularity
         recommendations_with_count = self._get_recommendations_based_on_tracks_in_batches(
             track_ids, recommendation_criteria)
         print(f"Found {len(recommendations_with_count)} recommendations.")

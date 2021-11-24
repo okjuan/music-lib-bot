@@ -28,7 +28,12 @@ class PlaylistStats:
         return playlist
 
     def get_popularity_representative_range(self, playlist):
-        return 0, 100
+        self.music_util.populate_popularity_if_absent(playlist.tracks)
+        popularities = [
+            track.popularity
+            for track in playlist.tracks
+        ]
+        return min(popularities), max(popularities)
 
     def get_audio_feature_representative_range(self, playlist):
         """
