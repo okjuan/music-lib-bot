@@ -331,8 +331,6 @@ class MusicUtil:
             num_recommendations (int): max is 100.
             recommendation_criteria (RecommendationCriteria).
         """
-        # TODO: avoid adding dups to playlist
-        # TODO: de-dup recommendations
         recommendations_with_count = self._get_recommendations_based_on_tracks_in_batches(
             track_ids, recommendation_criteria)
         print(f"Found {len(recommendations_with_count)} recommendations.")
