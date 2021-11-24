@@ -112,7 +112,7 @@ class MusicUtil:
 
     def get_most_popular_tracks(self, album, num_tracks):
         # get track popularity all together in one call
-        all_tracks = self._get_track_popularity_if_absent(album.tracks)
+        self.populate_popularity_if_absent(album.tracks)
         all_tracks = self.get_tracks_most_popular_first(album)
         return all_tracks[:min(num_tracks, len(all_tracks))]
 
@@ -128,24 +128,27 @@ class MusicUtil:
         return self.get_most_popular_first(album.tracks)
 
     def get_most_popular_first(self, tracks):
-        tracks = self._get_track_popularity_if_absent(tracks)
+        self.populate_popularity_if_absent(tracks)
         return sorted(
             tracks,
             key=lambda track: track.popularity,
             reverse=True
         )
 
-    def _get_track_popularity_if_absent(self, tracks):
-        tracks_with_popularity, track_uris_popularity_missing = [], []
-        for track in tracks:
+    def populate_popularity_if_absent(self, tracks):
+        track_uris_popularity_missing, track_index_by_uri = [], {}
+        for index, track in enumerate(tracks):
+            track_index_by_uri[track.uri] = index
             if track.popularity is None:
                 track_uris_popularity_missing.append(track.uri)
-            else:
-                tracks_with_popularity.append(track)
-        if len(track_uris_popularity_missing) > 0:
-            tracks_with_popularity.extend(
-                self.spotify_client_wrapper.get_tracks(track_uris_popularity_missing))
-        return tracks_with_popularity
+        if len(track_uris_popularity_missing) == 0:
+            return
+
+        tracks_w_popularity = self.spotify_client_wrapper.get_tracks(
+            track_uris_popularity_missing)
+        for track in tracks_w_popularity:
+            index = track_index_by_uri[track.uri]
+            tracks[index].popularity = track.popularity
 
     def get_most_popular_artist(self, artists):
         """

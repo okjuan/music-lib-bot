@@ -10,6 +10,69 @@ class TestMusicUtil(unittest.TestCase):
         self.mock_spotify_client = MagicMock()
         self.music_util = MusicUtil(self.mock_spotify_client)
 
+    def test_populate_popularity_if_absent__no_popularity__populates(self):
+        tracks_without_popularity = [mock_track(popularity=None)]
+        track_with_popularity = [mock_track(popularity=1)]
+        self.mock_spotify_client.get_tracks = MagicMock(
+            return_value=track_with_popularity)
+
+        self.music_util.populate_popularity_if_absent(tracks_without_popularity)
+
+        self.assertIsNotNone(tracks_without_popularity[0].popularity)
+        self.assertEqual(1, tracks_without_popularity[0].popularity)
+
+    def test_populate_popularity_if_absent__some_no_popularity__populates(self):
+        input_tracks = [
+            mock_track(uri="popularity=None", popularity=None),
+            mock_track(uri="popularity is set", popularity=1)
+        ]
+        track_with_popularity = [
+            mock_track(uri="popularity=None", popularity=2),
+        ]
+        self.mock_spotify_client.get_tracks = MagicMock(
+            return_value=track_with_popularity)
+
+        self.music_util.populate_popularity_if_absent(input_tracks)
+
+        self.assertIsNotNone(input_tracks[0].popularity)
+        self.assertEqual(2, len(input_tracks))
+        self.assertEqual(2, input_tracks[0].popularity)
+        self.assertEqual("popularity=None", input_tracks[0].uri)
+        self.assertEqual(1, input_tracks[1].popularity)
+        self.assertEqual("popularity is set", input_tracks[1].uri)
+
+    def test_populate_popularity_if_absent__already_contains_popularity__no_change(self):
+        input_tracks = [
+            mock_track(uri="popularity is 2", popularity=2),
+            mock_track(uri="popularity is 1", popularity=1)
+        ]
+        self.mock_spotify_client.get_tracks = MagicMock(
+            return_value=[])
+
+        self.music_util.populate_popularity_if_absent(input_tracks)
+
+        self.assertIsNotNone(input_tracks[0].popularity)
+        self.assertEqual(2, len(input_tracks))
+        self.assertEqual(2, input_tracks[0].popularity)
+        self.assertEqual("popularity is 2", input_tracks[0].uri)
+        self.assertEqual(1, input_tracks[1].popularity)
+        self.assertEqual("popularity is 1", input_tracks[1].uri)
+
+    def test_populate_popularity_if_absent__some_no_popularity__only_fetches_data_for_those(self):
+        input_tracks = [
+            mock_track(uri="popularity=None", popularity=None),
+            mock_track(uri="popularity is set", popularity=1),
+            mock_track(uri="popularity=None #2", popularity=None),
+        ]
+        self.mock_spotify_client.get_tracks = MagicMock(
+            return_value=[])
+
+        self.music_util.populate_popularity_if_absent(input_tracks)
+
+        self.mock_spotify_client.get_tracks.assert_called_once()
+        self.mock_spotify_client.get_tracks.assert_called_once_with(
+            ["popularity=None", "popularity=None #2"])
+
     def test_get_artist_ids(self):
         mock_artists = [mock_artist(id="mock-id-123")]
         mock_tracks = [mock_track(artists=mock_artists)]
