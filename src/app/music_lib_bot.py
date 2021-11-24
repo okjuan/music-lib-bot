@@ -198,7 +198,7 @@ class MusicLibBot:
             if playlist_criteria(album_group['albums'])
         ]
 
-    def interatively_create_playlists_from_my_albums_with_matching_genres(self):
+    def interactively_create_playlists_from_my_albums_with_matching_genres(self):
         albums_by_genre = self.get_albums_by_genre()
         if len(albums_by_genre) == 0:
             self.ui.tell_user("Couldn't match the albums into groups.. the genres didn't match :/")
@@ -246,7 +246,7 @@ class MusicLibBot:
         functions = {
             "a": self._get_create_playlist_from_an_artists_discography_callback(),
             "b": self._get_create_playlist_based_on_existing_playlist_callback(),
-            "c": self.interatively_create_playlists_from_my_albums_with_matching_genres,
+            "c": self.interactively_create_playlists_from_my_albums_with_matching_genres,
             "d": self.run_playlist_updater,
         }
         menu = [
@@ -258,7 +258,7 @@ class MusicLibBot:
             "'c' - (interactive) from albums in your library that have matching genres.",
             "---",
             "Update a playlist:",
-            "'d' - Add tracks to my playlist from my saved albums with similar genres",
+            "'d' - Add tracks from my saved albums with similar genres",
             "---",
             "'q' - quit",
         ]
