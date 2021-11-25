@@ -69,6 +69,8 @@ class PlaylistUpdater:
 
         matching_albums_in_your_library = self._get_my_albums_with_same_genres(genres, get_num_albums_to_fetch)
         self.info_logger(f"Found {len(matching_albums_in_your_library)} albums in your library that exactly match genres: {', '.join(genres)}")
+        if len(matching_albums_in_your_library) == 0:
+            return []
 
         return self._get_most_popular_tracks_if_albums_not_already_in_playlist(
             matching_albums_in_your_library, get_num_tracks_per_album)

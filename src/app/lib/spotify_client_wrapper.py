@@ -7,6 +7,8 @@ from app.models.artist import Artist
 from app.models.playlist import Playlist
 from app.models.track import Track
 
+
+API_BATCH_SIZE = 20
 SPOTIFY_ALBUMS_API_LIMIT = 50
 SPOTIFY_ADD_TRACKS_TO_PLAYLIST_API_LIMIT = 100
 SPOTIFY_SCOPES = "user-library-read,playlist-modify-private,playlist-modify-private,playlist-read-private,playlist-read-collaborative"
@@ -127,7 +129,12 @@ class SpotifyClientWrapper:
         ]
 
     def _fetch_in_batches(self, item_ids, fetch_items):
-        batch_size = min(20, len(item_ids))
+        """
+        Params:
+            item_ids ([str]): sole argument for fetch_items.
+            fetch_items (func): takes [str], returns list of items.
+        """
+        batch_size = min(API_BATCH_SIZE, len(item_ids))
         fetched_items = []
         for batch_start_index in range(0, len(item_ids), batch_size):
             batch_end_index = min(batch_start_index+batch_size, len(item_ids))
@@ -165,10 +172,18 @@ class SpotifyClientWrapper:
         return self.client.me()['id']
 
     def get_audio_features_by_track_id(self, track_ids):
+        def audio_feature_fetcher(track_ids):
+            audio_features = self.client.audio_features(track_ids)
+            return [
+                (track_audio_features['id'], track_audio_features)
+                for track_audio_features in audio_features
+            ]
+        all_audio_features = self._fetch_in_batches(
+            track_ids, audio_feature_fetcher)
         return {
-            track_audio_features["id"]: AudioFeatures.from_spotify_audio_features(
-                track_audio_features)
-            for track_audio_features in self.client.audio_features(track_ids)
+            track_id: AudioFeatures.from_spotify_audio_features(
+                audio_features)
+            for track_id, audio_features in all_audio_features
         }
 
     def get_recommendations_based_on_tracks(self, track_ids, recommendation_criteria):
