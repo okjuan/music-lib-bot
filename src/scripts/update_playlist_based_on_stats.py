@@ -26,18 +26,16 @@ def main():
     print(f"Got it!")
 
     playlist_updater = PlaylistUpdater(
-        playlist, my_music_lib, music_util, spotify_client_wrapper, print)
+        playlist,
+        my_music_lib,
+        music_util,
+        spotify_client_wrapper,
+        print,
+        playlist_stats,
+    )
 
-    print("Preparing recommendation criteria..")
-    audio_features_min, audio_features_max = playlist_stats.get_audio_feature_representative_range(
-        playlist)
-    popularity_min, popularity_max = playlist_stats.get_popularity_representative_range(
-        playlist)
-    recommendation_criteria = music_util.make_recommendation_criteria(
-        audio_features_min, audio_features_max, popularity_min, popularity_max)
-
-    playlist_updater.add_recommended_songs(
-        playlist, recommendation_criteria, lambda: 10)
+    playlist_updater.add_recommended_songs_with_similar_attributes(
+        lambda: 10)
 
 
 if __name__ == "__main__":
