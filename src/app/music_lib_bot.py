@@ -1,12 +1,12 @@
 # allows me to run:
 # $ python app/music_lib_bot.py
 import sys
-
 sys.path.extend(['.', '../'])
 
 from app.lib.music_util import MusicUtil
 from app.lib.my_music_lib import MyMusicLib
 from app.lib.playlist_creator import PlaylistCreator
+from app.lib.playlist_stats import PlaylistStats
 from app.lib.playlist_updater import PlaylistUpdater
 from app.lib.spotify_client_wrapper import SpotifyClientWrapper
 from app.lib.ui import ConsoleUI
@@ -21,6 +21,9 @@ DEFAULT_NUM_ALBUMS_TO_FETCH = 50
 MIN_PLAYLIST_SUGGESTIONS_TO_SHOW = 10
 MIN_NUM_TRACKS_PER_ALBUM = 1
 MAX_NUM_TRACKS_PER_ALBUM = 10
+DEFAULT_NUM_TRACKS_TO_ADD = 10
+MIN_NUM_TRACKS_TO_ADD = 1
+MAX_NUM_TRACKS_TO_ADD = 10
 
 
 class MusicLibBot:
@@ -35,34 +38,57 @@ class MusicLibBot:
             self.music_util,
             self.ui.tell_user,
         )
+        self.playlist_stats = PlaylistStats(
+            self.my_music_lib,
+            self.music_util,
+            self.ui.tell_user,
+        )
 
-    def run_playlist_updater(self):
-        while True:
-            playlist = self.get_playlist_from_user()
-            playlist_updater = PlaylistUpdater(
-                playlist,
-                self.my_music_lib,
-                self.music_util,
-            )
-            playlist_updater.add_tracks_from_my_saved_albums_with_similar_genres(
-                self.get_num_tracks_per_album, self.get_num_albums_to_fetch)
+    def run_add_tracks_from_my_saved_albums_with_similar_genres(self):
+        playlist = self.get_playlist_from_user(
+            self.my_music_lib.get_playlist_by_name)
+        playlist_updater = PlaylistUpdater(
+            playlist,
+            self.my_music_lib,
+            self.music_util,
+            self.spotify_client,
+            self.ui.tell_user,
+            self.playlist_stats,
+        )
+        playlist_updater.add_tracks_from_my_saved_albums_with_similar_genres(
+            self.get_num_tracks_per_album, self.get_num_albums_to_fetch)
 
-            if not self.user_wants_to_continue():
-                break
-        self.ui.tell_user(f"Thanks for using Playlist Updater, catch ya next time.")
+    def run_add_recommended_tracks_with_similar_attributes(self):
+        playlist = self.get_playlist_from_user(
+            self.playlist_stats.get_playlist_with_track_audio_features)
+        playlist_updater = PlaylistUpdater(
+            playlist,
+            self.my_music_lib,
+            self.music_util,
+            self.spotify_client,
+            self.ui.tell_user,
+            self.playlist_stats,
+        )
+        playlist_updater.add_recommended_songs_with_similar_attributes(
+            self.get_num_tracks_to_add)
 
-    def user_wants_to_continue(self):
-        return self.ui.get_yes_or_no("Make more changes? y or no - default is 'n'", False)
-
-    def get_playlist_from_user(self):
+    def get_playlist_from_user(self, get_playlist_by_name):
         playlist = None
         while playlist is None:
             playlist_name = self.ui.get_non_empty_string(
                 "What's the name of your playlist?")
-            playlist = self.my_music_lib.get_playlist_by_name(playlist_name)
+            playlist = get_playlist_by_name(playlist_name)
             if playlist is None:
                 self.ui.tell_user(f"I couldn't find '{playlist_name}' in your playlists.")
         return playlist
+
+    def get_num_tracks_to_add(self):
+        return self.ui.get_int_from_range(
+            f"# of tracks to add to playlist? default is {DEFAULT_NUM_TRACKS_TO_ADD}",
+            DEFAULT_NUM_TRACKS_TO_ADD,
+            MIN_NUM_TRACKS_TO_ADD,
+            MAX_NUM_TRACKS_TO_ADD
+        )
 
     def get_num_tracks_per_album(self):
         return self.ui.get_int_from_range(
@@ -140,12 +166,6 @@ class MusicLibBot:
 
     def _get_indices_as_list(self, list_):
         return list(range(len(list_)))
-
-    def get_num_tracks_per_album(self):
-        return self.ui.get_int(
-            f"How many tracks per album per playlist? default is {DEFAULT_NUM_TRACKS_PER_ALBUM}",
-            DEFAULT_NUM_TRACKS_PER_ALBUM
-        )
 
     def _get_create_playlist_from_an_artists_discography_callback(self):
         get_num_tracks_per_album = lambda: self.ui.get_int_from_options(
@@ -247,7 +267,8 @@ class MusicLibBot:
             "a": self._get_create_playlist_from_an_artists_discography_callback(),
             "b": self._get_create_playlist_based_on_existing_playlist_callback(),
             "c": self.interactively_create_playlists_from_my_albums_with_matching_genres,
-            "d": self.run_playlist_updater,
+            "d": self.run_add_tracks_from_my_saved_albums_with_similar_genres,
+            "e": self.run_add_recommended_tracks_with_similar_attributes,
         }
         menu = [
             "What d'ya wanna do? Pick an option:",
@@ -259,10 +280,11 @@ class MusicLibBot:
             "---",
             "Update a playlist:",
             "'d' - Add tracks from my saved albums with similar genres",
+            "'e' - Add recommended tracks with similar attributes",
             "---",
             "'q' - quit",
         ]
-        options = ["a", "b", "c", "d", "q"]
+        options = ["a", "b", "c", "d", "e", "q"]
         while True:
             selection = self.ui.get_string_from_options(
                 "\n\t".join(menu), options)

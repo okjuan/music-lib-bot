@@ -59,4 +59,4 @@ class MyMusicLib:
         for track in track_uris:
             random_position = randint(1, len(playlist.tracks)) if len(playlist.tracks) > 0 else 1
             self.add_track_to_playlist_at_position(
-                self.playlist.id, track, random_position)
+                playlist.id, track, random_position)

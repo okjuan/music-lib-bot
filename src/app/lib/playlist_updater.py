@@ -18,7 +18,7 @@ class PlaylistUpdater:
             return
 
         self.info_logger(f"Found {len(track_uris)} tracks with exact same genres as those already in your playlist..")
-        self.my_music_lib.add_tracks_in_random_positions(track_uris)
+        self.my_music_lib.add_tracks_in_random_positions(self.playlist, track_uris)
 
     def add_tracks_from_my_saved_albums_with_similar_genres(self, get_num_tracks_per_album, get_num_albums_to_fetch):
         "Less strict version of add_tracks_from_my_saved_albums_with_same_genres"
@@ -30,7 +30,7 @@ class PlaylistUpdater:
             return
 
         self.info_logger(f"Found {len(track_uris)} tracks with similar genres to those already in your playlist..")
-        self.my_music_lib.add_tracks_in_random_positions(track_uris)
+        self.my_music_lib.add_tracks_in_random_positions(self.playlist, track_uris)
 
     def add_recommended_songs_with_similar_attributes(self, get_num_songs_to_add):
         audio_features_min, audio_features_max = self.playlist_stats.get_audio_feature_representative_range(
@@ -89,12 +89,13 @@ class PlaylistUpdater:
 
     def _get_most_popular_tracks_if_albums_not_already_in_playlist(self, matching_albums_in_your_library, get_num_tracks_per_album):
         ids_of_albums_in_playlist, tracks = self.music_util.get_album_ids(self.playlist.tracks), []
+        num_tracks_per_album = get_num_tracks_per_album()
         for album in matching_albums_in_your_library:
             if album.id in ids_of_albums_in_playlist:
                 self.info_logger(f"Oh! Skipping album '{album.name}' because it's already in the playlist.")
             else:
                 most_popular_tracks = self.music_util.get_most_popular_tracks(
-                    album, get_num_tracks_per_album())
+                    album, num_tracks_per_album)
                 tracks.extend([track.uri for track in most_popular_tracks])
         return tracks
 
