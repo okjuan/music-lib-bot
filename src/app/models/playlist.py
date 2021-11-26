@@ -6,6 +6,7 @@ class Playlist:
         self.name = name
         self.description = description
         self.tracks = tracks
+        self.num_tracks = len(self.tracks)
 
     def from_spotify_playlist(spotify_playlist):
         return Playlist(
