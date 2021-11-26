@@ -6,8 +6,8 @@ MIN_KEY_VALUE = 0
 MAX_KEY_VALUE = 11
 MIN_MODE_VALUE = 0
 MAX_MODE_VALUE = 1
-MIN_TIME_SIGNATURE = 1
-MAX_TIME_SIGNATURE = 12
+MIN_TIME_SIGNATURE = 0
+MAX_TIME_SIGNATURE = 11
 
 class PlaylistStats:
     def __init__(self, my_music_lib, music_util, info_logger):
