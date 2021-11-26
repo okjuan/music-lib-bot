@@ -1,4 +1,4 @@
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 from re import match
 
 from app.models.recommendation_criteria import RecommendationCriteria
@@ -331,20 +331,27 @@ class MusicUtil:
             tracks_ids ([str]): max length is 5.
             num_recommendations (int): max is 100.
             recommendation_criteria (RecommendationCriteria).
+
+        Returns:
+            ([Track]):
         """
         recommendations_with_count = self._get_recommendations_based_on_tracks_in_batches(
             track_ids, recommendation_criteria)
         self.info_logger(f"Found {len(recommendations_with_count)} recommendations.")
+        RecommendedTrack = namedtuple("RecommendedTrack", ["track", "num_times_recommended"])
         most_recommended_tracks = sorted(
-            list(recommendations_with_count.items()),
-            key=lambda track_count_tuple: track_count_tuple[1],
+            [
+                RecommendedTrack(track_count_tuple[0], track_count_tuple[1])
+                for track_count_tuple in recommendations_with_count.items()
+            ],
+            key=lambda recommendation: recommendation.num_times_recommended,
             reverse=True,
         )
-        self.info_logger(f"Whittled down to {len(recommendations_with_count)} recommendations.")
         num_recommendations = min(num_recommendations, len(most_recommended_tracks))
+        self.info_logger(f"Whittled down to {num_recommendations} recommendations.")
         return [
-            track_count_tuple[0]
-            for track_count_tuple in most_recommended_tracks[:num_recommendations]
+            recommendation.track
+            for recommendation in most_recommended_tracks[:num_recommendations]
         ]
 
     def make_recommendation_criteria(self, audio_features_min, audio_features_max, popularity_min, popularity_max):
