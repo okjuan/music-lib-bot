@@ -1,5 +1,6 @@
 from app.models.album import Album
 from app.models.artist import Artist
+from app.models.audio_features import AudioFeatures
 from app.models.playlist import Playlist
 from app.models.track import Track
 from app.models.recommendation_criteria import RecommendationCriteria
@@ -10,7 +11,8 @@ def mock_album(id="", genres=[], artists=[], name=""):
 def mock_artist(name="", id="", uri="", popularity=0, genres=[], albums=None):
     return Artist(name, id, uri, popularity, genres, albums)
 
-def mock_track(name="", id_="", uri="", album=mock_album(), artists=[mock_artist()], disc_number=1, duration_ms=0, popularity=0, track_number=1):
+def mock_track(name="", id_="", uri="", album=mock_album(), artists=[mock_artist()], disc_number=1, duration_ms=0, popularity=0, track_number=1, audio_features=None):
+    audio_features = mock_audio_features() if audio_features is None else audio_features
     return Track(
         name,
         id,
@@ -21,6 +23,7 @@ def mock_track(name="", id_="", uri="", album=mock_album(), artists=[mock_artist
         duration_ms,
         popularity,
         track_number,
+        audio_features,
     )
 
 def mock_playlist(id_="", name="", description="", tracks=[]):
@@ -42,4 +45,21 @@ def mock_recommendation_criteria(danceability_range=[0,1], energy_range=[0,1], l
         key_range,
         mode_range,
         time_signature_range
+    )
+
+def mock_audio_features(danceability=1, energy=1, loudness=1, speechiness=1, acousticness=1, instrumentalness=1, liveness=1, valence=1, tempo=0, duration_ms=0, popularity=0, key=0, mode=1, time_signature=0):
+    return AudioFeatures(
+        danceability,
+        energy,
+        loudness,
+        speechiness,
+        acousticness,
+        instrumentalness,
+        liveness,
+        valence,
+        tempo,
+        duration_ms,
+        key,
+        mode,
+        time_signature
     )

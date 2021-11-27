@@ -8,6 +8,15 @@ MIN_MODE_VALUE = 0
 MAX_MODE_VALUE = 1
 MIN_TIME_SIGNATURE = 0
 MAX_TIME_SIGNATURE = 11
+MIN_TEMPO = 0
+MAX_TEMPO = 500
+MIN_DURATION_MS = 0
+MAX_DURATION_MS = 900000
+MIN_LOUDNESS = -60
+MAX_LOUDNESS = 0
+MIN_PERCENTAGE = 0
+MAX_PERCENTAGE = 1
+
 
 class PlaylistStats:
     def __init__(self, my_music_lib, music_util, info_logger):
@@ -40,27 +49,63 @@ class PlaylistStats:
         Params:
             playlist (Playlist): with track.audio_features populated for each track.
                 Tip: use self.get_playlist_with_track_audio_features first.
+
+        Returns:
+            (2-tuple): (AudioFeatures, AudioFeatures) min, max.
         """
+        if playlist.num_tracks == 1:
+            return (self._get_min_audio_features(), self._get_max_audio_features())
+
         danceability_min, danceability_max = self._get_audio_feature_min_and_max(
-            playlist.tracks, lambda track: track.audio_features.danceability)
+            [track.audio_features.danceability for track in playlist.tracks],
+            MIN_PERCENTAGE,
+            MAX_PERCENTAGE,
+        )
         energy_min, energy_max = self._get_audio_feature_min_and_max(
-            playlist.tracks, lambda track: track.audio_features.energy)
+            [track.audio_features.energy for track in playlist.tracks],
+            MIN_PERCENTAGE,
+            MAX_PERCENTAGE,
+        )
         loudness_min, loudness_max = self._get_audio_feature_min_and_max(
-            playlist.tracks, lambda track: track.audio_features.loudness)
+            [track.audio_features.loudness for track in playlist.tracks],
+            MIN_LOUDNESS,
+            MAX_LOUDNESS,
+        )
         speechiness_min, speechiness_max = self._get_audio_feature_min_and_max(
-            playlist.tracks, lambda track: track.audio_features.speechiness)
+            [track.audio_features.speechiness for track in playlist.tracks],
+            MIN_PERCENTAGE,
+            MAX_PERCENTAGE,
+        )
         acousticness_min, acousticness_max = self._get_audio_feature_min_and_max(
-            playlist.tracks, lambda track: track.audio_features.acousticness)
+            [track.audio_features.acousticness for track in playlist.tracks],
+            MIN_PERCENTAGE,
+            MAX_PERCENTAGE,
+        )
         instrumentalness_min, instrumentalness_max = self._get_audio_feature_min_and_max(
-            playlist.tracks, lambda track: track.audio_features.instrumentalness)
+            [track.audio_features.instrumentalness for track in playlist.tracks],
+            MIN_PERCENTAGE,
+            MAX_PERCENTAGE,
+        )
         liveness_min, liveness_max = self._get_audio_feature_min_and_max(
-            playlist.tracks, lambda track: track.audio_features.liveness)
+            [track.audio_features.valence for track in playlist.tracks],
+            MIN_PERCENTAGE,
+            MAX_PERCENTAGE,
+        )
         valence_min, valence_max = self._get_audio_feature_min_and_max(
-            playlist.tracks, lambda track: track.audio_features.valence)
+            [track.audio_features.valence for track in playlist.tracks],
+            MIN_PERCENTAGE,
+            MAX_PERCENTAGE,
+        )
         tempo_min, tempo_max = self._get_audio_feature_min_and_max(
-            playlist.tracks, lambda track: track.audio_features.tempo)
+            [track.audio_features.tempo for track in playlist.tracks],
+            MIN_TEMPO,
+            MAX_TEMPO,
+        )
         duration_ms_min, duration_ms_max = self._get_audio_feature_min_and_max(
-            playlist.tracks, lambda track: track.audio_features.duration_ms)
+            [track.audio_features.duration_ms for track in playlist.tracks],
+            MIN_DURATION_MS,
+            MAX_DURATION_MS,
+        )
         return (
             AudioFeatures(
                 danceability_min,
@@ -94,10 +139,21 @@ class PlaylistStats:
             ),
         )
 
-    def _get_audio_feature_min_and_max(self, tracks, get_audio_feature):
-        return self._get_middle_quantile_min_and_max(
-            [get_audio_feature(track) for track in tracks])
+    def _get_audio_feature_min_and_max(self, track_audio_features, min, max):
+        lower_bound, upper_bound = self._get_middle_quantile_min_and_max(
+            track_audio_features)
+        lower_bound = min if not (lower_bound >= min and max <= max) else lower_bound
+        upper_bound = max if not (upper_bound >= min and upper_bound <= max) else upper_bound
+        return lower_bound, upper_bound
 
     def _get_middle_quantile_min_and_max(self, values):
         value_quantiles = quantiles(values)
         return value_quantiles[0], value_quantiles[-1]
+
+    def _get_min_audio_features(self):
+        return AudioFeatures(
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
+    def _get_max_audio_features(self):
+        return AudioFeatures(
+            1, 1, 11, 1, 1, 1, 1, 1, 1, 11, 300, 900000, 11)
