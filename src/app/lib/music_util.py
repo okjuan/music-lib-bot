@@ -375,7 +375,7 @@ class MusicUtil:
             recommendation_criteria (RecommendationCriteria).
 
         Returns:
-            recommendations_with_count (dict):
+            recommendations_with_count (dict): key (Track), value (int) count.
         """
         recommendation_limit = self.spotify_client_wrapper.get_recommendation_seed_limit()
         recommendations_with_count = defaultdict(int)

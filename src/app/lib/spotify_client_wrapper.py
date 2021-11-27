@@ -172,6 +172,10 @@ class SpotifyClientWrapper:
         return self.client.me()['id']
 
     def get_audio_features_by_track_id(self, track_ids):
+        """
+        Returns:
+            (dict): key (str) track ID, value (AudioFeatures).
+        """
         def audio_feature_fetcher(track_ids):
             audio_features = self.client.audio_features(track_ids)
             return [
@@ -191,6 +195,9 @@ class SpotifyClientWrapper:
         Params:
             tracks_ids ([str]): max length is 5.
             recommendation_criteria (RecommendationCriteria).
+
+        Returns:
+            ([Track]).
         """
         if len(track_ids) > RECOMMENDATION_SEED_LIMIT:
             track_ids = track_ids[:RECOMMENDATION_SEED_LIMIT]
