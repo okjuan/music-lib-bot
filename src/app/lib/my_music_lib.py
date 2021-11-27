@@ -60,3 +60,15 @@ class MyMusicLib:
             random_position = randint(1, playlist.num_tracks) if playlist.num_tracks > 0 else 1
             self.add_track_to_playlist_at_position(
                 playlist.id, track, random_position)
+
+    def get_playlist_with_track_audio_features(self, playlist_name):
+        """
+        Params:
+            playlist_name (str).
+
+        Returns:
+            playlist (Playlist): with tracks that have audio_features populated.
+        """
+        playlist = self.get_playlist_by_name(playlist_name)
+        self.music_util.populate_track_audio_features(playlist)
+        return playlist

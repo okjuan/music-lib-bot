@@ -24,18 +24,6 @@ class PlaylistStats:
         self.music_util = music_util
         self.info_logger = info_logger
 
-    def get_playlist_with_track_audio_features(self, playlist_name):
-        """
-        Params:
-            playlist_name (str).
-
-        Returns:
-            playlist (Playlist): with tracks that have audio_features populated.
-        """
-        playlist = self.my_music_lib.get_playlist_by_name(playlist_name)
-        self.music_util.populate_track_audio_features(playlist)
-        return playlist
-
     def get_popularity_representative_range(self, playlist):
         self.music_util.populate_popularity_if_absent(playlist.tracks)
         popularities = [
@@ -48,7 +36,7 @@ class PlaylistStats:
         """
         Params:
             playlist (Playlist): with track.audio_features populated for each track.
-                Tip: use self.get_playlist_with_track_audio_features first.
+                Tip: use my_music_lib.get_playlist_with_track_audio_features first.
 
         Returns:
             (2-tuple): (AudioFeatures, AudioFeatures) min, max.

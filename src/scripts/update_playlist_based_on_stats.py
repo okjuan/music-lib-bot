@@ -18,7 +18,7 @@ def main():
 
     target_playlist = "kremwerk"
     print(f"Getting playlist '{target_playlist}' along with audio feature data")
-    playlist = playlist_stats.get_playlist_with_track_audio_features(
+    playlist = my_music_lib.get_playlist_with_track_audio_features(
         target_playlist)
     if playlist is None:
         print(f"Couldn't find playlist '{target_playlist}'")

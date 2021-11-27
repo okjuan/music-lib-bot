@@ -60,7 +60,7 @@ class MusicLibBot:
 
     def run_add_recommended_tracks_with_similar_attributes(self):
         playlist = self.get_playlist_from_user(
-            self.playlist_stats.get_playlist_with_track_audio_features)
+            self.my_music_lib.get_playlist_with_track_audio_features)
         playlist_updater = PlaylistUpdater(
             playlist,
             self.my_music_lib,
