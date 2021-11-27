@@ -189,7 +189,8 @@ class MusicLibBot:
         )
         def callback():
             self.playlist_creator.create_playlist_based_on_existing_playlist(
-                self.get_playlist_from_user,
+                lambda: self.get_playlist_from_user(
+                    self.my_music_lib.get_playlist_by_name),
                 get_new_playlist_name,
                 get_num_tracks_per_album,
             )
