@@ -267,12 +267,15 @@ class MusicUtil:
             without_parenthesized_substring, "[", "]")
 
     def _strip_metadata_between(self, str_, opening_token, closing_token):
-        if opening_token in str_:
-            open_paren_idx = str_.index(closing_token)
-            if open_paren_idx > 0:
-                tokens = str_.split(opening_token)
-                str_ = tokens[0].strip()
-        return str_
+        stripped_str = str_[:]
+        if opening_token in stripped_str:
+            open_token_idx = stripped_str.index(opening_token)
+            stripped_str = stripped_str[:open_token_idx]
+        if closing_token in stripped_str:
+            closing_token_index = stripped_str.index(closing_token)
+            stripped_str = stripped_str[closing_token_index+1:]
+        stripped_str = stripped_str.strip()
+        return stripped_str if len(stripped_str) > 0 else str_
 
     def is_same_album_name(self, album_name_1, album_name_2):
         return self._normalize_album_name(album_name_1) == self._normalize_album_name(album_name_2)
