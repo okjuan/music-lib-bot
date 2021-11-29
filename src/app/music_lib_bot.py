@@ -215,7 +215,7 @@ class MusicLibBot:
             for artist in album.artists
         })
         return "\n\t".join([
-            f"{album_group['description']}",
+            f"Description: {album_group['description']}",
             f"Number of albums: {len(album_group['albums'])}",
             f"Artists: {', '.join(artists)}",
         ])
@@ -236,6 +236,13 @@ class MusicLibBot:
         ).launch_interactive_picker()
 
     def run(self):
+        options = {
+            "a": "from an artist's discography",
+            "b": "from a playlist full of albums.",
+            "c": "(interactive) from albums in your library that have matching genres.",
+            "d": "Add tracks from my saved albums with similar genres",
+            "e": "Add recommended tracks with similar attributes",
+        }
         functions = {
             "a": self._get_create_playlist_from_an_artists_discography_callback(),
             "b": self._get_create_playlist_based_on_existing_playlist_callback(),
@@ -243,29 +250,16 @@ class MusicLibBot:
             "d": self.run_add_tracks_from_my_saved_albums_with_similar_genres,
             "e": self.run_add_recommended_tracks_with_similar_attributes,
         }
-        menu = [
-            "What d'ya wanna do? Pick an option:",
-            "---",
-            "Create a playlist:",
-            "'a' - from an artist's discography",
-            "'b' - from a playlist full of albums.",
-            "'c' - (interactive) from albums in your library that have matching genres.",
-            "---",
-            "Update a playlist:",
-            "'d' - Add tracks from my saved albums with similar genres",
-            "'e' - Add recommended tracks with similar attributes",
-            "---",
-            "'q' - quit",
-        ]
-        options = ["a", "b", "c", "d", "e", "q"]
-        while True:
-            selection = self.ui.get_string_from_options(
-                "\n\t".join(menu), options)
-            if selection == 'q':
-                self.ui.tell_user("Happy listening!")
-                break
-            functions[selection]()
-
+        def option_pick_handler(pick):
+            functions[pick]()
+        def get_option_description(pick):
+            return options[pick]
+        InteractiveOptionPicker(
+            list(options.keys()),
+            option_pick_handler,
+            self.ui,
+            get_option_description,
+        ).launch_interactive_picker()
 
 def main():
     spotify_client_wrapper = SpotifyClientWrapper()
