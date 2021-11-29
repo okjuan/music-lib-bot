@@ -51,11 +51,16 @@ class PlaylistUpdater:
         self.info_logger("Getting recommendations..")
         recommended_tracks = self.music_util.get_recommendations_based_on_tracks(
             [track.id for track in self.playlist.tracks],
-            get_num_songs_to_add(),
             recommendation_criteria,
         )
+        if len(recommended_tracks) == 0:
+            self.info_logger("Sorry, couldn't find recommendations to add :(")
+            return
         self.info_logger(f"Got {len(recommended_tracks)} recommended tracks")
-        self.info_logger("Adding tracks to the playlist..")
+
+        num_tracks_to_add = min(len(recommended_tracks), get_num_songs_to_add())
+        recommended_tracks = recommended_tracks[:num_tracks_to_add]
+        self.info_logger(f"Adding {num_tracks_to_add} tracks to the playlist..")
         self.spotify_client.add_tracks(
             self.playlist.id, [track.id for track in recommended_tracks])
 

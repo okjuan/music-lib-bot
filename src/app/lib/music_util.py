@@ -328,19 +328,20 @@ class MusicUtil:
                 track.set_audio_features(
                     audio_features_by_track_ids[track.id])
 
-    def get_recommendations_based_on_tracks(self, track_ids, num_recommendations, recommendation_criteria):
+    def get_recommendations_based_on_tracks(self, track_ids, recommendation_criteria):
         """
         Params:
             tracks_ids ([str]): max length is 5.
-            num_recommendations (int): max is 100.
             recommendation_criteria (RecommendationCriteria).
 
         Returns:
             ([Track]):
         """
+        MAX_RECOMMENDATIONS = 100
+
         recommendations_with_count = self._get_recommendations_based_on_tracks_in_batches(
             track_ids, recommendation_criteria)
-        self.info_logger(f"Found {len(recommendations_with_count)} recommendations.")
+
         RecommendedTrack = namedtuple("RecommendedTrack", ["track", "num_times_recommended"])
         most_recommended_tracks = sorted(
             [
@@ -350,8 +351,8 @@ class MusicUtil:
             key=lambda recommendation: recommendation.num_times_recommended,
             reverse=True,
         )
-        num_recommendations = min(num_recommendations, len(most_recommended_tracks))
-        self.info_logger(f"Whittled down to {num_recommendations} recommendations.")
+
+        num_recommendations = min(MAX_RECOMMENDATIONS, len(most_recommended_tracks))
         return [
             recommendation.track
             for recommendation in most_recommended_tracks[:num_recommendations]

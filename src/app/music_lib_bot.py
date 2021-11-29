@@ -21,9 +21,9 @@ DEFAULT_NUM_ALBUMS_TO_FETCH = 50
 MIN_PLAYLIST_SUGGESTIONS_TO_SHOW = 10
 MIN_NUM_TRACKS_PER_ALBUM = 1
 MAX_NUM_TRACKS_PER_ALBUM = 10
-DEFAULT_NUM_TRACKS_TO_ADD = 10
+DEFAULT_NUM_TRACKS_TO_ADD = 0
 MIN_NUM_TRACKS_TO_ADD = 1
-MAX_NUM_TRACKS_TO_ADD = 10
+MAX_NUM_TRACKS_TO_ADD = 100
 
 
 class MusicLibBot:
@@ -84,7 +84,7 @@ class MusicLibBot:
 
     def get_num_tracks_to_add(self):
         return self.ui.get_int_from_range(
-            f"# of tracks to add to playlist? default is {DEFAULT_NUM_TRACKS_TO_ADD}",
+            f"# of tracks to add to playlist?",
             DEFAULT_NUM_TRACKS_TO_ADD,
             MIN_NUM_TRACKS_TO_ADD,
             MAX_NUM_TRACKS_TO_ADD

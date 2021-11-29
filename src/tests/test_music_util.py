@@ -73,49 +73,34 @@ class TestMusicUtil(unittest.TestCase):
         self.mock_spotify_client.get_tracks.assert_called_once_with(
             ["popularity=None", "popularity=None #2"])
 
-    def test_get_recommendations_based_on_tracks__as_many_recommendations_as_requested__returns_all(self):
+    def test_get_recommendations_based_on_tracks(self):
         track_ids = ["mock-track-id-1", "mock-track-id-10", "mock-track-id-2"]
-        num_recommendations = 3
         recommendation_criteria = mock_recommendation_criteria()
-        mock_recommendations = {"mock-track-id-1": 1, "mock-track-id-10":10, "mock-track-id-2":2}
+        mock_recommendations = {"mock-track-id-1": 1, "mock-track-id-10": 10, "mock-track-id-2": 2}
         self.music_util._get_recommendations_based_on_tracks_in_batches = MagicMock(
             return_value=mock_recommendations)
 
         recommended_tracks = self.music_util.get_recommendations_based_on_tracks(
-            track_ids, num_recommendations, recommendation_criteria)
+            track_ids, recommendation_criteria)
 
         self.assertEqual(3, len(recommended_tracks))
         self.assertIn("mock-track-id-1", recommended_tracks)
         self.assertIn("mock-track-id-2", recommended_tracks)
         self.assertIn("mock-track-id-10", recommended_tracks)
 
-    def test_get_recommendations_based_on_tracks__more_recommendations_than_requested__returns_most_recommended(self):
-        track_ids = ["mock-track-id-1", "mock-track-id-10", "mock-track-id-2"]
-        num_recommendations = 1
+    def test_get_recommendations_based_on_tracks__many_recommendations__returns_most_recommended(self):
+        track_ids = [f"mock-track-id-{i}" for i in range(101)]
         recommendation_criteria = mock_recommendation_criteria()
-        mock_recommendations = {"mock-track-id-1": 1, "mock-track-id-10":10, "mock-track-id-2":2}
+        mock_recommendations = {track_id: i for i, track_id in enumerate(track_ids)}
         self.music_util._get_recommendations_based_on_tracks_in_batches = MagicMock(
             return_value=mock_recommendations)
 
         recommended_tracks = self.music_util.get_recommendations_based_on_tracks(
-            track_ids, num_recommendations, recommendation_criteria)
+            track_ids, recommendation_criteria)
 
-        self.assertEqual(1, len(recommended_tracks))
-        self.assertEqual("mock-track-id-10", recommended_tracks[0])
-
-    def test_get_recommendations_based_on_tracks__fewer_recommendations_than_requested__returns_most_recommended(self):
-        track_ids = ["mock-track-id-1"]
-        num_recommendations = 2
-        recommendation_criteria = mock_recommendation_criteria()
-        mock_recommendations = {"mock-track-id-1": 1}
-        self.music_util._get_recommendations_based_on_tracks_in_batches = MagicMock(
-            return_value=mock_recommendations)
-
-        recommended_tracks = self.music_util.get_recommendations_based_on_tracks(
-            track_ids, num_recommendations, recommendation_criteria)
-
-        self.assertEqual(1, len(recommended_tracks))
-        self.assertEqual("mock-track-id-1", recommended_tracks[0])
+        self.assertEqual(100, len(recommended_tracks))
+        self.assertIn("mock-track-id-100", recommended_tracks)
+        self.assertNotIn("mock-track-id-0", recommended_tracks)
 
     def test_get_artist_ids(self):
         mock_artists = [mock_artist(id="mock-id-123")]
