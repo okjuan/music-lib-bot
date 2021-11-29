@@ -110,12 +110,14 @@ class SpotifyClientWrapper:
 
     def get_tracks(self, track_ids):
         def track_fetcher(track_ids):
-            results = self.client.tracks(track_ids)
-            return results['tracks']
+            return self._fetch_by_track_ids(
+                track_ids,
+                lambda track_ids: self.client.tracks(track_ids)["tracks"]
+            )
         tracks = self._fetch_in_batches(track_ids, track_fetcher)
         return [
             Track.from_spotify_track(track)
-            for track in tracks
+            for _, track in tracks
         ]
 
     def get_albums(self, album_ids):
@@ -171,24 +173,45 @@ class SpotifyClientWrapper:
     def _get_current_user_id(self):
         return self.client.me()['id']
 
+    def _fetch_by_track_ids(self, track_ids, fetcher):
+        tracks_on_spotify, tracks_not_on_spotify = [], []
+        for track_id in track_ids:
+            if self.on_spotify(track_id):
+                tracks_on_spotify.append(track_id)
+            else:
+                tracks_not_on_spotify.append(track_id)
+
+        audio_features = fetcher(tracks_on_spotify)
+
+        result_data = [
+            (track_audio_features['id'], track_audio_features)
+            for track_audio_features in audio_features
+        ]
+        result_data.extend([
+            (track_id, None)
+            for track_id in tracks_not_on_spotify
+        ])
+        return result_data
+
     def get_audio_features_by_track_id(self, track_ids):
         """
         Returns:
             (dict): key (str) track ID, value (AudioFeatures).
         """
         def audio_feature_fetcher(track_ids):
-            audio_features = self.client.audio_features(track_ids)
-            return [
-                (track_audio_features['id'], track_audio_features)
-                for track_audio_features in audio_features
-            ]
+            return self._fetch_by_track_ids(
+                track_ids, self.client.audio_features)
         all_audio_features = self._fetch_in_batches(
             track_ids, audio_feature_fetcher)
         return {
             track_id: AudioFeatures.from_spotify_audio_features(
                 audio_features)
+            if audio_features is not None else None
             for track_id, audio_features in all_audio_features
         }
+
+    def on_spotify(self, track_id):
+        return track_id[:13] != "spotify:local"
 
     def get_recommendations_based_on_tracks(self, track_ids, recommendation_criteria):
         """

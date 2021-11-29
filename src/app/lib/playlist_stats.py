@@ -33,7 +33,9 @@ class PlaylistStats:
         return min(popularities), max(popularities)
 
     def get_audio_feature_representative_range(self, playlist):
-        """
+        """Skips tracks that don't have audio_features set. Should call
+        MusicUtil.populate_track_audio_features first.
+
         Params:
             playlist (Playlist): with track.audio_features populated for each track.
                 Tip: use my_music_lib.get_playlist_with_track_audio_features first.
@@ -41,56 +43,61 @@ class PlaylistStats:
         Returns:
             (2-tuple): (AudioFeatures, AudioFeatures) min, max.
         """
-        if playlist.num_tracks == 1:
+        tracks = [
+            track
+            for track in playlist.tracks
+            if track.audio_features is not None
+        ]
+        if len(tracks) == 1:
             return (self._get_min_audio_features(), self._get_max_audio_features())
 
         danceability_min, danceability_max = self._get_audio_feature_min_and_max(
-            [track.audio_features.danceability for track in playlist.tracks],
+            [track.audio_features.danceability for track in tracks],
             MIN_PERCENTAGE,
             MAX_PERCENTAGE,
         )
         energy_min, energy_max = self._get_audio_feature_min_and_max(
-            [track.audio_features.energy for track in playlist.tracks],
+            [track.audio_features.energy for track in tracks],
             MIN_PERCENTAGE,
             MAX_PERCENTAGE,
         )
         loudness_min, loudness_max = self._get_audio_feature_min_and_max(
-            [track.audio_features.loudness for track in playlist.tracks],
+            [track.audio_features.loudness for track in tracks],
             MIN_LOUDNESS,
             MAX_LOUDNESS,
         )
         speechiness_min, speechiness_max = self._get_audio_feature_min_and_max(
-            [track.audio_features.speechiness for track in playlist.tracks],
+            [track.audio_features.speechiness for track in tracks],
             MIN_PERCENTAGE,
             MAX_PERCENTAGE,
         )
         acousticness_min, acousticness_max = self._get_audio_feature_min_and_max(
-            [track.audio_features.acousticness for track in playlist.tracks],
+            [track.audio_features.acousticness for track in tracks],
             MIN_PERCENTAGE,
             MAX_PERCENTAGE,
         )
         instrumentalness_min, instrumentalness_max = self._get_audio_feature_min_and_max(
-            [track.audio_features.instrumentalness for track in playlist.tracks],
+            [track.audio_features.instrumentalness for track in tracks],
             MIN_PERCENTAGE,
             MAX_PERCENTAGE,
         )
         liveness_min, liveness_max = self._get_audio_feature_min_and_max(
-            [track.audio_features.valence for track in playlist.tracks],
+            [track.audio_features.valence for track in tracks],
             MIN_PERCENTAGE,
             MAX_PERCENTAGE,
         )
         valence_min, valence_max = self._get_audio_feature_min_and_max(
-            [track.audio_features.valence for track in playlist.tracks],
+            [track.audio_features.valence for track in tracks],
             MIN_PERCENTAGE,
             MAX_PERCENTAGE,
         )
         tempo_min, tempo_max = self._get_audio_feature_min_and_max(
-            [track.audio_features.tempo for track in playlist.tracks],
+            [track.audio_features.tempo for track in tracks],
             MIN_TEMPO,
             MAX_TEMPO,
         )
         duration_ms_min, duration_ms_max = self._get_audio_feature_min_and_max(
-            [track.audio_features.duration_ms for track in playlist.tracks],
+            [track.audio_features.duration_ms for track in tracks],
             MIN_DURATION_MS,
             MAX_DURATION_MS,
         )
