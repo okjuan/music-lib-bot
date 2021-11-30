@@ -372,6 +372,12 @@ class MusicUtil:
             popularity_min, popularity_max)
         return recommendation_criteria
 
+    def get_playlist_recommendation_criteria_based_on_audio_attributes(self, playlist, playlist_stats):
+        audio_features_min, audio_features_max = playlist_stats.get_audio_feature_representative_range(playlist)
+        popularity_min, popularity_max = playlist_stats.get_popularity_representative_range(playlist)
+        return self.make_recommendation_criteria(
+            audio_features_min, audio_features_max, popularity_min, popularity_max)
+
     def _get_recommendations_based_on_tracks_in_batches(self, track_ids, recommendation_criteria):
         """
         Params:

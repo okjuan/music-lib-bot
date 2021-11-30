@@ -60,16 +60,25 @@ class MusicLibBot:
     def run_add_recommended_tracks_with_similar_attributes(self):
         playlist = self.get_playlist_from_user(
             self.my_music_lib.get_playlist_with_track_audio_features)
-        playlist_updater = PlaylistUpdater(
-            playlist,
-            self.my_music_lib,
-            self.music_util,
-            self.spotify_client,
-            self.ui.tell_user,
-            self.playlist_stats,
+        recommendation_criteria = self.music_util.get_playlist_recommendation_criteria_based_on_audio_attributes(
+            playlist, self.playlist_stats)
+        recommended_tracks = self.music_util.get_recommendations_based_on_tracks(
+            [track.id for track in playlist.tracks],
+            recommendation_criteria,
         )
-        playlist_updater.add_recommended_songs_with_similar_attributes(
-            self.get_num_tracks_to_add)
+
+        def recommended_track_pick_handler(track):
+            self.my_music_lib.add_tracks_to_playlist(
+                playlist.id, [track.id])
+        def get_recommended_track_description(track):
+            artist_names = [artist.name for artist in track.artists]
+            return f"{track.name} by {', '.join(artist_names)}"
+        InteractiveOptionPicker(
+            recommended_tracks,
+            recommended_track_pick_handler,
+            self.ui,
+            get_recommended_track_description,
+        ).launch_interactive_picker()
 
     def get_playlist_from_user(self, get_playlist_by_name):
         playlist = None
