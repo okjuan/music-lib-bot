@@ -112,16 +112,6 @@ class MusicLibBot:
             DEFAULT_NUM_ALBUMS_TO_FETCH
         )
 
-    def _get_artist_from_user(self):
-        artist_name = self.ui.get_non_empty_string("What artist interests you?")
-        matching_artists = self.spotify_client.get_matching_artists(artist_name)
-        if matching_artists == []:
-            self.ui.tell_user(f"Sorry, I couldn't find an artist by the name '{artist_name}'")
-            return None
-        artist = self.music_util.get_most_popular_artist(matching_artists)
-        self.ui.tell_user(f"I found: {artist.name}, with genres {artist.genres}, with popularity {artist.popularity}")
-        return artist
-
     def get_min_albums_per_playlist(self):
         return self.ui.get_int(
             f"Minimum # of albums per playlist? default is {DEFAULT_MIN_ALBUMS_PER_PLAYLIST}",
@@ -152,35 +142,6 @@ class MusicLibBot:
             for album in albums
             for artist in album.artists
         })
-
-    def _get_create_playlist_from_an_artists_discography_callback(self):
-        get_num_tracks_per_album = lambda: self.ui.get_int_from_options(
-                "How many tracks do you want from each album?", [1, 2, 3, 4, 5])
-        get_new_playlist_name = lambda: self.ui.get_non_empty_string(
-            "What do you want to call your playlist?")
-        def callback():
-            self.playlist_creator.create_playlist_from_an_artists_discography(
-                self._get_artist_from_user,
-                get_num_tracks_per_album,
-                get_new_playlist_name,
-            )
-        return callback
-
-    def _get_create_playlist_based_on_existing_playlist_callback(self):
-        get_new_playlist_name = lambda: self.ui.get_non_empty_string(
-            "What should your new playlist be called?")
-        get_num_tracks_per_album = lambda: self.ui.get_int(
-            f"How many tracks per album? default is {DEFAULT_NUM_TRACKS_PER_ALBUM}",
-            DEFAULT_NUM_TRACKS_PER_ALBUM
-        )
-        def callback():
-            self.playlist_creator.create_playlist_based_on_existing_playlist(
-                lambda: self.get_playlist_from_user(
-                    self.my_music_lib.get_playlist_by_name),
-                get_new_playlist_name,
-                get_num_tracks_per_album,
-            )
-        return callback
 
     def get_albums_by_genre(self):
         min_genres_per_group = self.get_min_genres_per_group()
@@ -216,18 +177,6 @@ class MusicLibBot:
             key=lambda album_group: len(album_group['albums']),
             reverse=True
         )
-
-    def _get_playlist_description(self, album_group):
-        artists = list({
-            artist.name
-            for album in album_group['albums']
-            for artist in album.artists
-        })
-        return "\n\t".join([
-            f"Description: {album_group['description']}",
-            f"Number of albums: {len(album_group['albums'])}",
-            f"Artists: {', '.join(artists)}",
-        ])
 
     def launch_playlist_picker(self):
         suggested_playlists = self.get_playlist_options()
@@ -269,6 +218,58 @@ class MusicLibBot:
             self.ui,
             get_option_description,
         ).launch_interactive_picker()
+
+    def _get_artist_from_user(self):
+        artist_name = self.ui.get_non_empty_string("What artist interests you?")
+        matching_artists = self.spotify_client.get_matching_artists(artist_name)
+        if matching_artists == []:
+            self.ui.tell_user(f"Sorry, I couldn't find an artist by the name '{artist_name}'")
+            return None
+        artist = self.music_util.get_most_popular_artist(matching_artists)
+        self.ui.tell_user(f"I found: {artist.name}, with genres {artist.genres}, with popularity {artist.popularity}")
+        return artist
+
+    def _get_create_playlist_from_an_artists_discography_callback(self):
+        get_num_tracks_per_album = lambda: self.ui.get_int_from_options(
+                "How many tracks do you want from each album?", [1, 2, 3, 4, 5])
+        get_new_playlist_name = lambda: self.ui.get_non_empty_string(
+            "What do you want to call your playlist?")
+        def callback():
+            self.playlist_creator.create_playlist_from_an_artists_discography(
+                self._get_artist_from_user,
+                get_num_tracks_per_album,
+                get_new_playlist_name,
+            )
+        return callback
+
+    def _get_create_playlist_based_on_existing_playlist_callback(self):
+        get_new_playlist_name = lambda: self.ui.get_non_empty_string(
+            "What should your new playlist be called?")
+        get_num_tracks_per_album = lambda: self.ui.get_int(
+            f"How many tracks per album? default is {DEFAULT_NUM_TRACKS_PER_ALBUM}",
+            DEFAULT_NUM_TRACKS_PER_ALBUM
+        )
+        def callback():
+            self.playlist_creator.create_playlist_based_on_existing_playlist(
+                lambda: self.get_playlist_from_user(
+                    self.my_music_lib.get_playlist_by_name),
+                get_new_playlist_name,
+                get_num_tracks_per_album,
+            )
+        return callback
+
+    def _get_playlist_description(self, album_group):
+        artists = list({
+            artist.name
+            for album in album_group['albums']
+            for artist in album.artists
+        })
+        return "\n\t".join([
+            f"Description: {album_group['description']}",
+            f"Number of albums: {len(album_group['albums'])}",
+            f"Artists: {', '.join(artists)}",
+        ])
+
 
 def main():
     spotify_client_wrapper = SpotifyClientWrapper()

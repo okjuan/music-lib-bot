@@ -9,81 +9,6 @@ class MusicUtil:
         self.spotify_client_wrapper = spotify_client_wrapper
         self.info_logger = info_logger
 
-    def _add_artist_genres(self, albums):
-        """
-        Params:
-            albums ([Album]).
-
-        Returns:
-            albums_by_id (dict):
-                key (string): album ID.
-                value (Album).
-        """
-        albums_by_id = dict()
-        for album in albums:
-            artist_ids = [artist.id for artist in album.artists]
-            genres = list(set([
-                genre
-                for artist_id in artist_ids
-                for genre in self.spotify_client_wrapper.get_artist_genres(artist_id)
-            ]))
-            album.set_genres(genres)
-            albums_by_id[album.id] = album
-        return albums_by_id
-
-    def _detect_genre_matches(self, albums_by_id):
-        adjacencies, genre_to_albums = defaultdict(lambda: defaultdict(list)), defaultdict(set)
-        for _, album in albums_by_id.items():
-            for genre in album.genres:
-                for matching_album_id in genre_to_albums[genre]:
-                    adjacencies[album.id][matching_album_id].append(genre)
-                    adjacencies[matching_album_id][album.id].append(genre)
-                genre_to_albums[genre].add(album.id)
-        return adjacencies
-
-    def _as_readable_key(self, list_):
-        list_.sort()
-        return ", ".join(list_) if len(list_) > 0 else "unknown"
-
-    def _group_each_album_by_itself(self, album_ids):
-        """
-        Returns:
-            ([dict]):
-                e.g. [{
-                    'album ids': {'3tb57GFYfkABviRejjp1lh'},
-                    'genres': {'rock', 'punk'}
-                }].
-        """
-        genres_by_album_ids = self.get_genres_by_album_ids(list(album_ids))
-        return [
-            {
-                "album ids": {album_id},
-                "genres": set(genres)
-            }
-            for album_id, genres in genres_by_album_ids.items()
-        ]
-
-    def _group_albums(self, album_ids, genre_matches):
-        """
-        Returns:
-            grouped_albums ([dict]):
-                e.g. [{
-                    'album ids': {'3tb57GFYfkABviRejjp1lh'},
-                    'genres': {'rock', 'punk'}
-                }].
-        """
-        if len(album_ids) == 0 or len(genre_matches) == 0:
-            return self._group_each_album_by_itself(album_ids)
-
-        grouped_albums = defaultdict(lambda: defaultdict(set))
-        for album_id in album_ids:
-            for matching_album_id, genres_matched_on in genre_matches[album_id].items():
-                group_key = self._as_readable_key(genres_matched_on)
-                grouped_albums[group_key]["album ids"].add(album_id)
-                grouped_albums[group_key]["album ids"].add(matching_album_id)
-                grouped_albums[group_key]["genres"] = genres_matched_on
-        return list(grouped_albums.values())
-
     def get_genres_by_album_ids(self, album_ids):
         "album_ids ([str]) -> genres_by_album_id (dict) with key (str) album ID, value ([str]) genres"
         genres_by_album_ids = defaultdict(list)
@@ -251,38 +176,8 @@ class MusicUtil:
             )
         ]
 
-    def _strip_metadata_in_parentheses_or_brackets(self, album_name):
-        """(Parentheses) and [Brackets]
-        Assumptions:
-            - Parentheses contain metadata depending on where they occur
-                - If parentheses occur at the beginning of name, they don't contain metadata
-                - Otherwise, they contain metadata
-            - If at all, only 1 set of parentheses occurs
-            - Parentheses are balanced
-            - All of the above, applied also to [brackets]
-        """
-        without_parenthesized_substring = self._strip_metadata_between(
-            album_name.strip(), "(", ")")
-        return self._strip_metadata_between(
-            without_parenthesized_substring, "[", "]")
-
-    def _strip_metadata_between(self, str_, opening_token, closing_token):
-        stripped_str = str_[:]
-        if opening_token in stripped_str:
-            open_token_idx = stripped_str.index(opening_token)
-            stripped_str = stripped_str[:open_token_idx]
-        if closing_token in stripped_str:
-            closing_token_index = stripped_str.index(closing_token)
-            stripped_str = stripped_str[closing_token_index+1:]
-        stripped_str = stripped_str.strip()
-        return stripped_str if len(stripped_str) > 0 else str_
-
     def is_same_album_name(self, album_name_1, album_name_2):
         return self._normalize_album_name(album_name_1) == self._normalize_album_name(album_name_2)
-
-    def _normalize_album_name(self, album_name):
-        return self._strip_metadata_in_parentheses_or_brackets(
-                album_name.strip().lower())
 
     def filter_out_duplicates(self, albums, album_tie_breaker):
         albums_by_name = dict()
@@ -377,6 +272,111 @@ class MusicUtil:
         popularity_min, popularity_max = playlist_stats.get_popularity_representative_range(playlist)
         return self.make_recommendation_criteria(
             audio_features_min, audio_features_max, popularity_min, popularity_max)
+
+    def _add_artist_genres(self, albums):
+        """
+        Params:
+            albums ([Album]).
+
+        Returns:
+            albums_by_id (dict):
+                key (string): album ID.
+                value (Album).
+        """
+        albums_by_id = dict()
+        for album in albums:
+            artist_ids = [artist.id for artist in album.artists]
+            genres = list(set([
+                genre
+                for artist_id in artist_ids
+                for genre in self.spotify_client_wrapper.get_artist_genres(artist_id)
+            ]))
+            album.set_genres(genres)
+            albums_by_id[album.id] = album
+        return albums_by_id
+
+    def _detect_genre_matches(self, albums_by_id):
+        adjacencies, genre_to_albums = defaultdict(lambda: defaultdict(list)), defaultdict(set)
+        for _, album in albums_by_id.items():
+            for genre in album.genres:
+                for matching_album_id in genre_to_albums[genre]:
+                    adjacencies[album.id][matching_album_id].append(genre)
+                    adjacencies[matching_album_id][album.id].append(genre)
+                genre_to_albums[genre].add(album.id)
+        return adjacencies
+
+    def _as_readable_key(self, list_):
+        list_.sort()
+        return ", ".join(list_) if len(list_) > 0 else "unknown"
+
+    def _group_each_album_by_itself(self, album_ids):
+        """
+        Returns:
+            ([dict]):
+                e.g. [{
+                    'album ids': {'3tb57GFYfkABviRejjp1lh'},
+                    'genres': {'rock', 'punk'}
+                }].
+        """
+        genres_by_album_ids = self.get_genres_by_album_ids(list(album_ids))
+        return [
+            {
+                "album ids": {album_id},
+                "genres": set(genres)
+            }
+            for album_id, genres in genres_by_album_ids.items()
+        ]
+
+    def _group_albums(self, album_ids, genre_matches):
+        """
+        Returns:
+            grouped_albums ([dict]):
+                e.g. [{
+                    'album ids': {'3tb57GFYfkABviRejjp1lh'},
+                    'genres': {'rock', 'punk'}
+                }].
+        """
+        if len(album_ids) == 0 or len(genre_matches) == 0:
+            return self._group_each_album_by_itself(album_ids)
+
+        grouped_albums = defaultdict(lambda: defaultdict(set))
+        for album_id in album_ids:
+            for matching_album_id, genres_matched_on in genre_matches[album_id].items():
+                group_key = self._as_readable_key(genres_matched_on)
+                grouped_albums[group_key]["album ids"].add(album_id)
+                grouped_albums[group_key]["album ids"].add(matching_album_id)
+                grouped_albums[group_key]["genres"] = genres_matched_on
+        return list(grouped_albums.values())
+
+    def _strip_metadata_in_parentheses_or_brackets(self, album_name):
+        """(Parentheses) and [Brackets]
+        Assumptions:
+            - Parentheses contain metadata depending on where they occur
+                - If parentheses occur at the beginning of name, they don't contain metadata
+                - Otherwise, they contain metadata
+            - If at all, only 1 set of parentheses occurs
+            - Parentheses are balanced
+            - All of the above, applied also to [brackets]
+        """
+        without_parenthesized_substring = self._strip_metadata_between(
+            album_name.strip(), "(", ")")
+        return self._strip_metadata_between(
+            without_parenthesized_substring, "[", "]")
+
+    def _strip_metadata_between(self, str_, opening_token, closing_token):
+        stripped_str = str_[:]
+        if opening_token in stripped_str:
+            open_token_idx = stripped_str.index(opening_token)
+            stripped_str = stripped_str[:open_token_idx]
+        if closing_token in stripped_str:
+            closing_token_index = stripped_str.index(closing_token)
+            stripped_str = stripped_str[closing_token_index+1:]
+        stripped_str = stripped_str.strip()
+        return stripped_str if len(stripped_str) > 0 else str_
+
+    def _normalize_album_name(self, album_name):
+        return self._strip_metadata_in_parentheses_or_brackets(
+                album_name.strip().lower())
 
     def _get_recommendations_based_on_tracks_in_batches(self, track_ids, recommendation_criteria):
         """

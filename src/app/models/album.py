@@ -24,23 +24,6 @@ class Album:
         self.genres = genres
         self.popularity = popularity
 
-    def _parse_date(spotify_release_date):
-        """For Herbie Hancock alone, I've seen these release_dates:
-        - "1999-01-01"
-        - "2009"
-        - "1980-03"
-        """
-        # sometime Spotify just gives a year
-        if len(spotify_release_date) == 4:
-            # default to first day of year
-            return datetime.fromisocalendar(int(spotify_release_date), 1, 1)
-        elif len(spotify_release_date) == 7:
-            # default to first day of month
-            return datetime.fromisocalendar(
-                int(spotify_release_date[:4]), int(spotify_release_date[5:7]), 1)
-        else:
-            return datetime.fromisoformat(spotify_release_date)
-
     def __key(self):
         return self.id
 
@@ -74,3 +57,20 @@ class Album:
             spotify_album['total_tracks'],
             popularity=spotify_album['popularity'],
         )
+
+    def _parse_date(spotify_release_date):
+        """For Herbie Hancock alone, I've seen these release_dates:
+        - "1999-01-01"
+        - "2009"
+        - "1980-03"
+        """
+        # sometime Spotify just gives a year
+        if len(spotify_release_date) == 4:
+            # default to first day of year
+            return datetime.fromisocalendar(int(spotify_release_date), 1, 1)
+        elif len(spotify_release_date) == 7:
+            # default to first day of month
+            return datetime.fromisocalendar(
+                int(spotify_release_date[:4]), int(spotify_release_date[5:7]), 1)
+        else:
+            return datetime.fromisoformat(spotify_release_date)
