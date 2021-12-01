@@ -38,7 +38,7 @@ class PlaylistStats:
 
         Params:
             playlist (Playlist): with track.audio_features populated for each track.
-                Tip: use my_music_lib.get_playlist_with_track_audio_features first.
+                Tip: use music_util.populate_track_audio_features first.
 
         Returns:
             (2-tuple): (AudioFeatures, AudioFeatures) min, max.

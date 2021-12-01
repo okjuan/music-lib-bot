@@ -59,7 +59,8 @@ class MusicLibBot:
 
     def run_add_recommended_tracks_with_similar_attributes(self):
         playlist = self.get_playlist_from_user(
-            self.my_music_lib.get_playlist_with_track_audio_features)
+            self.my_music_lib.get_playlist_by_name)
+        self.music_util.populate_track_audio_features(playlist)
         recommendation_criteria = self.music_util.get_playlist_recommendation_criteria_based_on_audio_attributes(
             playlist, self.playlist_stats)
         recommended_tracks_by_percentage = self.music_util.get_recommendations_based_on_tracks(
