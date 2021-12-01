@@ -229,9 +229,9 @@ class MusicLibBot:
         options = {
             "a": "Create playlist from an artist's discography",
             "b": "Create playlist from a playlist full of albums.",
-            "c": "Create playlists from albums in your library that have matching genres.",
-            "d": "To an existing playlist add tracks from my saved albums with similar genres",
-            "e": "To an existing playlist add recommended tracks with similar attributes",
+            "c": "Create playlist from albums in your library that have matching genres.",
+            "d": "Update existing playlist with tracks from my saved albums with similar genres",
+            "e": "Update existing playlist with recommended tracks with similar attributes",
         }
         functions = {
             "a": self._get_create_playlist_from_an_artists_discography_callback(),
