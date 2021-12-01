@@ -51,7 +51,7 @@ class InteractiveOptionPicker:
         self.ui.tell_user("\nHere are your options:")
         for idx, option in enumerate(options):
             description = self.get_option_description(option)
-            self.ui.tell_user(f"({idx}) - {description}")
+            self.ui.tell_user(f"({idx}): {description}")
 
     def _get_range_as_list(self, length):
         return list(range(length))

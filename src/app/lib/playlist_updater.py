@@ -44,10 +44,19 @@ class PlaylistUpdater:
             get_num_songs_to_add (lambda): takes 0 params, returns int.
         """
         self.info_logger("Getting recommendations..")
-        recommended_tracks = self.music_util.get_recommendations_based_on_tracks(
+        recommended_tracks_by_percentage = self.music_util.get_recommendations_based_on_tracks(
             [track.id for track in self.playlist.tracks],
             recommendation_criteria,
         )
+
+        recommended_tracks = []
+        for recommended_percentage, recommended_tracks in recommended_tracks_by_percentage.items():
+            if recommended_percentage < 0.5:
+                self.info_logger(f"Ignoring {len(recommended_tracks)} recommendations because they're not highly recommended.")
+            else:
+                self.info_logger(f"Found {len(recommended_tracks)} highly recommended tracks!")
+                recommended_tracks.extend(recommended_tracks)
+
         if len(recommended_tracks) == 0:
             self.info_logger("Sorry, couldn't find recommendations to add :(")
             return

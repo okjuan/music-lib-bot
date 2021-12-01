@@ -62,19 +62,37 @@ class MusicLibBot:
             self.my_music_lib.get_playlist_with_track_audio_features)
         recommendation_criteria = self.music_util.get_playlist_recommendation_criteria_based_on_audio_attributes(
             playlist, self.playlist_stats)
-        recommended_tracks = self.music_util.get_recommendations_based_on_tracks(
+        recommended_tracks_by_percentage = self.music_util.get_recommendations_based_on_tracks(
             [track.id for track in playlist.tracks],
             recommendation_criteria,
         )
+        if len(recommended_tracks_by_percentage) == 0:
+            self.ui.tell_user("Sorry, couldn't find recommendations to add :(")
+            return
+        recommended_tracks_with_percentage = sorted(
+            [
+                dict(
+                    recommended_percentage=recommended_percentage,
+                    tracks=tracks
+                )
+                for recommended_percentage, tracks in recommended_tracks_by_percentage.items()
+            ],
+            key=lambda x: x["recommended_percentage"],
+            reverse=True
+        )
 
-        def recommended_track_pick_handler(track):
+        def recommended_track_pick_handler(recommended_tracks_with_percentage):
             self.my_music_lib.add_tracks_to_playlist(
-                playlist.id, [track.id])
-        def get_recommended_track_description(track):
-            artist_names = [artist.name for artist in track.artists]
-            return f"{track.name} by {', '.join(artist_names)}"
+                playlist.id, [track.id for track in recommended_tracks_with_percentage["tracks"]])
+        def get_recommended_track_description(recommended_tracks_with_percentage):
+            percentage = int(recommended_tracks_with_percentage['recommended_percentage'] * 100)
+            preamble = f"Recommended with {percentage}% confidence:\n- "
+            return preamble + "\n- ".join([
+                f"{track.name} by {', '.join([artist.name for artist in track.artists])}"
+                for track in recommended_tracks_with_percentage['tracks']
+            ])
         InteractiveOptionPicker(
-            recommended_tracks,
+            recommended_tracks_with_percentage,
             recommended_track_pick_handler,
             self.ui,
             get_recommended_track_description,
@@ -154,6 +172,12 @@ class MusicLibBot:
         return albums_by_genre
 
     def get_suggested_playlists(self, albums_by_genre):
+        """
+        Returns:
+            ([dict]): each with 2 key-value pairs:
+                key "description", value (str).
+                key "albums", value ([Album]).
+        """
         min_albums_per_playlist = self.get_min_albums_per_playlist()
         min_artists_per_playlist = self.get_min_artists_per_playlist()
         playlist_criteria = lambda albums: len(albums) >= min_albums_per_playlist and self.get_num_diff_artists(albums) >= min_artists_per_playlist
@@ -167,6 +191,13 @@ class MusicLibBot:
         ]
 
     def get_playlist_options(self):
+        """
+        Returns:
+            ([dict]): each dict with 2 key-value pairs:
+                - key "description", value (str).
+                - key "albums", value ([Album]).
+                sorted in descending order by number of albums,
+        """
         albums_by_genre = self.get_albums_by_genre()
         if len(albums_by_genre) == 0:
             self.ui.tell_user("Couldn't match the albums into groups.. the genres didn't match :/")

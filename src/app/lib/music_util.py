@@ -230,28 +230,15 @@ class MusicUtil:
             recommendation_criteria (RecommendationCriteria).
 
         Returns:
-            ([Track]):
+            recommended_tracks_by_percentage (dict): key (float) percentage, in [0,1],
+                value ([Track]) recommended tracks.
         """
-        MAX_RECOMMENDATIONS = 100
-
-        recommendations_with_count = self._get_recommendations_based_on_tracks_in_batches(
+        recommendations_by_percent = self._get_recommendations_based_on_tracks_in_batches(
             track_ids, recommendation_criteria)
-
-        RecommendedTrack = namedtuple("RecommendedTrack", ["track", "num_times_recommended"])
-        most_recommended_tracks = sorted(
-            [
-                RecommendedTrack(track_count_tuple[0], track_count_tuple[1])
-                for track_count_tuple in recommendations_with_count.items()
-            ],
-            key=lambda recommendation: recommendation.num_times_recommended,
-            reverse=True,
-        )
-
-        num_recommendations = min(MAX_RECOMMENDATIONS, len(most_recommended_tracks))
-        return [
-            recommendation.track
-            for recommendation in most_recommended_tracks[:num_recommendations]
-        ]
+        recommended_tracks_by_percentage = defaultdict(list)
+        for track, percentage_recommended in recommendations_by_percent.items():
+            recommended_tracks_by_percentage[percentage_recommended].append(track)
+        return recommended_tracks_by_percentage
 
     def make_recommendation_criteria(self, audio_features_min, audio_features_max, popularity_min, popularity_max):
         """
@@ -385,15 +372,19 @@ class MusicUtil:
             recommendation_criteria (RecommendationCriteria).
 
         Returns:
-            recommendations_with_count (dict): key (Track), value (int) count.
+            (dict): key (Track), value (float) in [0,1].
         """
         recommendation_limit = self.spotify_client_wrapper.get_recommendation_seed_limit()
-        recommendations_with_count = defaultdict(int)
+        recommendations_with_count, num_batches = defaultdict(int), 0
         for min_index in range(0, len(track_ids), recommendation_limit):
+            num_batches += 1
             max_index = min(min_index+recommendation_limit, len(track_ids))
             recommendations = self.spotify_client_wrapper.get_recommendations_based_on_tracks(
                 track_ids[min_index:max_index], recommendation_criteria)
             for track in recommendations:
                 if track.id not in track_ids:
                     recommendations_with_count[track] += 1
-        return recommendations_with_count
+        return {
+            track: float(count)/num_batches
+            for track, count in recommendations_with_count.items()
+        }
