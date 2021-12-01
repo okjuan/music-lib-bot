@@ -15,7 +15,7 @@ def mock_track(name="", id_="", uri="", album=mock_album(), artists=[mock_artist
     audio_features = mock_audio_features() if audio_features is None else audio_features
     return Track(
         name,
-        id,
+        id_,
         uri,
         album.id,
         artists,
