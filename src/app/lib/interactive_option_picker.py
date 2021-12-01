@@ -17,14 +17,6 @@ class InteractiveOptionPicker:
                 break
 
             self.pick_handler(self.options[selection])
-            if not self.user_wants_to_continue():
-                break
-
-    def user_wants_to_continue(self):
-        return self.ui.get_yes_or_no(
-            f"Pick another option? y or n - default is 'y'",
-            True
-        )
 
     def get_selection(self):
         num_options = self.get_num_options_desired()
