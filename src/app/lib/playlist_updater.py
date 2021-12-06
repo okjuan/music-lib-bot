@@ -33,7 +33,7 @@ class PlaylistUpdater:
         self.my_music_lib.add_tracks_in_random_positions(self.playlist, track_uris)
 
     def add_recommended_songs_with_similar_attributes(self, get_num_songs_to_add):
-        recommendation_criteria = self.music_util.get_playlist_recommendation_criteria_based_on_audio_attributes(
+        recommendation_criteria = self.music_util.get_recommendation_criteria_based_on_audio_attributes(
             self.playlist, self.playlist_stats)
         self.add_recommended_songs(recommendation_criteria, get_num_songs_to_add)
 
