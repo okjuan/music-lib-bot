@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch, MagicMock
 
-from tests.fixtures import mock_album, mock_artist, mock_playlist, mock_recommendation_criteria, mock_track
+from tests.fixtures import mock_album, mock_artist, mock_playlist, mock_song_attribute_ranges, mock_track
 from app.lib.music_util import MusicUtil
 
 
@@ -75,13 +75,13 @@ class TestMusicUtil(unittest.TestCase):
 
     def test_get_recommendations_based_on_tracks__groups_recommendations_with_same_percentage(self):
         track_ids = ["mock-track-id-1", "mock-track-id-10", "mock-track-id-2"]
-        recommendation_criteria = mock_recommendation_criteria()
+        song_attribute_ranges = mock_song_attribute_ranges()
         mock_recommendations = {"mock-track-id-1": 1.0, "mock-track-id-10": 0.5, "mock-track-id-2": 0.5}
         self.music_util._get_recommendations_based_on_tracks_in_batches = MagicMock(
             return_value=mock_recommendations)
 
         recommendations_by_percent = self.music_util.get_recommendations_based_on_tracks(
-            track_ids, recommendation_criteria)
+            track_ids, song_attribute_ranges)
 
         self.assertEqual(2, len(recommendations_by_percent))
         self.assertIn(1.0, recommendations_by_percent)
@@ -96,7 +96,7 @@ class TestMusicUtil(unittest.TestCase):
         )
 
     def test__get_recommendations_based_on_tracks_in_batches__recommended_for_all_tracks__specifies_100_percent(self):
-        track_ids, recommendation_criteria = ["mock-seed-track"], mock_recommendation_criteria()
+        track_ids, song_attribute_ranges = ["mock-seed-track"], mock_song_attribute_ranges()
         self.mock_spotify_client.get_recommendation_seed_limit = MagicMock(
             return_value=1)
         recommended_track = mock_track(id_="mock-recommendation")
@@ -104,7 +104,7 @@ class TestMusicUtil(unittest.TestCase):
             return_value=[recommended_track])
 
         recommendations_with_percentage = self.music_util._get_recommendations_based_on_tracks_in_batches(
-            track_ids, recommendation_criteria)
+            track_ids, song_attribute_ranges)
 
         self.assertEqual(1, len(recommendations_with_percentage))
         self.assertIn(recommended_track, recommendations_with_percentage)
@@ -112,7 +112,7 @@ class TestMusicUtil(unittest.TestCase):
 
     def test__get_recommendations_based_on_tracks_in_batches__recommended_for_half_the_tracks__specifies_50_percent(self):
         track_ids = ["mock-seed-track-1", "mock-seed-track-2"]
-        recommendation_criteria = mock_recommendation_criteria()
+        song_attribute_ranges = mock_song_attribute_ranges()
         self.mock_spotify_client.get_recommendation_seed_limit = MagicMock(
             return_value=1)
         recommended_track = mock_track(id_="mock-recommendation")
@@ -126,7 +126,7 @@ class TestMusicUtil(unittest.TestCase):
             side_effect=mock_get_recommendations)
 
         recommendations_with_percentage = self.music_util._get_recommendations_based_on_tracks_in_batches(
-            track_ids, recommendation_criteria)
+            track_ids, song_attribute_ranges)
 
         self.assertEqual(1, len(recommendations_with_percentage))
         self.assertIn(recommended_track, recommendations_with_percentage)
@@ -134,7 +134,7 @@ class TestMusicUtil(unittest.TestCase):
 
     def test__get_recommendations_based_on_tracks_in_batches__multiple_percentages__recommends_all(self):
         track_ids = ["mock-seed-track-1", "mock-seed-track-2", "mock-seed-track-3"]
-        recommendation_criteria = mock_recommendation_criteria()
+        song_attribute_ranges = mock_song_attribute_ranges()
         self.mock_spotify_client.get_recommendation_seed_limit = MagicMock(
             return_value=1)
         recommended_track1 = mock_track(id_="mock-recommendation-1")
@@ -151,14 +151,14 @@ class TestMusicUtil(unittest.TestCase):
             side_effect=mock_get_recommendations)
 
         recommendations_with_percentage = self.music_util._get_recommendations_based_on_tracks_in_batches(
-            track_ids, recommendation_criteria)
+            track_ids, song_attribute_ranges)
 
         self.mock_spotify_client.get_recommendations_based_on_tracks.assert_any_call(
-            ["mock-seed-track-1"], recommendation_criteria)
+            ["mock-seed-track-1"], song_attribute_ranges)
         self.mock_spotify_client.get_recommendations_based_on_tracks.assert_any_call(
-            ["mock-seed-track-2"], recommendation_criteria)
+            ["mock-seed-track-2"], song_attribute_ranges)
         self.mock_spotify_client.get_recommendations_based_on_tracks.assert_any_call(
-            ["mock-seed-track-3"], recommendation_criteria)
+            ["mock-seed-track-3"], song_attribute_ranges)
         self.assertEqual(2, len(recommendations_with_percentage))
         self.assertEqual(2.0/3.0, recommendations_with_percentage[recommended_track1])
         self.assertEqual(1.0/3.0, recommendations_with_percentage[recommended_track2])

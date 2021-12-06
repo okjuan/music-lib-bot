@@ -1,7 +1,7 @@
 from app.models.audio_features import AudioFeatures
 
 
-class RecommendationCriteria:
+class SongAttributeRanges:
     def __init__(self, danceability_range, energy_range, loudness_range, speechiness_range, acousticness_range, instrumentalness_range, liveness_range, valence_range, tempo_range, duration_ms_range, popularity_range, key_range, mode_range, time_signature_range):
         """
         Params:
@@ -82,9 +82,10 @@ class RecommendationCriteria:
     def from_audio_features_min_max_ranges(audio_features_min, audio_features_max):
         """Defaults to accepting all keys, modes, and time_signatures since these field are
         less important right now. Also defaults to accepting all popularity values,
-        but that can be modified by calling RecommendationCriteria.set_popularity_min_max_range.
+        but you can modify that by calling SongAttributeRanges.set_popularity_min_max_range.
+        Of course you can also set key_range, mode_range, and time_signature_range directly.
         """
-        return RecommendationCriteria(
+        return SongAttributeRanges(
             (audio_features_min.danceability, audio_features_max.danceability),
             (audio_features_min.energy, audio_features_max.energy),
             (audio_features_min.loudness, audio_features_max.loudness),

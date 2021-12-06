@@ -33,21 +33,26 @@ class PlaylistUpdater:
         self.my_music_lib.add_tracks_in_random_positions(self.playlist, track_uris)
 
     def add_recommended_songs_with_similar_attributes(self, get_num_songs_to_add):
-        recommendation_criteria = self.music_util.get_recommendation_criteria_based_on_audio_attributes(
-            self.playlist, self.playlist_stats)
-        self.info_logger(f"Got recommendation criteria: {recommendation_criteria}")
-        self.add_recommended_songs(recommendation_criteria, get_num_songs_to_add)
+        num_songs_added = 0
+        while num_songs_added == 0:
+            song_attribute_ranges = self.music_util.get_song_attribute_ranges(
+                self.playlist, self.playlist_stats)
+            self.info_logger(f"Got recommendation criteria: {song_attribute_ranges}")
+            num_songs_added = self.add_recommended_songs(
+                song_attribute_ranges, get_num_songs_to_add)
 
-    def add_recommended_songs(self, recommendation_criteria, get_num_songs_to_add):
+    def add_recommended_songs(self, song_attribute_ranges, get_num_songs_to_add):
         """
         Params:
-            recommendation_criteria (RecommendationCriteria).
+            song_attribute_ranges (SongAttributeRanges).
             get_num_songs_to_add (lambda): takes 0 params, returns int.
+        Returns:
+            (int): number of recommended songs added.
         """
         self.info_logger("Getting recommendations..")
         recommended_tracks_by_percentage = self.music_util.get_recommendations_based_on_tracks(
             [track.id for track in self.playlist.tracks],
-            recommendation_criteria,
+            song_attribute_ranges,
         )
 
         recommended_tracks = []

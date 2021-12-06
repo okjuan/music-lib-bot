@@ -61,11 +61,11 @@ class MusicLibBot:
         playlist = self.get_playlist_from_user(
             self.my_music_lib.get_playlist_by_name)
         self.music_util.populate_track_audio_features(playlist)
-        recommendation_criteria = self.music_util.get_recommendation_criteria_based_on_audio_attributes(
+        song_attribute_ranges = self.music_util.get_song_attribute_ranges(
             playlist, self.playlist_stats)
         recommended_tracks_by_percentage = self.music_util.get_recommendations_based_on_tracks(
             [track.id for track in playlist.tracks],
-            recommendation_criteria,
+            song_attribute_ranges,
         )
         if len(recommended_tracks_by_percentage) == 0:
             self.ui.tell_user("Sorry, couldn't find recommendations to add :(")

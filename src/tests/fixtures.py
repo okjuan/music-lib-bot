@@ -3,7 +3,7 @@ from app.models.artist import Artist
 from app.models.audio_features import AudioFeatures
 from app.models.playlist import Playlist
 from app.models.track import Track
-from app.models.recommendation_criteria import RecommendationCriteria
+from app.models.song_attribute_ranges import SongAttributeRanges
 
 def mock_album(id="", genres=[], artists=[], name=""):
     return Album(name, id, [], artists, release_date="", num_tracks=0, genres=genres)
@@ -29,8 +29,8 @@ def mock_track(name="", id_="", uri="", album=mock_album(), artists=[mock_artist
 def mock_playlist(id_="", name="", description="", tracks=[]):
     return Playlist(id_, name, description, tracks)
 
-def mock_recommendation_criteria(danceability_range=[0,1], energy_range=[0,1], loudness_range=[0,1], speechiness_range=[0,1], acousticness_range=[0,1], instrumentalness_range=[0,1], liveness_range=[0,1], valence_range=[0,1], tempo_range=[0,300], duration_ms_range=[0,900000], popularity_range=[0,100], key_range=[0,11], mode_range=[0,1], time_signature_range=[0,11]):
-    return RecommendationCriteria(
+def mock_song_attribute_ranges(danceability_range=[0,1], energy_range=[0,1], loudness_range=[0,1], speechiness_range=[0,1], acousticness_range=[0,1], instrumentalness_range=[0,1], liveness_range=[0,1], valence_range=[0,1], tempo_range=[0,300], duration_ms_range=[0,900000], popularity_range=[0,100], key_range=[0,11], mode_range=[0,1], time_signature_range=[0,11]):
+    return SongAttributeRanges(
         danceability_range,
         energy_range,
         loudness_range,

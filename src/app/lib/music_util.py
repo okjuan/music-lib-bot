@@ -1,7 +1,7 @@
 from collections import defaultdict
 from re import match
 
-from app.models.recommendation_criteria import RecommendationCriteria
+from app.models.song_attribute_ranges import SongAttributeRanges
 
 
 class MusicUtil:
@@ -223,24 +223,24 @@ class MusicUtil:
                 track.set_audio_features(
                     audio_features_by_track_ids[track.id])
 
-    def get_recommendations_based_on_tracks(self, track_ids, recommendation_criteria):
+    def get_recommendations_based_on_tracks(self, track_ids, song_attribute_ranges):
         """
         Params:
             tracks_ids ([str]): max length is 5.
-            recommendation_criteria (RecommendationCriteria).
+            song_attribute_ranges (SongAttributeRanges).
 
         Returns:
             recommended_tracks_by_percentage (dict): key (float) percentage, in [0,1],
                 value ([Track]) recommended tracks.
         """
         recommendations_by_percent = self._get_recommendations_based_on_tracks_in_batches(
-            track_ids, recommendation_criteria)
+            track_ids, song_attribute_ranges)
         recommended_tracks_by_percentage = defaultdict(list)
         for track, percentage_recommended in recommendations_by_percent.items():
             recommended_tracks_by_percentage[percentage_recommended].append(track)
         return recommended_tracks_by_percentage
 
-    def make_recommendation_criteria(self, audio_features_min, audio_features_max, popularity_min, popularity_max):
+    def make_song_attribute_ranges(self, audio_features_min, audio_features_max, popularity_min, popularity_max):
         """
         Params:
             audio_features_min (AudioFeatures).
@@ -248,16 +248,21 @@ class MusicUtil:
             popularity_min (int): in [0, 100].
             popularity_max (int): in [0, 100].
         """
-        recommendation_criteria = RecommendationCriteria.from_audio_features_min_max_ranges(
+        song_attribute_ranges = SongAttributeRanges.from_audio_features_min_max_ranges(
             audio_features_min, audio_features_max)
-        recommendation_criteria.set_popularity_min_max_range(
+        song_attribute_ranges.set_popularity_min_max_range(
             popularity_min, popularity_max)
-        return recommendation_criteria
+        return song_attribute_ranges
 
-    def get_recommendation_criteria_based_on_audio_attributes(self, playlist, playlist_stats):
+    def get_song_attribute_ranges(self, playlist, playlist_stats):
+        """
+        Params:
+            playlist (Playlist).
+            playlist_stats (PlaylistStats).
+        """
         audio_features_min, audio_features_max = playlist_stats.get_audio_feature_representative_range(playlist)
         popularity_min, popularity_max = playlist_stats.get_popularity_representative_range(playlist)
-        return self.make_recommendation_criteria(
+        return self.make_song_attribute_ranges(
             audio_features_min, audio_features_max, popularity_min, popularity_max)
 
     def _add_artist_genres(self, albums):
@@ -365,11 +370,11 @@ class MusicUtil:
         return self._strip_metadata_in_parentheses_or_brackets(
                 album_name.strip().lower())
 
-    def _get_recommendations_based_on_tracks_in_batches(self, track_ids, recommendation_criteria):
+    def _get_recommendations_based_on_tracks_in_batches(self, track_ids, song_attribute_ranges):
         """
         Params:
             tracks_ids ([str]): max length is 5.
-            recommendation_criteria (RecommendationCriteria).
+            song_attribute_ranges (SongAttributeRanges).
 
         Returns:
             (dict): key (Track), value (float) in [0,1].
@@ -380,7 +385,7 @@ class MusicUtil:
             num_batches += 1
             max_index = min(min_index+recommendation_limit, len(track_ids))
             recommendations = self.spotify_client_wrapper.get_recommendations_based_on_tracks(
-                track_ids[min_index:max_index], recommendation_criteria)
+                track_ids[min_index:max_index], song_attribute_ranges)
             for track in recommendations:
                 if track.id not in track_ids:
                     recommendations_with_count[track] += 1
