@@ -1,4 +1,4 @@
-from collections import defaultdict, namedtuple
+from collections import defaultdict
 from re import match
 
 from app.models.recommendation_criteria import RecommendationCriteria
