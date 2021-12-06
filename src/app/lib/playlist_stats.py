@@ -2,22 +2,6 @@ from app.models.audio_features import AudioFeatures
 from statistics import quantiles
 
 
-MIN_KEY_VALUE = 0
-MAX_KEY_VALUE = 11
-MIN_MODE_VALUE = 0
-MAX_MODE_VALUE = 1
-MIN_TIME_SIGNATURE = 0
-MAX_TIME_SIGNATURE = 11
-MIN_TEMPO = 0
-MAX_TEMPO = 500
-MIN_DURATION_MS = 0
-MAX_DURATION_MS = 900000
-MIN_LOUDNESS = -60
-MAX_LOUDNESS = 0
-MIN_PERCENTAGE = 0
-MAX_PERCENTAGE = 1
-
-
 class PlaylistStats:
     def __init__(self, my_music_lib, music_util, info_logger):
         self.my_music_lib = my_music_lib
@@ -53,61 +37,61 @@ class PlaylistStats:
 
         danceability_min, danceability_max = self._get_audio_feature_min_and_max(
             [track.audio_features.danceability for track in tracks],
-            MIN_PERCENTAGE,
-            MAX_PERCENTAGE,
+            AudioFeatures.MIN_PERCENTAGE,
+            AudioFeatures.MAX_PERCENTAGE,
         )
         energy_min, energy_max = self._get_audio_feature_min_and_max(
             [track.audio_features.energy for track in tracks],
-            MIN_PERCENTAGE,
-            MAX_PERCENTAGE,
+            AudioFeatures.MIN_PERCENTAGE,
+            AudioFeatures.MAX_PERCENTAGE,
         )
         loudness_min, loudness_max = self._get_audio_feature_min_and_max(
             [track.audio_features.loudness for track in tracks],
-            MIN_LOUDNESS,
-            MAX_LOUDNESS,
+            AudioFeatures.MIN_LOUDNESS,
+            AudioFeatures.MAX_LOUDNESS,
         )
         speechiness_min, speechiness_max = self._get_audio_feature_min_and_max(
             [track.audio_features.speechiness for track in tracks],
-            MIN_PERCENTAGE,
-            MAX_PERCENTAGE,
+            AudioFeatures.MIN_PERCENTAGE,
+            AudioFeatures.MAX_PERCENTAGE,
         )
         acousticness_min, acousticness_max = self._get_audio_feature_min_and_max(
             [track.audio_features.acousticness for track in tracks],
-            MIN_PERCENTAGE,
-            MAX_PERCENTAGE,
+            AudioFeatures.MIN_PERCENTAGE,
+            AudioFeatures.MAX_PERCENTAGE,
         )
         instrumentalness_min, instrumentalness_max = self._get_audio_feature_min_and_max(
             [track.audio_features.instrumentalness for track in tracks],
-            MIN_PERCENTAGE,
-            MAX_PERCENTAGE,
+            AudioFeatures.MIN_PERCENTAGE,
+            AudioFeatures.MAX_PERCENTAGE,
         )
         liveness_min, liveness_max = self._get_audio_feature_min_and_max(
             [track.audio_features.valence for track in tracks],
-            MIN_PERCENTAGE,
-            MAX_PERCENTAGE,
+            AudioFeatures.MIN_PERCENTAGE,
+            AudioFeatures.MAX_PERCENTAGE,
         )
         valence_min, valence_max = self._get_audio_feature_min_and_max(
             [track.audio_features.valence for track in tracks],
-            MIN_PERCENTAGE,
-            MAX_PERCENTAGE,
+            AudioFeatures.MIN_PERCENTAGE,
+            AudioFeatures.MAX_PERCENTAGE,
         )
         tempo_min, tempo_max = self._get_audio_feature_min_and_max(
             [track.audio_features.tempo for track in tracks],
-            MIN_TEMPO,
-            MAX_TEMPO,
+            AudioFeatures.MIN_TEMPO,
+            AudioFeatures.MAX_TEMPO,
         )
         duration_ms_min, duration_ms_max = self._get_audio_feature_min_and_max(
             [track.audio_features.duration_ms for track in tracks],
-            MIN_DURATION_MS,
-            MAX_DURATION_MS,
+            AudioFeatures.MIN_DURATION_MS,
+            AudioFeatures.MAX_DURATION_MS,
         )
         return (
             AudioFeatures(
                 danceability_min,
                 energy_min,
-                MIN_KEY_VALUE,
+                AudioFeatures.MIN_KEY_VALUE,
                 loudness_min,
-                MIN_MODE_VALUE,
+                AudioFeatures.MIN_MODE_VALUE,
                 speechiness_min,
                 acousticness_min,
                 instrumentalness_min,
@@ -115,14 +99,14 @@ class PlaylistStats:
                 valence_min,
                 tempo_min,
                 duration_ms_min,
-                MIN_TIME_SIGNATURE,
+                AudioFeatures.MIN_TIME_SIGNATURE,
             ),
             AudioFeatures(
                 danceability_max,
                 energy_max,
-                MAX_KEY_VALUE,
+                AudioFeatures.MAX_KEY_VALUE,
                 loudness_max,
-                MAX_MODE_VALUE,
+                AudioFeatures.MAX_MODE_VALUE,
                 speechiness_max,
                 acousticness_max,
                 instrumentalness_max,
@@ -130,7 +114,7 @@ class PlaylistStats:
                 valence_max,
                 tempo_max,
                 duration_ms_max,
-                MAX_TIME_SIGNATURE,
+                AudioFeatures.MAX_TIME_SIGNATURE,
             ),
         )
 

@@ -1,3 +1,6 @@
+from app.models.audio_features import AudioFeatures
+
+
 class RecommendationCriteria:
     def __init__(self, danceability_range, energy_range, loudness_range, speechiness_range, acousticness_range, instrumentalness_range, liveness_range, valence_range, tempo_range, duration_ms_range, popularity_range, key_range, mode_range, time_signature_range):
         """
@@ -27,10 +30,51 @@ class RecommendationCriteria:
         self.valence_range = valence_range
         self.tempo_range = tempo_range
         self.duration_ms_range = duration_ms_range
-        self.popularity_range = popularity_range
-        self.key_range = key_range
-        self.mode_range = mode_range
-        self.time_signature_range = time_signature_range
+        self.popularity_range = (
+            popularity_range
+            if popularity_range is not None
+            else (AudioFeatures.MIN_POPULARITY, AudioFeatures.MAX_POPULARITY)
+        )
+        self.key_range = (
+            key_range
+            if key_range is not None
+            else (AudioFeatures.MIN_KEY_VALUE, AudioFeatures.MAX_KEY_VALUE)
+        )
+        self.mode_range = (
+            mode_range
+            if mode_range is not None
+            else (AudioFeatures.MIN_MODE_VALUE, AudioFeatures.MAX_MODE_VALUE)
+        )
+        self.time_signature_range = (
+            time_signature_range
+            if time_signature_range is not None
+            else (AudioFeatures.MIN_TIME_SIGNATURE, AudioFeatures.MAX_TIME_SIGNATURE)
+        )
+
+    def __str__(self):
+        return "\n".join([
+            f"Danceability: [{self.danceability_range[0]:.3f}, {self.danceability_range[1]:.3f}]",
+            f"Energy: [{self.energy_range[0]:.3f}, {self.energy_range[1]:.3f}]",
+            f"Loudness: [{self.loudness_range[0]:.3f}, {self.loudness_range[1]:.3f}]",
+            f"Speechiness: [{self.speechiness_range[0]:.3f}, {self.speechiness_range[1]:.3f}]",
+            f"Acousticness: [{self.acousticness_range[0]:.3f}, {self.acousticness_range[1]:.3f}]",
+            f"Instrumentalness: [{self.instrumentalness_range[0]:.3f}, {self.instrumentalness_range[1]:.3f}]",
+            f"Liveness: [{self.liveness_range[0]:.3f}, {self.liveness_range[1]:.3f}]",
+            f"Valence: [{self.valence_range[0]:.3f}, {self.valence_range[1]:.3f}]",
+            f"Tempo: [{self.tempo_range[0]:.3f}, {self.tempo_range[1]:.3f}]",
+            f"Duration in ms: [{self._in_min_sec_format(self.duration_ms_range[0])}, {self._in_min_sec_format(self.duration_ms_range[1])}]",
+            f"Popularity: [{self.popularity_range[0]}, {self.popularity_range[1]}]",
+            f"Key: [{self.key_range[0]}, {self.key_range[1]}]",
+            f"Mode: [{self.mode_range[0]}, {self.mode_range[1]}]",
+            f"Time Signature: [{self.time_signature_range[0]}, {self.time_signature_range[1]}]",
+        ])
+
+    def _in_min_sec_format(self, milliseconds):
+        "Given a (float) milliseconds, returns (str) e.g. '3min20'."
+        seconds = int(milliseconds / 1000)
+        full_minutes = seconds // 60
+        remaining_seconds = seconds % 6
+        return f"{full_minutes}min{remaining_seconds}"
 
     def set_popularity_min_max_range(self, popularity_min, popularity_max):
         self.popularity_range = (popularity_min, popularity_max)

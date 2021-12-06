@@ -1,4 +1,13 @@
 class AudioFeatures:
+    MIN_KEY_VALUE, MAX_KEY_VALUE = 0, 11
+    MIN_MODE_VALUE, MAX_MODE_VALUE = 0, 1
+    MIN_TIME_SIGNATURE, MAX_TIME_SIGNATURE = 0, 11
+    MIN_TEMPO, MAX_TEMPO = 0, 500
+    MIN_DURATION_MS, MAX_DURATION_MS = 0, 900000
+    MIN_LOUDNESS, MAX_LOUDNESS = -60, 0
+    MIN_PERCENTAGE, MAX_PERCENTAGE = 0, 1
+    MIN_POPULARITY, MAX_POPULARITY = 0, 100
+
     def __init__(self, danceability, energy, key, loudness, mode, speechiness, acousticness, instrumentalness, liveness, valence, tempo, duration_ms, time_signature):
         """
         Params:

@@ -35,6 +35,7 @@ class PlaylistUpdater:
     def add_recommended_songs_with_similar_attributes(self, get_num_songs_to_add):
         recommendation_criteria = self.music_util.get_recommendation_criteria_based_on_audio_attributes(
             self.playlist, self.playlist_stats)
+        self.info_logger(f"Got recommendation criteria: {recommendation_criteria}")
         self.add_recommended_songs(recommendation_criteria, get_num_songs_to_add)
 
     def add_recommended_songs(self, recommendation_criteria, get_num_songs_to_add):
