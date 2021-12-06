@@ -240,20 +240,6 @@ class MusicUtil:
             recommended_tracks_by_percentage[percentage_recommended].append(track)
         return recommended_tracks_by_percentage
 
-    def make_song_attribute_ranges(self, audio_features_min, audio_features_max, popularity_min, popularity_max):
-        """
-        Params:
-            audio_features_min (AudioFeatures).
-            audio_features_max (AudioFeatures).
-            popularity_min (int): in [0, 100].
-            popularity_max (int): in [0, 100].
-        """
-        song_attribute_ranges = SongAttributeRanges.from_audio_features_min_max_ranges(
-            audio_features_min, audio_features_max)
-        song_attribute_ranges.set_popularity_min_max_range(
-            popularity_min, popularity_max)
-        return song_attribute_ranges
-
     def get_song_attribute_ranges(self, playlist, playlist_stats):
         """
         Params:
@@ -262,8 +248,11 @@ class MusicUtil:
         """
         audio_features_min, audio_features_max = playlist_stats.get_audio_feature_representative_range(playlist)
         popularity_min, popularity_max = playlist_stats.get_popularity_representative_range(playlist)
-        return self.make_song_attribute_ranges(
-            audio_features_min, audio_features_max, popularity_min, popularity_max)
+        song_attribute_ranges = SongAttributeRanges.from_audio_features_min_max_ranges(
+            audio_features_min, audio_features_max)
+        song_attribute_ranges.set_popularity_min_max_range(
+            popularity_min, popularity_max)
+        return song_attribute_ranges
 
     def _add_artist_genres(self, albums):
         """
