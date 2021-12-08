@@ -29,14 +29,6 @@ class ConsoleUI:
     def tell_user(self, message):
         print(message)
 
-    def _get_int_from_options(self, message, options):
-        criteria = lambda int_: int_ in options
-        return self._get_int_if_meets_criteria(message, criteria)
-
-    def _get_string_from_options(self, message, options):
-        criteria = lambda string_: string_ in options
-        return self._get_string_if_meets_criteria(message, criteria)
-
     def get_int_from_range(self, message, default, min_, max_):
         criteria = lambda int_: int_ >= min_ and int_ <= max_
         selected_int = self._get_int_if_meets_criteria(message, criteria)
@@ -47,6 +39,14 @@ class ConsoleUI:
             self._parse_yes_or_no(self._prompt_user(prompt)),
             default
         )
+
+    def _get_int_from_options(self, message, options):
+        criteria = lambda int_: int_ in options
+        return self._get_int_if_meets_criteria(message, criteria)
+
+    def _get_string_from_options(self, message, options):
+        criteria = lambda string_: string_ in options
+        return self._get_string_if_meets_criteria(message, criteria)
 
     def _get_int_if_meets_criteria(self, message, meets_criteria):
         selection = self._prompt_user(message)

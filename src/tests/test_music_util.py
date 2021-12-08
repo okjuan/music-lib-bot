@@ -1,14 +1,167 @@
 import unittest
 from unittest.mock import patch, MagicMock
 
-from tests.fixtures import mock_album, mock_artist, mock_playlist, mock_track
+from tests.fixtures import mock_album, mock_artist, mock_playlist, mock_song_attribute_ranges, mock_track
 from app.lib.music_util import MusicUtil
 
 
 class TestMusicUtil(unittest.TestCase):
     def setUp(self):
         self.mock_spotify_client = MagicMock()
-        self.music_util = MusicUtil(self.mock_spotify_client)
+        self.music_util = MusicUtil(self.mock_spotify_client, MagicMock())
+
+    def test_populate_popularity_if_absent__no_popularity__populates(self):
+        tracks_without_popularity = [mock_track(popularity=None)]
+        track_with_popularity = [mock_track(popularity=1)]
+        self.mock_spotify_client.get_tracks = MagicMock(
+            return_value=track_with_popularity)
+
+        self.music_util.populate_popularity_if_absent(tracks_without_popularity)
+
+        self.assertIsNotNone(tracks_without_popularity[0].popularity)
+        self.assertEqual(1, tracks_without_popularity[0].popularity)
+
+    def test_populate_popularity_if_absent__some_no_popularity__populates(self):
+        input_tracks = [
+            mock_track(uri="popularity=None", popularity=None),
+            mock_track(uri="popularity is set", popularity=1)
+        ]
+        track_with_popularity = [
+            mock_track(uri="popularity=None", popularity=2),
+        ]
+        self.mock_spotify_client.get_tracks = MagicMock(
+            return_value=track_with_popularity)
+
+        self.music_util.populate_popularity_if_absent(input_tracks)
+
+        self.assertIsNotNone(input_tracks[0].popularity)
+        self.assertEqual(2, len(input_tracks))
+        self.assertEqual(2, input_tracks[0].popularity)
+        self.assertEqual("popularity=None", input_tracks[0].uri)
+        self.assertEqual(1, input_tracks[1].popularity)
+        self.assertEqual("popularity is set", input_tracks[1].uri)
+
+    def test_populate_popularity_if_absent__already_contains_popularity__no_change(self):
+        input_tracks = [
+            mock_track(uri="popularity is 2", popularity=2),
+            mock_track(uri="popularity is 1", popularity=1)
+        ]
+        self.mock_spotify_client.get_tracks = MagicMock(
+            return_value=[])
+
+        self.music_util.populate_popularity_if_absent(input_tracks)
+
+        self.assertIsNotNone(input_tracks[0].popularity)
+        self.assertEqual(2, len(input_tracks))
+        self.assertEqual(2, input_tracks[0].popularity)
+        self.assertEqual("popularity is 2", input_tracks[0].uri)
+        self.assertEqual(1, input_tracks[1].popularity)
+        self.assertEqual("popularity is 1", input_tracks[1].uri)
+
+    def test_populate_popularity_if_absent__some_no_popularity__only_fetches_data_for_those(self):
+        input_tracks = [
+            mock_track(uri="popularity=None", popularity=None),
+            mock_track(uri="popularity is set", popularity=1),
+            mock_track(uri="popularity=None #2", popularity=None),
+        ]
+        self.mock_spotify_client.get_tracks = MagicMock(
+            return_value=[])
+
+        self.music_util.populate_popularity_if_absent(input_tracks)
+
+        self.mock_spotify_client.get_tracks.assert_called_once()
+        self.mock_spotify_client.get_tracks.assert_called_once_with(
+            ["popularity=None", "popularity=None #2"])
+
+    def test_get_recommendations_based_on_tracks__groups_recommendations_with_same_percentage(self):
+        track_ids = ["mock-track-id-1", "mock-track-id-10", "mock-track-id-2"]
+        song_attribute_ranges = mock_song_attribute_ranges()
+        mock_recommendations = {"mock-track-id-1": 1.0, "mock-track-id-10": 0.5, "mock-track-id-2": 0.5}
+        self.music_util._get_recommendations_based_on_tracks_in_batches = MagicMock(
+            return_value=mock_recommendations)
+
+        recommendations_by_percent = self.music_util.get_recommendations_based_on_tracks(
+            track_ids, song_attribute_ranges)
+
+        self.assertEqual(2, len(recommendations_by_percent))
+        self.assertIn(1.0, recommendations_by_percent)
+        self.assertIn(0.5, recommendations_by_percent)
+        self.assertEqual(
+            ["mock-track-id-1"],
+            recommendations_by_percent[1.0]
+        )
+        self.assertEqual(
+            sorted(["mock-track-id-10", "mock-track-id-2"]),
+            sorted(recommendations_by_percent[0.5])
+        )
+
+    def test__get_recommendations_based_on_tracks_in_batches__recommended_for_all_tracks__specifies_100_percent(self):
+        track_ids, song_attribute_ranges = ["mock-seed-track"], mock_song_attribute_ranges()
+        self.mock_spotify_client.get_recommendation_seed_limit = MagicMock(
+            return_value=1)
+        recommended_track = mock_track(id_="mock-recommendation")
+        self.mock_spotify_client.get_recommendations_based_on_tracks = MagicMock(
+            return_value=[recommended_track])
+
+        recommendations_with_percentage = self.music_util._get_recommendations_based_on_tracks_in_batches(
+            track_ids, song_attribute_ranges)
+
+        self.assertEqual(1, len(recommendations_with_percentage))
+        self.assertIn(recommended_track, recommendations_with_percentage)
+        self.assertEqual(1.0, recommendations_with_percentage[recommended_track])
+
+    def test__get_recommendations_based_on_tracks_in_batches__recommended_for_half_the_tracks__specifies_50_percent(self):
+        track_ids = ["mock-seed-track-1", "mock-seed-track-2"]
+        song_attribute_ranges = mock_song_attribute_ranges()
+        self.mock_spotify_client.get_recommendation_seed_limit = MagicMock(
+            return_value=1)
+        recommended_track = mock_track(id_="mock-recommendation")
+        def mock_get_recommendations(track_ids, _):
+            if track_ids == ["mock-seed-track-1"]:
+                return [recommended_track]
+            elif track_ids == ["mock-seed-track-2"]:
+                return []
+            raise NotImplemented()
+        self.mock_spotify_client.get_recommendations_based_on_tracks = MagicMock(
+            side_effect=mock_get_recommendations)
+
+        recommendations_with_percentage = self.music_util._get_recommendations_based_on_tracks_in_batches(
+            track_ids, song_attribute_ranges)
+
+        self.assertEqual(1, len(recommendations_with_percentage))
+        self.assertIn(recommended_track, recommendations_with_percentage)
+        self.assertEqual(0.5, recommendations_with_percentage[recommended_track])
+
+    def test__get_recommendations_based_on_tracks_in_batches__multiple_percentages__recommends_all(self):
+        track_ids = ["mock-seed-track-1", "mock-seed-track-2", "mock-seed-track-3"]
+        song_attribute_ranges = mock_song_attribute_ranges()
+        self.mock_spotify_client.get_recommendation_seed_limit = MagicMock(
+            return_value=1)
+        recommended_track1 = mock_track(id_="mock-recommendation-1")
+        recommended_track2 = mock_track(id_="mock-recommendation-2")
+        def mock_get_recommendations(track_ids, _):
+            if track_ids == ["mock-seed-track-1"]:
+                return [recommended_track1, recommended_track2]
+            elif track_ids == ["mock-seed-track-2"]:
+                return [recommended_track1]
+            elif track_ids == ["mock-seed-track-3"]:
+                return []
+            raise NotImplemented()
+        self.mock_spotify_client.get_recommendations_based_on_tracks = MagicMock(
+            side_effect=mock_get_recommendations)
+
+        recommendations_with_percentage = self.music_util._get_recommendations_based_on_tracks_in_batches(
+            track_ids, song_attribute_ranges)
+
+        self.mock_spotify_client.get_recommendations_based_on_tracks.assert_any_call(
+            ["mock-seed-track-1"], song_attribute_ranges)
+        self.mock_spotify_client.get_recommendations_based_on_tracks.assert_any_call(
+            ["mock-seed-track-2"], song_attribute_ranges)
+        self.mock_spotify_client.get_recommendations_based_on_tracks.assert_any_call(
+            ["mock-seed-track-3"], song_attribute_ranges)
+        self.assertEqual(2, len(recommendations_with_percentage))
+        self.assertEqual(2.0/3.0, recommendations_with_percentage[recommended_track1])
+        self.assertEqual(1.0/3.0, recommendations_with_percentage[recommended_track2])
 
     def test_get_artist_ids(self):
         mock_artists = [mock_artist(id="mock-id-123")]

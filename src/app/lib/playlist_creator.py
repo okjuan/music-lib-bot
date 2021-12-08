@@ -26,15 +26,6 @@ class PlaylistCreator:
         self.duplicate_and_reduce_num_tracks_per_album(
             get_playlist, get_new_playlist_name, get_num_tracks_per_album)
 
-    def _get_discography(self, get_artist):
-        artist = get_artist()
-        if artist is None:
-            return None
-        albums = self.music_util.get_discography(artist)
-        if albums is None or albums == []:
-            return None
-        return albums
-
     def create_playlist_from_an_artists_discography(self, get_artist, get_num_tracks_per_album, get_new_playlist_name):
         albums = self._get_discography(get_artist)
         if albums is None:
@@ -84,3 +75,12 @@ class PlaylistCreator:
         track_uris = [track.id for track in most_popular_tracks_per_album]
         shuffle(track_uris)
         self.my_music_lib.create_playlist(new_playlist_name, track_uris)
+
+    def _get_discography(self, get_artist):
+        artist = get_artist()
+        if artist is None:
+            return None
+        albums = self.music_util.get_discography(artist)
+        if albums is None or albums == []:
+            return None
+        return albums
