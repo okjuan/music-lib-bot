@@ -14,7 +14,8 @@ class PlaylistStats:
             track.popularity
             for track in playlist.tracks
         ]
-        return min(popularities), max(popularities)
+        min, max = self._get_middle_quantile_min_and_max(popularities)
+        return int(min), int(max)
 
     def get_audio_feature_representative_range(self, playlist):
         """Skips tracks that don't have audio_features set. Should call
@@ -130,9 +131,11 @@ class PlaylistStats:
         return value_quantiles[0], value_quantiles[-1]
 
     def _get_min_audio_features(self):
+        # TODO: use AudioFeatures.MIN_*
         return AudioFeatures(
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
     def _get_max_audio_features(self):
+        # TODO: use AudioFeatures.MAX_*
         return AudioFeatures(
             1, 1, 11, 1, 1, 1, 1, 1, 1, 11, 300, 900000, 11)

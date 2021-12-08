@@ -1,5 +1,6 @@
 from collections import defaultdict
 from re import match
+from app.models.audio_features import AudioFeatures
 
 from app.models.song_attribute_ranges import SongAttributeRanges
 
@@ -240,7 +241,7 @@ class MusicUtil:
             recommended_tracks_by_percentage[percentage_recommended].append(track)
         return recommended_tracks_by_percentage
 
-    def get_song_attribute_ranges(self, playlist, playlist_stats):
+    def get_strict_song_attribute_ranges(self, playlist, playlist_stats):
         """
         Params:
             playlist (Playlist).
@@ -253,6 +254,77 @@ class MusicUtil:
         song_attribute_ranges.set_popularity_min_max_range(
             popularity_min, popularity_max)
         return song_attribute_ranges
+
+    def get_lenient_song_attribute_ranges(self, playlist):
+        audio_features_min, audio_features_max = self.get_min_and_max_audio_features(playlist)
+        popularity_min, popularity_max = self.get_min_and_max_popularity(playlist)
+        song_attribute_ranges = SongAttributeRanges.from_audio_features_min_max_ranges(
+            audio_features_min, audio_features_max)
+        song_attribute_ranges.set_popularity_min_max_range(
+            popularity_min, popularity_max)
+        return song_attribute_ranges
+
+    def get_min_and_max_popularity(self, playlist):
+        popularities = [track.popularity for track in playlist.tracks]
+        return min(popularities), max(popularities)
+
+    def get_min_and_max_audio_features(self, playlist):
+        min_audio_features = AudioFeatures.with_maximum_values()
+        max_audio_features = AudioFeatures.with_minimum_values()
+        for track in playlist.tracks:
+            if track.audio_features.danceability < min_audio_features.danceability:
+                min_audio_features.danceability = track.audio_features.danceability
+            if track.audio_features.danceability > max_audio_features.danceability:
+                max_audio_features.danceability = track.audio_features.danceability
+            if track.audio_features.energy < min_audio_features.energy:
+                min_audio_features.energy = track.audio_features.energy
+            if track.audio_features.energy > max_audio_features.energy:
+                max_audio_features.energy = track.audio_features.energy
+            if track.audio_features.key < min_audio_features.key:
+                min_audio_features.key = track.audio_features.key
+            if track.audio_features.key > max_audio_features.key:
+                max_audio_features.key = track.audio_features.key
+            if track.audio_features.loudness < min_audio_features.loudness:
+                min_audio_features.loudness = track.audio_features.loudness
+            if track.audio_features.loudness > max_audio_features.loudness:
+                max_audio_features.loudness = track.audio_features.loudness
+            if track.audio_features.mode < min_audio_features.mode:
+                min_audio_features.mode = track.audio_features.mode
+            if track.audio_features.mode > max_audio_features.mode:
+                max_audio_features.mode = track.audio_features.mode
+            if track.audio_features.speechiness < min_audio_features.speechiness:
+                min_audio_features.speechiness = track.audio_features.speechiness
+            if track.audio_features.speechiness > max_audio_features.speechiness:
+                max_audio_features.speechiness = track.audio_features.speechiness
+            if track.audio_features.acousticness < min_audio_features.acousticness:
+                min_audio_features.acousticness = track.audio_features.acousticness
+            if track.audio_features.acousticness > max_audio_features.acousticness:
+                max_audio_features.acousticness = track.audio_features.acousticness
+            if track.audio_features.instrumentalness < min_audio_features.instrumentalness:
+                min_audio_features.instrumentalness = track.audio_features.instrumentalness
+            if track.audio_features.instrumentalness > max_audio_features.instrumentalness:
+                max_audio_features.instrumentalness = track.audio_features.instrumentalness
+            if track.audio_features.liveness < min_audio_features.liveness:
+                min_audio_features.liveness = track.audio_features.liveness
+            if track.audio_features.liveness > max_audio_features.liveness:
+                max_audio_features.liveness = track.audio_features.liveness
+            if track.audio_features.valence < min_audio_features.valence:
+                min_audio_features.valence = track.audio_features.valence
+            if track.audio_features.valence > max_audio_features.valence:
+                max_audio_features.valence = track.audio_features.valence
+            if track.audio_features.tempo < min_audio_features.tempo:
+                min_audio_features.tempo = track.audio_features.tempo
+            if track.audio_features.tempo > max_audio_features.tempo:
+                max_audio_features.tempo = track.audio_features.tempo
+            if track.audio_features.duration_ms < min_audio_features.duration_ms:
+                min_audio_features.duration_ms = track.audio_features.duration_ms
+            if track.audio_features.duration_ms > max_audio_features.duration_ms:
+                max_audio_features.duration_ms = track.audio_features.duration_ms
+            if track.audio_features.time_signature < min_audio_features.time_signature:
+                min_audio_features.time_signature = track.audio_features.time_signature
+            if track.audio_features.time_signature > max_audio_features.time_signature:
+                max_audio_features.time_signature = track.audio_features.time_signature
+        return min_audio_features, max_audio_features
 
     def _add_artist_genres(self, albums):
         """

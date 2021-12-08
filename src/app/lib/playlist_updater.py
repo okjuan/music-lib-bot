@@ -33,13 +33,26 @@ class PlaylistUpdater:
         self.my_music_lib.add_tracks_in_random_positions(self.playlist, track_uris)
 
     def add_recommended_songs_with_similar_attributes(self, get_num_songs_to_add):
-        num_songs_added = 0
-        while num_songs_added == 0:
-            song_attribute_ranges = self.music_util.get_song_attribute_ranges(
-                self.playlist, self.playlist_stats)
-            self.info_logger(f"Got recommendation criteria: {song_attribute_ranges}")
-            num_songs_added = self.add_recommended_songs(
-                song_attribute_ranges, get_num_songs_to_add)
+        num_songs_added = self._add_recommended_songs_that_match_strict_criteria(
+            get_num_songs_to_add)
+        if num_songs_added > 0:
+            return
+        self.info_logger("Couldn't find recommendations... widening song attribute range")
+        self._add_recommended_songs_that_match_lenient_criteria(
+            get_num_songs_to_add)
+
+    def _add_recommended_songs_that_match_strict_criteria(self, get_num_songs_to_add):
+        song_attribute_ranges = self.music_util.get_strict_song_attribute_ranges(
+            self.playlist, self.playlist_stats)
+        self.info_logger(f"Got recommendation criteria:\n{song_attribute_ranges}")
+        return self.add_recommended_songs(
+            song_attribute_ranges, get_num_songs_to_add)
+
+    def _add_recommended_songs_that_match_lenient_criteria(self, get_num_songs_to_add):
+        song_attribute_ranges = self.music_util.get_lenient_song_attribute_ranges(self.playlist)
+        self.info_logger(f"Got recommendation criteria:\n{song_attribute_ranges}")
+        return self.add_recommended_songs(
+            song_attribute_ranges, get_num_songs_to_add)
 
     def add_recommended_songs(self, song_attribute_ranges, get_num_songs_to_add):
         """
@@ -55,24 +68,24 @@ class PlaylistUpdater:
             song_attribute_ranges,
         )
 
-        recommended_tracks = []
+        highly_recommended_tracks = []
         for recommended_percentage, recommended_tracks in recommended_tracks_by_percentage.items():
             if recommended_percentage < 0.5:
                 self.info_logger(f"Ignoring {len(recommended_tracks)} recommendations because they're not highly recommended.")
             else:
-                self.info_logger(f"Found {len(recommended_tracks)} highly recommended tracks!")
-                recommended_tracks.extend(recommended_tracks)
+                highly_recommended_tracks.extend(recommended_tracks)
 
-        if len(recommended_tracks) == 0:
+        if len(highly_recommended_tracks) == 0:
             self.info_logger("Sorry, couldn't find recommendations to add :(")
-            return
-        self.info_logger(f"Got {len(recommended_tracks)} recommended tracks")
+            return 0
+        self.info_logger(f"Found {len(highly_recommended_tracks)} highly recommended tracks!")
 
-        num_tracks_to_add = min(len(recommended_tracks), get_num_songs_to_add())
-        recommended_tracks = recommended_tracks[:num_tracks_to_add]
+        num_tracks_to_add = min(len(highly_recommended_tracks), get_num_songs_to_add())
+        highly_recommended_tracks = highly_recommended_tracks[:num_tracks_to_add]
         self.info_logger(f"Adding {num_tracks_to_add} tracks to the playlist..")
         self.spotify_client.add_tracks(
-            self.playlist.id, [track.id for track in recommended_tracks])
+            self.playlist.id, [track.id for track in highly_recommended_tracks])
+        return num_tracks_to_add
 
     def _get_tracks_from_my_saved_albums_with_same_genres(self, get_num_tracks_per_album, get_num_albums_to_fetch):
         """Skips albums that are already present in the playlist."""
