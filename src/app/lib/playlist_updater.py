@@ -9,28 +9,33 @@ class PlaylistUpdater:
         self.playlist_stats = playlist_stats
 
     def add_tracks_from_my_saved_albums_with_same_genres(self, get_num_tracks_per_album, get_num_albums_to_fetch):
+        "Returns (int) number of tracks added to playlist"
         track_uris = self._get_tracks_from_my_saved_albums_with_same_genres(
             get_num_tracks_per_album, get_num_albums_to_fetch)
 
         if len(track_uris) == 0:
             self.info_logger(f"Couldn't find any new tracks in your library with the same exact genres as your playlist '{self.playlist.name}'")
-            self.info_logger("Consider calling 'add_tracks_from_my_saved_albums_with_similar_genres' instead, which is less strict about genre matching")
-            return
+            return 0
 
         self.info_logger(f"Found {len(track_uris)} tracks with exact same genres as those already in your playlist..")
         self.my_music_lib.add_tracks_in_random_positions(self.playlist, track_uris)
+        return len(track_uris)
 
     def add_tracks_from_my_saved_albums_with_similar_genres(self, get_num_tracks_per_album, get_num_albums_to_fetch):
-        "Less strict version of add_tracks_from_my_saved_albums_with_same_genres"
+        """Less strict version of add_tracks_from_my_saved_albums_with_same_genres
+        Returns:
+            (int): number of tracks added to playlist.
+        """
         track_uris = self._get_tracks_from_my_saved_albums_with_similar_genres(
             get_num_tracks_per_album, get_num_albums_to_fetch)
 
         if len(track_uris) == 0:
             self.info_logger(f"Couldn't find any new tracks in your library with similar genres as those your playlist '{self.playlist.name}'")
-            return
+            return 0
 
         self.info_logger(f"Found {len(track_uris)} tracks with similar genres to those already in your playlist..")
         self.my_music_lib.add_tracks_in_random_positions(self.playlist, track_uris)
+        return len(track_uris)
 
     def add_recommended_songs_with_similar_attributes(self, get_num_songs_to_add):
         num_songs_added = self._add_recommended_songs_that_match_strict_criteria(
