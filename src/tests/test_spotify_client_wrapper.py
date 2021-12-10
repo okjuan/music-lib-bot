@@ -16,6 +16,16 @@ class TestSpotifyClientWrapper(unittest.TestCase):
     def test_add_tracks(self):
         pass
 
+    def test_get_artist_genres(self):
+        artist_id = "3nFkdlSjzX9mRTtwJOzDYB" # Jay-Z
+
+        artist_genres = self.spotify_client_wrapper.get_artist_genres(artist_id)
+
+        self.assertEqual(
+            sorted(['east coast hip hop', 'hip hop', 'rap']),
+            sorted(artist_genres),
+        )
+
     def test_get_my_albums(self):
         num_albums_to_fetch = 10
 

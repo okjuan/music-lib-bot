@@ -10,6 +10,84 @@ class TestMusicUtil(unittest.TestCase):
         self.mock_spotify_client = MagicMock()
         self.music_util = MusicUtil(self.mock_spotify_client, MagicMock())
 
+    def test_get_highly_common_genres__none_in_top_perecent__returns_genres_in_2nd_top_percent(self):
+        mock_playlist_id = "mock-playlist-id"
+        def mock_get_most_common_genres(_, top_percentage):
+            if top_percentage == 10:
+                return []
+            elif top_percentage == 20:
+                return ['rock']
+            else:
+                return []
+        self.music_util.get_most_common_genres = mock_get_most_common_genres
+
+        genres = self.music_util.get_highly_common_genres(mock_playlist_id)
+
+        self.assertEqual(['rock'], genres)
+
+    def test_get_highly_common_genres__no_genres(self):
+        mock_playlist_id = "mock-playlist-id"
+        def mock_get_most_common_genres(_, top_percentage):
+            return []
+        self.music_util.get_most_common_genres = mock_get_most_common_genres
+
+        genres = self.music_util.get_highly_common_genres(mock_playlist_id)
+
+        self.assertEqual([], genres)
+
+    def test_get_most_common_genres__single_genre__returns_that_genre(self):
+        playlist_id = "mock-playlist-id"
+        top_percentage = 1
+        self.music_util.get_genres_by_frequency = MagicMock(
+            # rock constitutes 100%
+            return_value=dict(rock=1))
+
+        genres = self.music_util.get_most_common_genres(
+            playlist_id, top_percentage)
+
+        self.assertEqual(["rock"], genres)
+
+    def test_get_most_common_genres__single_top_genre__returns_that_genre(self):
+        playlist_id = "mock-playlist-id"
+        top_percentage = 50
+        self.music_util.get_genres_by_frequency = MagicMock(
+            # rock constitutes 66%, pop %33%
+            return_value=dict(rock=2, pop=1))
+
+        genres = self.music_util.get_most_common_genres(
+            playlist_id, top_percentage)
+
+        self.assertEqual(["rock"], genres)
+
+    def test_get_common_genres_in_playlist__single_artist__returns_their_genres(self):
+        playlist_id = "mock-playlist-id"
+        genres = ['east coast hip hop', 'hip hop', 'rap']
+        self.mock_spotify_client.get_artist_genres = MagicMock(
+            return_value=genres)
+        self.music_util.get_artist_ids = MagicMock(return_value=["mock-artist-id"])
+
+        genres_in_common = self.music_util.get_common_genres_in_playlist(playlist_id)
+
+        self.assertEqual(
+            sorted(['east coast hip hop', 'hip hop', 'rap']),
+            sorted(genres_in_common),
+        )
+
+    def test_get_common_genres_in_playlist__same_artist_multiple_times__returns_their_genres(self):
+        playlist_id = "mock-playlist-id"
+        genres = ['east coast hip hop', 'hip hop', 'rap']
+        self.mock_spotify_client.get_artist_genres = MagicMock(
+            return_value=genres)
+        self.music_util.get_artist_ids = MagicMock(
+            return_value=["mock-artist-id", "mock-artist-id"])
+
+        genres_in_common = self.music_util.get_common_genres_in_playlist(playlist_id)
+
+        self.assertEqual(
+            sorted(['east coast hip hop', 'hip hop', 'rap']),
+            sorted(genres_in_common),
+        )
+
     def test_populate_popularity_if_absent__no_popularity__populates(self):
         tracks_without_popularity = [mock_track(popularity=None)]
         track_with_popularity = [mock_track(popularity=1)]

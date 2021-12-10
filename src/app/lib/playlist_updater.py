@@ -110,17 +110,11 @@ class PlaylistUpdater:
 
     def _get_tracks_from_my_saved_albums_with_similar_genres(self, get_num_tracks_per_album, get_num_albums_to_fetch):
         "Less strict version of _get_tracks_from_my_saved_albums_with_same_genres"
-        genres = self._get_most_common_genres()
-        if len(genres) == 0:
-            self.info_logger("Couldn't find any genres :(")
-            return []
-        self.info_logger(f"Your playlist's most common genres are: {', '.join(genres)}")
-
+        genres = self.music_util.get_highly_common_genres(self.playlist.id)
         matching_albums_in_your_library = self._get_my_albums_with_superset_genres(genres, get_num_albums_to_fetch)
         self.info_logger(f"Found {len(matching_albums_in_your_library)} albums in your library that contain genres: {', '.join(genres)}")
         if len(matching_albums_in_your_library) == 0:
             return []
-
         return self._get_most_popular_tracks_if_albums_not_already_in_playlist(
             matching_albums_in_your_library, get_num_tracks_per_album)
 
@@ -139,18 +133,6 @@ class PlaylistUpdater:
     def _get_genres_in_common_in_playlist(self):
         if self.playlist_genres is None:
             self.playlist_genres = self.music_util.get_common_genres_in_playlist(self.playlist.id)
-        return self.playlist_genres
-
-    def _get_most_common_genres(self):
-        "Returns top 10% most common genres. If 10% < 1 then return most common genre."
-        if self.playlist_genres is not None:
-            return self.playlist_genres
-
-        target_genres = self.music_util.get_genres_by_frequency(self.playlist.id)
-        target_genres_list = [(genre, count) for genre, count in target_genres.items()]
-        target_genres_list.sort(key=lambda pair: pair[1], reverse=True)
-        top_10_percent = max(int(len(target_genres_list)/10), 1)
-        self.playlist_genres = [genre for genre, _ in target_genres_list[:top_10_percent]]
         return self.playlist_genres
 
     def _get_my_albums_with_same_genres(self, genres, get_num_albums_to_fetch):

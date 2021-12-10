@@ -58,7 +58,7 @@ class MusicLibBot:
             self.get_num_tracks_per_album, self.get_num_albums_to_fetch)
         if num_tracks_added > 0:
             return
-        self.ui.tell_user("Couldn't find tracks with same genres... going to try similar genres instead.")
+        self.ui.tell_user("Will try to add songs with similar genres..")
         playlist_updater.add_tracks_from_my_saved_albums_with_similar_genres(
             self.get_num_tracks_per_album, self.get_num_albums_to_fetch)
 

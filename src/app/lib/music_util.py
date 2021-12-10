@@ -119,7 +119,46 @@ class MusicUtil:
             genres_in_common &= genres
         return list(genres_in_common)
 
+    def get_highly_common_genres(self, playlist_id):
+        """
+        Params:
+            playlist_id (str).
+
+        Returns:
+            genres ([str]).
+        """
+        genres, top_percentages = [], [10, 20, 30, 40, 50]
+        for top_percentage in top_percentages:
+            genres = self.get_most_common_genres(playlist_id, top_percentage)
+            if len(genres) > 0:
+                break
+        if len(genres) == 0:
+            self.info_logger("Couldn't find any genres :(")
+            return []
+        self.info_logger(f"Your playlist's most common genres are: {', '.join(genres)}")
+        return genres
+
+    def get_most_common_genres(self, playlist_id, top_percent):
+        """Get top x% most common genres, or single most common one.
+
+        Params:
+            playlist_id (str).
+            top_percent (int): [1, 100].
+
+        Returns:
+            genres ([str]).
+        """
+        target_genres = self.get_genres_by_frequency(playlist_id)
+        target_genres_list = [(genre, count) for genre, count in target_genres.items()]
+        target_genres_list.sort(key=lambda pair: pair[1], reverse=True)
+        genres_in_top_percent = max(int(len(target_genres_list)/top_percent), 1)
+        return [genre for genre, _ in target_genres_list[:genres_in_top_percent]]
+
     def get_genres_by_frequency(self, spotify_playlist_id):
+        """
+        Returns:
+            (dict): key (str) genre, value (int) count.
+        """
         genre_count = defaultdict(int)
         for artist_id in self.get_artist_ids(spotify_playlist_id):
             genres = self.spotify_client_wrapper.get_artist_genres(artist_id)
