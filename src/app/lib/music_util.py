@@ -109,15 +109,25 @@ class MusicUtil:
         return list(set([track.album_id for track in tracks]))
 
     def get_common_genres_in_playlist(self, spotify_playlist_id):
-        artist_ids = self.get_artist_ids(spotify_playlist_id)
-        if len(artist_ids) == 0:
-            return []
-
-        genres_in_common = set(self.spotify_client_wrapper.get_artist_genres(artist_ids[0]))
-        for artist_id in artist_ids[1:]:
-            genres = set(self.spotify_client_wrapper.get_artist_genres(artist_id))
-            genres_in_common &= genres
+        playlist = self.spotify_client_wrapper.get_playlist(spotify_playlist_id)
+        genres_in_common = set()
+        for track in playlist.tracks:
+            genres = self.get_genres([
+                artist.id
+                for artist in track.artists
+            ])
+            if len(genres_in_common) == 0:
+                genres_in_common = genres
+            else:
+                genres_in_common &= genres
         return list(genres_in_common)
+
+    def get_genres(self, artist_ids):
+        all_genres = set()
+        for artist_id in artist_ids:
+            artist_genres = self.spotify_client_wrapper.get_artist_genres(artist_id)
+            all_genres |= set(artist_genres)
+        return all_genres
 
     def get_highly_common_genres(self, playlist_id):
         """
