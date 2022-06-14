@@ -57,6 +57,6 @@ class MyMusicLib:
             self.info_logger("Oops, no tracks given, so I can't add them to your playlist.")
         self.info_logger(f"Adding {len(track_uris)} randomly throughout your playlist: '{playlist.name}'")
         for track in track_uris:
-            random_position = randint(1, playlist.num_tracks) if playlist.num_tracks > 0 else 1
+            random_position = randint(1, playlist.get_num_tracks()) if playlist.get_num_tracks() > 0 else 1
             self.add_track_to_playlist_at_position(
                 playlist.id, track, random_position)
