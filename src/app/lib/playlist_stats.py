@@ -9,10 +9,10 @@ class PlaylistStats:
         self.info_logger = info_logger
 
     def get_popularity_representative_range(self, playlist):
-        self.music_util.populate_popularity_if_absent(playlist.tracks)
+        self.music_util.populate_popularity_if_absent(playlist.get_tracks())
         popularities = [
             track.popularity
-            for track in playlist.tracks
+            for track in playlist.get_tracks()
         ]
         min, max = self._get_middle_quantile_min_and_max(popularities)
         return int(min), int(max)
@@ -30,7 +30,7 @@ class PlaylistStats:
         """
         tracks = [
             track
-            for track in playlist.tracks
+            for track in playlist.get_tracks()
             if track.audio_features is not None
         ]
         if len(tracks) == 1:

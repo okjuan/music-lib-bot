@@ -64,10 +64,9 @@ class SpotifyClientWrapper:
             results = self.client.artist_albums(
                 artist_id, album_type="album", offset=offset)
             finished = len(results['items']) + offset >= results['total']
-            return results['items'], finished
-        albums_metadata = self._fetch_until_all_items_returned(album_fetcher)
-        return self.get_albums(
-            [album['id'] for album in albums_metadata])
+            return [album['id'] for album in results['items']], finished
+        album_ids = self._fetch_until_all_items_returned(album_fetcher)
+        return self.get_albums(album_ids)
 
     def get_my_albums(self, max_albums_to_fetch):
         def my_album_fetcher(offset=0):
@@ -76,10 +75,9 @@ class SpotifyClientWrapper:
             items = results['items'][:min(num_results, max_albums_to_fetch)]
             albums = [item['album'] for item in items]
             finished = num_results + offset >= max_albums_to_fetch
-            return albums, finished
-        albums_metadata = self._fetch_until_all_items_returned(my_album_fetcher)
-        return self.get_albums(
-            [album['id'] for album in albums_metadata])
+            return [album['id'] for album in albums], finished
+        album_ids = self._fetch_until_all_items_returned(my_album_fetcher)
+        return self.get_albums(album_ids)
 
     def get_tracks(self, track_ids):
         def track_fetcher(track_ids):
@@ -200,16 +198,17 @@ class SpotifyClientWrapper:
             results = self.client.playlist_tracks(
                 playlist_id, offset=offset)
             finished = len(results['items']) + offset >= results['total']
-            return results['items'], finished
+            tracks = [
+                Track.from_spotify_playlist_track(track)
+                for track in results['items']
+            ]
+            return tracks, finished
 
-        playlist_track_metadata = self._fetch_until_all_items_returned(track_fetcher)
-        return [
-            Track.from_spotify_playlist_track(track)
-            for track in playlist_track_metadata
-        ]
+        return self._fetch_until_all_items_returned(track_fetcher)
 
     def _fetch_until_all_items_returned(self, fetch_func):
-        """
+        """Skips duplicates that Spotify returns for some reason.
+
         Params:
             fetch_func (func): optional param 'offset',
                 returning a 2-tuple where:
@@ -220,12 +219,13 @@ class SpotifyClientWrapper:
             (List): all fetched items.
         """
         all_items, finished = fetch_func()
+        all_items = set(all_items)
         offset, batch_size = 0, API_BATCH_SIZE
         while not finished:
             offset += batch_size
             items, finished = fetch_func(offset=offset)
-            all_items.extend(items)
-        return all_items
+            all_items |= set(items)
+        return list(all_items)
 
     def _fetch_in_batches(self, item_ids, fetch_items):
         """

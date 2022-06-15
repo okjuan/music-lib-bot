@@ -69,7 +69,7 @@ class MusicLibBot:
         song_attribute_ranges = self.music_util.get_lenient_song_attribute_ranges(
             playlist)
         recommended_tracks_by_percentage = self.music_util.get_recommendations_based_on_tracks(
-            [track.id for track in playlist.tracks],
+            [track.id for track in playlist.get_tracks()],
             song_attribute_ranges,
         )
         if len(recommended_tracks_by_percentage) == 0:

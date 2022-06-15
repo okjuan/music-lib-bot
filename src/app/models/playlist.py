@@ -9,6 +9,17 @@ class Playlist:
         self.tracks = None
         self.num_tracks = None
 
+    def __key(self):
+        return self.id
+
+    def __hash__(self):
+        return hash(self.__key())
+
+    def __eq__(self, other):
+        if isinstance(other, Playlist):
+            return self.__key() == other.__key()
+        return NotImplemented
+
     def get_tracks(self):
         if self.tracks is None:
             self.tracks = self.tracks_fetcher()

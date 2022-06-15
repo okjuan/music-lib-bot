@@ -111,7 +111,7 @@ class MusicUtil:
     def get_common_genres_in_playlist(self, spotify_playlist_id):
         playlist = self.spotify_client_wrapper.get_playlist(spotify_playlist_id)
         genres_in_common = set()
-        for track in playlist.tracks:
+        for track in playlist.get_tracks():
             genres = self.get_genres([
                 artist.id
                 for artist in track.artists
@@ -181,7 +181,7 @@ class MusicUtil:
         playlist = self.spotify_client_wrapper.get_playlist(spotify_playlist_id)
         return list({
             artist.id
-            for track in playlist.tracks
+            for track in playlist.get_tracks()
             for artist in track.artists
         })
 
@@ -265,10 +265,10 @@ class MusicUtil:
         """
         audio_features_by_track_ids = self.spotify_client_wrapper.get_audio_features_by_track_id([
             track.uri
-            for track in playlist.tracks
+            for track in playlist.get_tracks()
             if track.audio_features is None
         ])
-        for track in playlist.tracks:
+        for track in playlist.get_tracks():
             if track.id in audio_features_by_track_ids:
                 track.set_audio_features(
                     audio_features_by_track_ids[track.id])
@@ -314,13 +314,13 @@ class MusicUtil:
         return song_attribute_ranges
 
     def get_min_and_max_popularity(self, playlist):
-        popularities = [track.popularity for track in playlist.tracks]
+        popularities = [track.popularity for track in playlist.get_tracks()]
         return min(popularities), max(popularities)
 
     def get_min_and_max_audio_features(self, playlist):
         min_audio_features = AudioFeatures.with_maximum_values()
         max_audio_features = AudioFeatures.with_minimum_values()
-        for track in playlist.tracks:
+        for track in playlist.get_tracks():
             if track.audio_features.danceability < min_audio_features.danceability:
                 min_audio_features.danceability = track.audio_features.danceability
             if track.audio_features.danceability > max_audio_features.danceability:

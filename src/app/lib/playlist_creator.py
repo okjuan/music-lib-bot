@@ -60,7 +60,7 @@ class PlaylistCreator:
     def duplicate_and_reduce_num_tracks_per_album(self, get_playlist, get_new_playlist_name, get_num_tracks_per_album):
         tracks_by_album = defaultdict(list)
         playlist = get_playlist()
-        for track in playlist.tracks:
+        for track in playlist.get_tracks():
             tracks_by_album[track.album_id].append(track)
 
         most_popular_tracks_per_album, num_tracks_per_album = [], get_num_tracks_per_album()
