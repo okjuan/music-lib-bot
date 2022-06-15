@@ -246,6 +246,14 @@ class MusicUtil:
             return album1 if album1.popularity > album2.popularity else album2
         return self.filter_out_duplicates(albums, prefer_most_popular)
 
+    def filter_out_if_not_in_albums(self, tracks, albums):
+        album_ids = [album.id for album in albums]
+        return [
+            track
+            for track in tracks
+            if track.album_id in album_ids
+        ]
+
     def get_album_by_artist(self, album_name, artist):
         "Returns list of matching albums"
         matching_artists = self.spotify_client_wrapper.get_matching_artists(artist)
@@ -256,6 +264,14 @@ class MusicUtil:
             for album in albums
             if self.is_same_album_name(album_name, album.name)
         ]
+
+    def get_albums_in_playlist(self, playlist):
+        "Returns list of unique album IDs."
+        album_ids =  list({
+            track.album_id
+            for track in playlist.get_tracks()
+        })
+        return self.spotify_client_wrapper.get_albums(album_ids)
 
     def populate_track_audio_features(self, playlist):
         """Fetches and sets track.audio_features for each track in the playlist.

@@ -56,6 +56,22 @@ class SpotifyClientWrapper:
                     return playlist['id']
         return None
 
+    def find_current_user_matching_playlists(self, keyword):
+        def get_playlist_tracks(spotify_playlist_id):
+            return lambda: self._get_playlist_tracks(spotify_playlist_id)
+        def playlist_fetcher(offset=0):
+            results = self.client.current_user_playlists(offset=offset)
+            matching_playlists = [
+                Playlist.from_spotify_playlist_search_results(
+                    playlist, get_playlist_tracks(playlist['id']))
+                for playlist in results['items']
+                if keyword in playlist['name']
+            ]
+            finished = len(results['items']) + offset >= results['total']
+            return matching_playlists, finished
+        playlists = self._fetch_until_all_items_returned(playlist_fetcher)
+        return playlists
+
     def get_artist_genres(self, artist_id):
         return self.client.artist(artist_id)['genres']
 
@@ -126,6 +142,9 @@ class SpotifyClientWrapper:
             [track_uri],
             position=position,
         )
+
+    def remove_tracks_from_playlist(self, playlist_id, track_uris):
+        self.client.playlist_remove_all_occurrences_of_items(playlist_id, track_uris)
 
     def get_audio_features_by_track_id(self, track_ids):
         """

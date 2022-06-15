@@ -42,3 +42,12 @@ class Playlist:
                 for track in spotify_playlist['tracks']['items']
             ],
         )
+
+    def from_spotify_playlist_search_results(spotify_playlist, tracks_fetcher):
+        playlist = Playlist(
+            spotify_playlist['id'],
+            spotify_playlist['name'],
+            spotify_playlist['description'],
+            tracks_fetcher,
+        )
+        return playlist
