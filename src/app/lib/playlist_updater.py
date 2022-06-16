@@ -69,7 +69,7 @@ class PlaylistUpdater:
         """
         self.info_logger("Getting recommendations..")
         recommended_tracks_by_percentage = self.music_util.get_recommendations_based_on_tracks(
-            [track.id for track in self.playlist.tracks],
+            [track.id for track in self.playlist.get_tracks()],
             song_attribute_ranges,
         )
 
@@ -119,7 +119,7 @@ class PlaylistUpdater:
             matching_albums_in_your_library, get_num_tracks_per_album)
 
     def _get_most_popular_tracks_if_albums_not_already_in_playlist(self, matching_albums_in_your_library, get_num_tracks_per_album):
-        ids_of_albums_in_playlist, tracks = self.music_util.get_album_ids(self.playlist.tracks), []
+        ids_of_albums_in_playlist, tracks = self.music_util.get_album_ids(self.playlist.get_tracks()), []
         num_tracks_per_album = get_num_tracks_per_album()
         for album in matching_albums_in_your_library:
             if album.id in ids_of_albums_in_playlist:

@@ -789,6 +789,42 @@ class TestMusicUtil(unittest.TestCase):
 
         self.assertEqual(3, len(album_groups))
 
+    def test_filter_out_if_not_in_albums__all_tracks_in_albums__does_not_filter_any(self):
+        mock_tracks = [mock_track(album=mock_album(id="album123"))]
+        mock_albums = [mock_album(id="album123")]
+
+        tracks = self.music_util.filter_out_if_not_in_albums(mock_tracks, mock_albums)
+
+        self.assertEqual(tracks, mock_tracks)
+
+    def test_filter_out_if_not_in_albums__some_tracks_in_albums__filter_out_others(self):
+        mock_tracks = [
+            mock_track(album=mock_album(id="album123")),
+            mock_track(album=mock_album(id="some other album")),
+        ]
+        mock_albums = [mock_album(id="album123")]
+
+        tracks = self.music_util.filter_out_if_not_in_albums(mock_tracks, mock_albums)
+
+        self.assertEqual(len(tracks), 1)
+        self.assertEqual(tracks[0].album_id, "album123")
+
+    def test_filter_out_if_not_in_albums__no_tracks__none_returned(self):
+        mock_tracks = []
+        mock_albums = [mock_album(id="album123")]
+
+        tracks = self.music_util.filter_out_if_not_in_albums(mock_tracks, mock_albums)
+
+        self.assertEqual(len(tracks), 0)
+
+    def test_filter_out_if_not_in_albums__no_albums__none_returned(self):
+        mock_tracks = [mock_track()]
+        mock_albums = []
+
+        tracks = self.music_util.filter_out_if_not_in_albums(mock_tracks, mock_albums)
+
+        self.assertEqual(len(tracks), 0)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -56,6 +56,22 @@ class SpotifyClientWrapper:
                     return playlist['id']
         return None
 
+    def find_current_user_matching_playlists(self, keyword):
+        def get_playlist_tracks(spotify_playlist_id):
+            return lambda: self._get_playlist_tracks(spotify_playlist_id)
+        def playlist_fetcher(offset=0):
+            results = self.client.current_user_playlists(offset=offset)
+            matching_playlists = [
+                Playlist.from_spotify_playlist_search_results(
+                    playlist, get_playlist_tracks(playlist['id']))
+                for playlist in results['items']
+                if keyword in playlist['name']
+            ]
+            finished = len(results['items']) + offset >= results['total']
+            return matching_playlists, finished
+        playlists = self._fetch_until_all_items_returned(playlist_fetcher)
+        return playlists
+
     def get_artist_genres(self, artist_id):
         return self.client.artist(artist_id)['genres']
 
@@ -63,10 +79,10 @@ class SpotifyClientWrapper:
         def album_fetcher(offset=0):
             results = self.client.artist_albums(
                 artist_id, album_type="album", offset=offset)
-            return results['items'], results['total']
-        albums_metadata = self._fetch_until_all_items_returned(album_fetcher)
-        return self.get_albums(
-            [album['id'] for album in albums_metadata])
+            finished = len(results['items']) + offset >= results['total']
+            return [album['id'] for album in results['items']], finished
+        album_ids = self._fetch_until_all_items_returned(album_fetcher)
+        return self.get_albums(album_ids)
 
     def get_my_albums(self, max_albums_to_fetch):
         def my_album_fetcher(offset=0):
@@ -74,10 +90,10 @@ class SpotifyClientWrapper:
             num_results = len(results['items'])
             items = results['items'][:min(num_results, max_albums_to_fetch)]
             albums = [item['album'] for item in items]
-            return albums, max_albums_to_fetch
-        albums_metadata = self._fetch_until_all_items_returned(my_album_fetcher)
-        return self.get_albums(
-            [album['id'] for album in albums_metadata])
+            finished = num_results + offset >= max_albums_to_fetch
+            return [album['id'] for album in albums], finished
+        album_ids = self._fetch_until_all_items_returned(my_album_fetcher)
+        return self.get_albums(album_ids)
 
     def get_tracks(self, track_ids):
         def track_fetcher(track_ids):
@@ -126,6 +142,9 @@ class SpotifyClientWrapper:
             [track_uri],
             position=position,
         )
+
+    def remove_tracks_from_playlist(self, playlist_id, track_uris):
+        self.client.playlist_remove_all_occurrences_of_items(playlist_id, track_uris)
 
     def get_audio_features_by_track_id(self, track_ids):
         """
@@ -197,30 +216,35 @@ class SpotifyClientWrapper:
         def track_fetcher(offset=0):
             results = self.client.playlist_tracks(
                 playlist_id, offset=offset)
-            return results['items'], results['total']
+            finished = len(results['items']) + offset >= results['total']
+            tracks = [
+                Track.from_spotify_playlist_track(track)
+                for track in results['items']
+            ]
+            return tracks, finished
 
-        playlist_track_metadata = self._fetch_until_all_items_returned(track_fetcher)
-        return [
-            Track.from_spotify_playlist_track(track)
-            for track in playlist_track_metadata
-        ]
+        return self._fetch_until_all_items_returned(track_fetcher)
 
     def _fetch_until_all_items_returned(self, fetch_func):
-        """
+        """Skips duplicates that Spotify returns for some reason.
+
         Params:
             fetch_func (func): optional param 'offset',
-                returns a 2-tuple where:
-                - ([dict]) 1st item is the fetched items
-                - (int) 2nd item is the total items
+                returning a 2-tuple where:
+                - (List) the fetched items
+                - (bool) whether fetching has finished
+
+        Returns:
+            (List): all fetched items.
         """
-        all_items, total = fetch_func()
-        num_results_fetched = len(all_items)
-        while num_results_fetched < total:
-            offset = num_results_fetched
-            items, total = fetch_func(offset=offset)
-            num_results_fetched += len(items)
-            all_items.extend(items)
-        return all_items
+        all_items, finished = fetch_func()
+        all_items = set(all_items)
+        offset, batch_size = 0, API_BATCH_SIZE
+        while not finished:
+            offset += batch_size
+            items, finished = fetch_func(offset=offset)
+            all_items |= set(items)
+        return list(all_items)
 
     def _fetch_in_batches(self, item_ids, fetch_items):
         """

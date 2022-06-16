@@ -57,3 +57,33 @@ class TestSpotifyClientWrapper(unittest.TestCase):
             playlist_name)
 
         self.assertEqual("62y1x73aOCl7F52EcAfHbP", playlist_id)
+
+    @unittest.skip("takes too long to run")
+    def test_find_current_user_matching_playlists(self):
+        playlists = self.spotify_client_wrapper.find_current_user_matching_playlists(
+            "test playlist for music.lib.bot")
+
+        self.assertEqual(len(playlists), 1)
+        self.assertEqual(playlists[0].name, "test playlist for music.lib.bot")
+        self.assertEqual(playlists[0].id, "0n7rtEEIWS0SZuZLCjxjhN")
+
+    @unittest.skip("takes too long to run")
+    def test_find_current_user_matching_playlists(self):
+        playlists = self.spotify_client_wrapper.find_current_user_matching_playlists(
+            "multiple test playlists for music.lib.bot")
+
+        self.assertEqual(len(playlists), 2)
+        self.assertIn(
+            playlists[0].name,
+            [
+                "multiple test playlists for music.lib.bot v1",
+                "multiple test playlists for music.lib.bot v2",
+            ]
+        )
+        self.assertIn(
+            playlists[0].id,
+            [
+                "0d8y7RfDpXDYH1jmzgF5Ii",
+                "4LDXQjT9E9PbB9Tn8C5Yxk",
+            ]
+        )
