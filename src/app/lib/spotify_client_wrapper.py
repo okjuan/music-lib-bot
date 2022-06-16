@@ -63,7 +63,8 @@ class SpotifyClientWrapper:
         def album_fetcher(offset=0):
             results = self.client.artist_albums(
                 artist_id, album_type="album", offset=offset)
-            return results['items'], results['total']
+            finished = len(results['items']) + offset >= results['total']
+            return results['items'], finished
         albums_metadata = self._fetch_until_all_items_returned(album_fetcher)
         return self.get_albums(
             [album['id'] for album in albums_metadata])
@@ -74,7 +75,8 @@ class SpotifyClientWrapper:
             num_results = len(results['items'])
             items = results['items'][:min(num_results, max_albums_to_fetch)]
             albums = [item['album'] for item in items]
-            return albums, max_albums_to_fetch
+            finished = num_results + offset >= max_albums_to_fetch
+            return albums, finished
         albums_metadata = self._fetch_until_all_items_returned(my_album_fetcher)
         return self.get_albums(
             [album['id'] for album in albums_metadata])
@@ -197,7 +199,8 @@ class SpotifyClientWrapper:
         def track_fetcher(offset=0):
             results = self.client.playlist_tracks(
                 playlist_id, offset=offset)
-            return results['items'], results['total']
+            finished = len(results['items']) + offset >= results['total']
+            return results['items'], finished
 
         playlist_track_metadata = self._fetch_until_all_items_returned(track_fetcher)
         return [
@@ -209,16 +212,18 @@ class SpotifyClientWrapper:
         """
         Params:
             fetch_func (func): optional param 'offset',
-                returns a 2-tuple where:
-                - ([dict]) 1st item is the fetched items
-                - (int) 2nd item is the total items
+                returning a 2-tuple where:
+                - (List) the fetched items
+                - (bool) whether fetching has finished
+
+        Returns:
+            (List): all fetched items.
         """
-        all_items, total = fetch_func()
-        num_results_fetched = len(all_items)
-        while num_results_fetched < total:
-            offset = num_results_fetched
-            items, total = fetch_func(offset=offset)
-            num_results_fetched += len(items)
+        all_items, finished = fetch_func()
+        offset, batch_size = 0, API_BATCH_SIZE
+        while not finished:
+            offset += batch_size
+            items, finished = fetch_func(offset=offset)
             all_items.extend(items)
         return all_items
 
