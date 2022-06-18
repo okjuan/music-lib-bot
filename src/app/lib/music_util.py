@@ -519,3 +519,10 @@ class MusicUtil:
             track: float(count)/num_batches
             for track, count in recommendations_with_count.items()
         }
+
+    def get_num_diff_artists(self, albums):
+        return len({
+            artist.id
+            for album in albums
+            for artist in album.artists
+        })

@@ -160,13 +160,6 @@ class MusicLibBot:
             DEFAULT_LOOK_AT_ENTIRE_LIBRARY
         )
 
-    def get_num_diff_artists(self, albums):
-        return len({
-            artist.id
-            for album in albums
-            for artist in album.artists
-        })
-
     def get_albums_by_genre(self):
         min_genres_per_group = self.get_min_genres_per_group()
         if self.look_at_entire_library():
@@ -186,7 +179,7 @@ class MusicLibBot:
         """
         min_albums_per_playlist = self.get_min_albums_per_playlist()
         min_artists_per_playlist = self.get_min_artists_per_playlist()
-        playlist_criteria = lambda albums: len(albums) >= min_albums_per_playlist and self.get_num_diff_artists(albums) >= min_artists_per_playlist
+        playlist_criteria = lambda albums: len(albums) >= min_albums_per_playlist and self.music_util.get_num_diff_artists(albums) >= min_artists_per_playlist
         return [
             dict(
                 description=', '.join(album_group['genres']),
