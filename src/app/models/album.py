@@ -66,6 +66,8 @@ class Album:
         """
         # sometime Spotify just gives a year
         if len(spotify_release_date) == 4:
+            if spotify_release_date == '0000':
+                return None
             # default to first day of year
             return datetime.fromisocalendar(int(spotify_release_date), 1, 1)
         elif len(spotify_release_date) == 7:
