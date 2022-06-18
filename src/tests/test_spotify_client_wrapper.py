@@ -1,9 +1,9 @@
 from os import putenv
 import unittest
 
-from app.models.album import Album
-from app.models.artist import Artist
-from app.lib.spotify_client_wrapper import SpotifyClientWrapper
+from packages.spotify.models.album import Album
+from packages.spotify.models.artist import Artist
+from packages.spotify.spotify_client_wrapper import SpotifyClientWrapper
 
 
 class TestSpotifyClientWrapper(unittest.TestCase):

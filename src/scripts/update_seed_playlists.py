@@ -5,7 +5,7 @@ sys.path.extend(['.', '../'])
 
 from app.lib.my_music_lib import MyMusicLib
 from app.lib.music_util import MusicUtil
-from app.lib.spotify_client_wrapper import SpotifyClientWrapper
+from packages.spotify.spotify_client_wrapper import SpotifyClientWrapper
 
 NUM_TRACKS_PER_ALBUM = 3
 

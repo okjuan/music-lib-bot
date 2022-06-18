@@ -1,4 +1,4 @@
-from app.models.artist import Artist
+from packages.spotify.models.artist import Artist
 
 
 class Track:

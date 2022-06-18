@@ -9,7 +9,7 @@ from app.lib.playlist_creator import PlaylistCreator
 from app.lib.playlist_stats import PlaylistStats
 from app.lib.playlist_updater import PlaylistUpdater
 from app.lib.interactive_option_picker import InteractiveOptionPicker
-from app.lib.spotify_client_wrapper import SpotifyClientWrapper
+from packages.spotify.spotify_client_wrapper import SpotifyClientWrapper
 from app.lib.console_ui import ConsoleUI
 
 DEFAULT_LOOK_AT_ENTIRE_LIBRARY = False
