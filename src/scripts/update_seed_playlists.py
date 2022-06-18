@@ -30,7 +30,7 @@ def main():
             current_albums = []
 
         albums_to_add = set(seed_albums) - set(current_albums)
-        albums_to_remove = set(current_albums) - set(seed_albums)
+        #albums_to_remove = set(current_albums) - set(seed_albums)
 
         if len(albums_to_add) > 0:
             print("Finding what tracks to add..")
@@ -39,14 +39,16 @@ def main():
             print(f"Adding {len(tracks_to_add)} tracks.")
             my_music_lib.add_tracks_in_random_positions(
                 target_playlist, [track.uri for track in tracks_to_add])
+        else:
+            print(f"Playlist '{target_playlist.name}' is all up-to-date!")
 
-        if len(albums_to_remove) > 0:
-            print("Finding the tracks to remove..")
-            tracks_to_remove = music_util.filter_out_if_not_in_albums(
-                target_playlist.tracks, albums_to_remove)
-            print(f"Removing {len(tracks_to_remove)} tracks.")
-            my_music_lib.remove_tracks_from_playlist(
-                target_playlist, [track.uri for track in tracks_to_remove])
+        #if len(albums_to_remove) > 0:
+        #    print("Finding the tracks to remove..")
+        #    tracks_to_remove = music_util.filter_out_if_not_in_albums(
+        #        target_playlist.tracks, albums_to_remove)
+        #    print(f"Removing {len(tracks_to_remove)} tracks.")
+        #    my_music_lib.remove_tracks_from_playlist(
+        #        target_playlist, [track.uri for track in tracks_to_remove])
 
 
 if __name__ == "__main__":
