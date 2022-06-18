@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import patch, MagicMock
 
 from tests.fixtures import mock_album, mock_artist, mock_playlist, mock_song_attribute_ranges, mock_track
-from app.lib.music_util import MusicUtil
+from packages.music_management.music_util import MusicUtil
 
 
 class TestMusicUtil(unittest.TestCase):

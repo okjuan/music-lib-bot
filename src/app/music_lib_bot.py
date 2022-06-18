@@ -3,11 +3,11 @@
 import sys
 sys.path.extend(['.', '../'])
 
-from app.lib.music_util import MusicUtil
-from app.lib.my_music_lib import MyMusicLib
-from app.lib.playlist_creator import PlaylistCreator
-from app.lib.playlist_stats import PlaylistStats
-from app.lib.playlist_updater import PlaylistUpdater
+from packages.music_management.music_util import MusicUtil
+from packages.music_management.my_music_lib import MyMusicLib
+from packages.music_management.playlist_creator import PlaylistCreator
+from packages.music_management.playlist_stats import PlaylistStats
+from packages.music_management.playlist_updater import PlaylistUpdater
 from app.lib.interactive_option_picker import InteractiveOptionPicker
 from packages.spotify.spotify_client_wrapper import SpotifyClientWrapper
 from app.lib.console_ui import ConsoleUI

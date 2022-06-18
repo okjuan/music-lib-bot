@@ -3,7 +3,7 @@
 import sys
 sys.path.extend(['.', '../'])
 
-from app.lib.music_util import MusicUtil
+from packages.music_management.music_util import MusicUtil
 from packages.spotify.spotify_client_wrapper import SpotifyClientWrapper
 
 

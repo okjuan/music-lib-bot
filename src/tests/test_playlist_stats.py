@@ -1,8 +1,8 @@
 import unittest
 from unittest.mock import MagicMock
-from app.lib.music_util import MusicUtil
-from app.lib.my_music_lib import MyMusicLib
-from app.lib.playlist_stats import PlaylistStats
+from packages.music_management.music_util import MusicUtil
+from packages.music_management.my_music_lib import MyMusicLib
+from packages.music_management.playlist_stats import PlaylistStats
 from tests.fixtures import mock_audio_features, mock_playlist, mock_track
 
 
