@@ -65,7 +65,7 @@ class TestSpotify(unittest.TestCase):
 
         self.assertEqual(len(playlists), 1)
         self.assertEqual(playlists[0].name, "test playlist for music.lib.bot")
-        self.assertEqual(playlists[0].id, "0n7rtEEIWS0SZuZLCjxjhN")
+        self.assertEqual(playlists[0].spotify_id, "0n7rtEEIWS0SZuZLCjxjhN")
 
     @unittest.skip("takes too long to run")
     def test_find_current_user_matching_playlists(self):
@@ -81,7 +81,7 @@ class TestSpotify(unittest.TestCase):
             ]
         )
         self.assertIn(
-            playlists[0].id,
+            playlists[0].spotify_id,
             [
                 "0d8y7RfDpXDYH1jmzgF5Ii",
                 "4LDXQjT9E9PbB9Tn8C5Yxk",

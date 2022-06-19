@@ -2,23 +2,23 @@ from packages.music_api_clients.models.artist import Artist
 
 
 class Track:
-    def __init__(self, name, id_, uri, album_id, artists, disc_number, duration_ms, popularity, track_number, audio_features=None):
+    def __init__(self, name, artists, disc_number, duration_ms, popularity, track_number, spotify_album_id=None, spotify_id=None, spotify_uri=None, audio_features=None):
         self.name = name
-        self.id = id_
-        self.uri = uri
-        self.album_id = album_id
         self.artists = artists
         self.disc_number = disc_number
         self.duration_ms = duration_ms
         self.popularity = popularity
         self.track_number = track_number
+        self.spotify_album_id = spotify_album_id
+        self.spotify_id = spotify_id
+        self.spotify_uri = spotify_uri
         self.audio_features = audio_features
 
     def set_audio_features(self, audio_features):
         self.audio_features = audio_features
 
     def __key(self):
-        return self.id
+        return self.spotify_id
 
     def __hash__(self):
         return hash(self.__key())
@@ -42,9 +42,6 @@ class Track:
         """
         return Track(
             spotify_track['name'],
-            spotify_track['id'],
-            spotify_track['uri'],
-            spotify_track['album']['id'],
             [
                 Artist.from_spotify_track_artist(artist)
                 for artist in spotify_track['artists']
@@ -53,14 +50,14 @@ class Track:
             spotify_track['duration_ms'],
             spotify_track['popularity'],
             spotify_track['track_number'],
+            spotify_album_id=spotify_track['album']['id'],
+            spotify_id=spotify_track['id'],
+            spotify_uri=spotify_track['uri'],
         )
 
-    def from_spotify_album_track(spotify_track, album_id):
+    def from_spotify_album_track(spotify_track, spotify_album_id):
         return Track(
             spotify_track['name'],
-            spotify_track['id'],
-            spotify_track['uri'],
-            album_id,
             [
                 Artist.from_spotify_album_track_artist(artist)
                 for artist in spotify_track['artists']
@@ -69,4 +66,7 @@ class Track:
             spotify_track['duration_ms'],
             None,
             spotify_track['track_number'],
+            spotify_album_id=spotify_album_id,
+            spotify_id=spotify_track['id'],
+            spotify_uri=spotify_track['uri'],
         )

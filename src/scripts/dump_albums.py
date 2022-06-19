@@ -13,7 +13,7 @@ def main():
 
     matching_artists = spotify.get_matching_artists("beatles")
     artist = music_util.get_most_popular_artist(matching_artists)
-    for album in spotify.get_artist_albums(artist.id):
+    for album in spotify.get_artist_albums(artist.spotify_id):
         print(album.name)
 
 

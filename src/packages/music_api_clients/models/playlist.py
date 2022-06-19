@@ -1,16 +1,16 @@
 from packages.music_api_clients.models.track import Track
 
 class Playlist:
-    def __init__(self, id_, name, description, tracks_fetcher):
-        self.id = id_
+    def __init__(self, name, description, tracks_fetcher, spotify_id=None):
         self.name = name
         self.description = description
         self.tracks_fetcher = tracks_fetcher
+        self.spotify_id = spotify_id
         self.tracks = None
         self.num_tracks = None
 
     def __key(self):
-        return self.id
+        return self.spotify_id
 
     def __hash__(self):
         return hash(self.__key())
@@ -34,20 +34,20 @@ class Playlist:
 
     def from_spotify_playlist(spotify_playlist):
         return Playlist(
-            spotify_playlist['id'],
             spotify_playlist['name'],
             spotify_playlist['description'],
             lambda: [
                 Track.from_spotify_playlist_track(track)
                 for track in spotify_playlist['tracks']['items']
             ],
+            spotify_id=spotify_playlist['id'],
         )
 
     def from_spotify_playlist_search_results(spotify_playlist, tracks_fetcher):
         playlist = Playlist(
-            spotify_playlist['id'],
             spotify_playlist['name'],
             spotify_playlist['description'],
             tracks_fetcher,
+            spotify_id=spotify_playlist['id'],
         )
         return playlist

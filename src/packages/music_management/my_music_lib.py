@@ -23,7 +23,7 @@ class MyMusicLib:
     def create_playlist(self, name, track_uris, description=""):
         playlist = self.music_api_client.create_playlist(name, description)
         if len(track_uris) > 0:
-            self.music_api_client.add_tracks(playlist.id, track_uris)
+            self.music_api_client.add_tracks(playlist.spotify_id, track_uris)
         return playlist
 
     def get_or_create_playlist(self, name):
@@ -71,15 +71,15 @@ class MyMusicLib:
         if playlist.get_num_tracks() == 0:
             shuffled_track_uris = track_uris[:]
             shuffle(shuffled_track_uris)
-            self.add_tracks_to_playlist(playlist.id, shuffled_track_uris)
+            self.add_tracks_to_playlist(playlist.spotify_id, shuffled_track_uris)
         else:
             num_tracks_in_playlist = playlist.get_num_tracks()
             for track in track_uris:
                 random_position = randint(1, num_tracks_in_playlist)
                 self.add_track_to_playlist_at_position(
-                    playlist.id, track, random_position)
+                    playlist.spotify_id, track, random_position)
                 num_tracks_in_playlist += 1
 
     def remove_tracks_from_playlist(self, playlist, track_uris):
         self.music_api_client.remove_tracks_from_playlist(
-            playlist.id, track_uris)
+            playlist.spotify_id, track_uris)

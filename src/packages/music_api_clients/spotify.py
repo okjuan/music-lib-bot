@@ -39,7 +39,7 @@ class Spotify:
     def get_playlist(self, playlist_id):
         playlist = Playlist.from_spotify_playlist(
             self.client.playlist(playlist_id))
-        playlist.tracks = self._get_playlist_tracks(playlist.id)
+        playlist.tracks = self._get_playlist_tracks(playlist.spotify_id)
         return playlist
 
     def find_current_user_playlist(self, playlist_name):

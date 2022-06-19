@@ -14,8 +14,8 @@ class MusicUtil:
         genres_by_album_ids = defaultdict(list)
         for album in self.music_api_client.get_albums(album_ids):
             for artist in album.artists:
-                genres_by_album_ids[album.id].extend(
-                    self.music_api_client.get_artist_genres(artist.id))
+                genres_by_album_ids[album.spotify_id].extend(
+                    self.music_api_client.get_artist_genres(artist.spotify_id))
         return genres_by_album_ids
 
     def group_albums_by_genre(self, albums, min_genres_per_group):
@@ -64,16 +64,16 @@ class MusicUtil:
     def populate_popularity_if_absent(self, tracks):
         track_uris_popularity_missing, track_index_by_uri = [], {}
         for index, track in enumerate(tracks):
-            track_index_by_uri[track.uri] = index
+            track_index_by_uri[track.spotify_uri] = index
             if track.popularity is None:
-                track_uris_popularity_missing.append(track.uri)
+                track_uris_popularity_missing.append(track.spotify_uri)
         if len(track_uris_popularity_missing) == 0:
             return
 
         tracks_w_popularity = self.music_api_client.get_tracks(
             track_uris_popularity_missing)
         for track in tracks_w_popularity:
-            index = track_index_by_uri[track.uri]
+            index = track_index_by_uri[track.spotify_uri]
             tracks[index].popularity = track.popularity
 
     def get_most_popular_artist(self, artists):
@@ -105,14 +105,14 @@ class MusicUtil:
         ])
 
     def get_album_ids(self, tracks):
-        return list(set([track.album_id for track in tracks]))
+        return list(set([track.spotify_album_id for track in tracks]))
 
     def get_common_genres_in_playlist(self, spotify_playlist_id):
         playlist = self.music_api_client.get_playlist(spotify_playlist_id)
         genres_in_common = set()
         for track in playlist.get_tracks():
             genres = self.get_genres([
-                artist.id
+                artist.spotify_id
                 for artist in track.artists
             ])
             if len(genres_in_common) == 0:
@@ -179,7 +179,7 @@ class MusicUtil:
         "spotify_playlist_id (str) -> [set] where each element is an artist id (str)"
         playlist = self.music_api_client.get_playlist(spotify_playlist_id)
         return list({
-            artist.id
+            artist.spotify_id
             for track in playlist.get_tracks()
             for artist in track.artists
         })
@@ -188,7 +188,7 @@ class MusicUtil:
         return sorted(albums, key=lambda album: album.release_date)
 
     def get_discography(self, artist):
-        return self.music_api_client.get_artist_albums(artist.id)
+        return self.music_api_client.get_artist_albums(artist.spotify_id)
 
     def is_live(self, album):
         # '(?i)' is a flag that enables cap insensitivity
@@ -246,18 +246,18 @@ class MusicUtil:
         return self.filter_out_duplicates(albums, prefer_most_popular)
 
     def filter_out_if_not_in_albums(self, tracks, albums):
-        album_ids = [album.id for album in albums]
+        album_ids = [album.spotify_id for album in albums]
         return [
             track
             for track in tracks
-            if track.album_id in album_ids
+            if track.spotify_album_id in album_ids
         ]
 
     def get_album_by_artist(self, album_name, artist):
         "Returns list of matching albums"
         matching_artists = self.music_api_client.get_matching_artists(artist)
         artist = self.get_most_popular_artist(matching_artists)
-        albums = self.music_api_client.get_artist_albums(artist.id)
+        albums = self.music_api_client.get_artist_albums(artist.spotify_id)
         return [
             album
             for album in albums
@@ -267,7 +267,7 @@ class MusicUtil:
     def get_albums_in_playlist(self, playlist):
         "Returns list of unique album IDs."
         album_ids =  list({
-            track.album_id
+            track.spotify_album_id
             for track in playlist.get_tracks()
         })
         return self.music_api_client.get_albums(album_ids)
@@ -279,14 +279,14 @@ class MusicUtil:
             playlist (Playlist).
         """
         audio_features_by_track_ids = self.music_api_client.get_audio_features_by_track_id([
-            track.uri
+            track.spotify_uri
             for track in playlist.get_tracks()
             if track.audio_features is None
         ])
         for track in playlist.get_tracks():
-            if track.id in audio_features_by_track_ids:
+            if track.spotify_id in audio_features_by_track_ids:
                 track.set_audio_features(
-                    audio_features_by_track_ids[track.id])
+                    audio_features_by_track_ids[track.spotify_id])
 
     def get_recommendations_based_on_tracks(self, track_ids, song_attribute_ranges):
         """
@@ -402,14 +402,14 @@ class MusicUtil:
         """
         albums_by_id = dict()
         for album in albums:
-            artist_ids = [artist.id for artist in album.artists]
+            artist_ids = [artist.spotify_id for artist in album.artists]
             genres = list(set([
                 genre
                 for artist_id in artist_ids
                 for genre in self.music_api_client.get_artist_genres(artist_id)
             ]))
             album.set_genres(genres)
-            albums_by_id[album.id] = album
+            albums_by_id[album.spotify_id] = album
         return albums_by_id
 
     def _detect_genre_matches(self, albums_by_id):
@@ -417,9 +417,9 @@ class MusicUtil:
         for _, album in albums_by_id.items():
             for genre in album.genres:
                 for matching_album_id in genre_to_albums[genre]:
-                    adjacencies[album.id][matching_album_id].append(genre)
-                    adjacencies[matching_album_id][album.id].append(genre)
-                genre_to_albums[genre].add(album.id)
+                    adjacencies[album.spotify_id][matching_album_id].append(genre)
+                    adjacencies[matching_album_id][album.spotify_id].append(genre)
+                genre_to_albums[genre].add(album.spotify_id)
         return adjacencies
 
     def _as_readable_key(self, list_):
@@ -512,7 +512,7 @@ class MusicUtil:
             recommendations = self.music_api_client.get_recommendations_based_on_tracks(
                 track_ids[min_index:max_index], song_attribute_ranges)
             for track in recommendations:
-                if track.id not in track_ids:
+                if track.spotify_id not in track_ids:
                     recommendations_with_count[track] += 1
         return {
             track: float(count)/num_batches
@@ -521,7 +521,7 @@ class MusicUtil:
 
     def get_num_diff_artists(self, albums):
         return len({
-            artist.id
+            artist.spotify_id
             for album in albums
             for artist in album.artists
         })

@@ -11,7 +11,7 @@ from packages.music_api_clients.spotify import Spotify
 def get_playlist_metadata(my_music_lib, playlist_name):
     playlist = my_music_lib.get_playlist_by_name(playlist_name)
     # from this, discovered https://github.com/okjuan/music-lib-bot/issues/13
-    return (playlist, playlist.id, playlist.name, playlist.get_num_tracks())
+    return (playlist, playlist.spotify_id, playlist.name, playlist.get_num_tracks())
 
 def main():
     spotify = Spotify()

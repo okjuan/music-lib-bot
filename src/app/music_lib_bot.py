@@ -69,7 +69,7 @@ class MusicLibBot:
         song_attribute_ranges = self.music_util.get_lenient_song_attribute_ranges(
             playlist)
         recommended_tracks_by_percentage = self.music_util.get_recommendations_based_on_tracks(
-            [track.id for track in playlist.get_tracks()],
+            [track.spotify_id for track in playlist.get_tracks()],
             song_attribute_ranges,
         )
         if len(recommended_tracks_by_percentage) == 0:
@@ -89,7 +89,7 @@ class MusicLibBot:
 
         def recommended_track_pick_handler(recommended_tracks_with_percentage):
             self.my_music_lib.add_tracks_to_playlist(
-                playlist.id, [track.id for track in recommended_tracks_with_percentage["tracks"]])
+                playlist.spotify_id, [track.spotify_id for track in recommended_tracks_with_percentage["tracks"]])
         def get_recommended_track_description(recommended_tracks_with_percentage):
             percentage = int(recommended_tracks_with_percentage['recommended_percentage'] * 100)
             preamble = f"Recommended with {percentage}% confidence:\n- "
