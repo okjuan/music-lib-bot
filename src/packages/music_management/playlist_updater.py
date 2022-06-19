@@ -10,32 +10,32 @@ class PlaylistUpdater:
 
     def add_tracks_from_my_saved_albums_with_same_genres(self, get_num_tracks_per_album, get_num_albums_to_fetch):
         "Returns (int) number of tracks added to playlist"
-        track_uris = self._get_tracks_from_my_saved_albums_with_same_genres(
+        tracks = self._get_tracks_from_my_saved_albums_with_same_genres(
             get_num_tracks_per_album, get_num_albums_to_fetch)
 
-        if len(track_uris) == 0:
+        if len(tracks) == 0:
             self.info_logger(f"Couldn't find any new tracks in your library with the same exact genres as your playlist '{self.playlist.name}'")
             return 0
 
-        self.info_logger(f"Found {len(track_uris)} tracks with exact same genres as those already in your playlist..")
-        self.my_music_lib.add_tracks_in_random_positions(self.playlist, track_uris)
-        return len(track_uris)
+        self.info_logger(f"Found {len(tracks)} tracks with exact same genres as those already in your playlist..")
+        self.my_music_lib.add_tracks_in_random_positions(self.playlist, tracks)
+        return len(tracks)
 
     def add_tracks_from_my_saved_albums_with_similar_genres(self, get_num_tracks_per_album, get_num_albums_to_fetch):
         """Less strict version of add_tracks_from_my_saved_albums_with_same_genres
         Returns:
             (int): number of tracks added to playlist.
         """
-        track_uris = self._get_tracks_from_my_saved_albums_with_similar_genres(
+        tracks = self._get_tracks_from_my_saved_albums_with_similar_genres(
             get_num_tracks_per_album, get_num_albums_to_fetch)
 
-        if len(track_uris) == 0:
+        if len(tracks) == 0:
             self.info_logger(f"Couldn't find any new tracks in your library with similar genres as those your playlist '{self.playlist.name}'")
             return 0
 
-        self.info_logger(f"Found {len(track_uris)} tracks with similar genres to those already in your playlist..")
-        self.my_music_lib.add_tracks_in_random_positions(self.playlist, track_uris)
-        return len(track_uris)
+        self.info_logger(f"Found {len(tracks)} tracks with similar genres to those already in your playlist..")
+        self.my_music_lib.add_tracks_in_random_positions(self.playlist, tracks)
+        return len(tracks)
 
     def add_recommended_songs_with_similar_attributes(self, get_num_songs_to_add):
         num_songs_added = self._add_recommended_songs_that_match_strict_criteria(
@@ -69,9 +69,7 @@ class PlaylistUpdater:
         """
         self.info_logger("Getting recommendations..")
         recommended_tracks_by_percentage = self.music_util.get_recommendations_based_on_tracks(
-            [track.spotify_id for track in self.playlist.get_tracks()],
-            song_attribute_ranges,
-        )
+            self.playlist.get_tracks(), song_attribute_ranges)
 
         highly_recommended_tracks = []
         for recommended_percentage, recommended_tracks in recommended_tracks_by_percentage.items():
@@ -89,7 +87,7 @@ class PlaylistUpdater:
         highly_recommended_tracks = highly_recommended_tracks[:num_tracks_to_add]
         self.info_logger(f"Adding {num_tracks_to_add} tracks to the playlist..")
         self.music_api_client.add_tracks(
-            self.playlist.spotify_id, [track.spotify_id for track in highly_recommended_tracks])
+            self.playlist, highly_recommended_tracks)
         return num_tracks_to_add
 
     def _get_tracks_from_my_saved_albums_with_same_genres(self, get_num_tracks_per_album, get_num_albums_to_fetch):
@@ -110,7 +108,7 @@ class PlaylistUpdater:
 
     def _get_tracks_from_my_saved_albums_with_similar_genres(self, get_num_tracks_per_album, get_num_albums_to_fetch):
         "Less strict version of _get_tracks_from_my_saved_albums_with_same_genres"
-        genres = self.music_util.get_highly_common_genres(self.playlist.spotify_id)
+        genres = self.music_util.get_highly_common_genres(self.playlist)
         matching_albums_in_your_library = self._get_my_albums_with_superset_genres(genres, get_num_albums_to_fetch)
         self.info_logger(f"Found {len(matching_albums_in_your_library)} albums in your library that contain genres: {', '.join(genres)}")
         if len(matching_albums_in_your_library) == 0:
@@ -119,20 +117,19 @@ class PlaylistUpdater:
             matching_albums_in_your_library, get_num_tracks_per_album)
 
     def _get_most_popular_tracks_if_albums_not_already_in_playlist(self, matching_albums_in_your_library, get_num_tracks_per_album):
-        ids_of_albums_in_playlist, tracks = self.music_util.get_album_ids(self.playlist.get_tracks()), []
-        num_tracks_per_album = get_num_tracks_per_album()
+        tracks, num_tracks_per_album = [], get_num_tracks_per_album()
         for album in matching_albums_in_your_library:
-            if album.spotify_id in ids_of_albums_in_playlist:
+            if self.playlist.has_any_tracks_from_album(album):
                 self.info_logger(f"Oh! Skipping album '{album.name}' because it's already in the playlist.")
             else:
                 most_popular_tracks = self.music_util.get_most_popular_tracks(
                     album, num_tracks_per_album)
-                tracks.extend([track.spotify_uri for track in most_popular_tracks])
+                tracks.extend(most_popular_tracks)
         return tracks
 
     def _get_genres_in_common_in_playlist(self):
         if self.playlist_genres is None:
-            self.playlist_genres = self.music_util.get_common_genres_in_playlist(self.playlist.spotify_id)
+            self.playlist_genres = self.music_util.get_common_genres_in_playlist(self.playlist)
         return self.playlist_genres
 
     def _get_my_albums_with_same_genres(self, genres, get_num_albums_to_fetch):

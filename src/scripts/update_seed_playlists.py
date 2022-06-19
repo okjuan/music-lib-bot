@@ -48,7 +48,7 @@ def main():
         #        target_playlist.tracks, albums_to_remove)
         #    print(f"Removing {len(tracks_to_remove)} tracks.")
         #    my_music_lib.remove_tracks_from_playlist(
-        #        target_playlist, [track.spotify_uri for track in tracks_to_remove])
+        #        target_playlist, tracks_to_remove)
 
 
 if __name__ == "__main__":

@@ -32,6 +32,12 @@ class Playlist:
             self.num_tracks = len(self.tracks)
         return self.num_tracks
 
+    def has_any_tracks_from_album(self, album):
+        for track in self.get_tracks():
+            if album.contains_track(track):
+                return True
+        return False
+
     def from_spotify_playlist(spotify_playlist):
         return Playlist(
             spotify_playlist['name'],

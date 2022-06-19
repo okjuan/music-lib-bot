@@ -1,6 +1,7 @@
 from os import putenv
 import unittest
 
+from tests.fixtures import mock_artist, mock_track, mock_playlist, mock_audio_features
 from packages.music_api_clients.models.album import Album
 from packages.music_api_clients.models.artist import Artist
 from packages.music_api_clients.spotify import Spotify
@@ -17,9 +18,9 @@ class TestSpotify(unittest.TestCase):
         pass
 
     def test_get_artist_genres(self):
-        artist_id = "3nFkdlSjzX9mRTtwJOzDYB" # Jay-Z
+        artist = mock_artist(spotify_id="3nFkdlSjzX9mRTtwJOzDYB") # Jay-Z
 
-        artist_genres = self.spotify.get_artist_genres(artist_id)
+        artist_genres = self.spotify.get_artist_genres(artist)
 
         self.assertEqual(
             sorted(['east coast hip hop', 'hip hop', 'rap']),
@@ -36,9 +37,9 @@ class TestSpotify(unittest.TestCase):
         self.assertEqual(Artist, type(albums[0].artists[0]))
 
     def test_get_artist_albums(self):
-        artist_id = "74ASZWbe4lXaubB36ztrGX" # Bob Dylan
+        artist = mock_artist(spotify_id="74ASZWbe4lXaubB36ztrGX") # Bob Dylan
 
-        albums = self.spotify.get_artist_albums(artist_id)
+        albums = self.spotify.get_artist_albums(artist)
 
         self.assertIn("Rough and Rowdy Ways", [album.name for album in albums])
 
@@ -57,6 +58,14 @@ class TestSpotify(unittest.TestCase):
             playlist_name)
 
         self.assertEqual("62y1x73aOCl7F52EcAfHbP", playlist_id)
+
+    def test_populate_track_audio_features(self):
+        track = mock_track(
+            spotify_id="1ZZMu5cxiU4eFUNVwMnCJq", audio_features=None)
+
+        self.spotify.set_track_audio_features([track])
+
+        self.assertIsNotNone(track.audio_features)
 
     @unittest.skip("takes too long to run")
     def test_find_current_user_matching_playlists(self):

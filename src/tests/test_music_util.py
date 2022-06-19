@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch, MagicMock
 
-from tests.fixtures import mock_album, mock_artist, mock_playlist, mock_song_attribute_ranges, mock_track
+from tests.fixtures import mock_album, mock_artist, mock_audio_features, mock_playlist, mock_song_attribute_ranges, mock_track
 from packages.music_management.music_util import MusicUtil
 
 
@@ -71,29 +71,31 @@ class TestMusicUtil(unittest.TestCase):
         self.assertEqual(1, tracks_without_popularity[0].popularity)
 
     def test_populate_popularity_if_absent__some_no_popularity__populates(self):
+        track_with_popularity_missing = mock_track(
+            spotify_id="popularity=None", popularity=None)
         input_tracks = [
-            mock_track(spotify_uri="popularity=None", popularity=None),
-            mock_track(spotify_uri="popularity is set", popularity=1)
+            track_with_popularity_missing,
+            mock_track(spotify_id="popularity is set", popularity=1)
         ]
-        track_with_popularity = [
-            mock_track(spotify_uri="popularity=None", popularity=2),
+        track_with_popularity__after_fetched = [
+            mock_track(spotify_id="popularity=None", popularity=2),
         ]
         self.mock_spotify.get_tracks = MagicMock(
-            return_value=track_with_popularity)
+            return_value=track_with_popularity__after_fetched)
 
         self.music_util.populate_popularity_if_absent(input_tracks)
 
         self.assertIsNotNone(input_tracks[0].popularity)
         self.assertEqual(2, len(input_tracks))
         self.assertEqual(2, input_tracks[0].popularity)
-        self.assertEqual("popularity=None", input_tracks[0].spotify_uri)
+        self.assertEqual("popularity=None", input_tracks[0].spotify_id)
         self.assertEqual(1, input_tracks[1].popularity)
-        self.assertEqual("popularity is set", input_tracks[1].spotify_uri)
+        self.assertEqual("popularity is set", input_tracks[1].spotify_id)
 
     def test_populate_popularity_if_absent__already_contains_popularity__no_change(self):
         input_tracks = [
-            mock_track(spotify_uri="popularity is 2", popularity=2),
-            mock_track(spotify_uri="popularity is 1", popularity=1)
+            mock_track(spotify_id="popularity is 2", popularity=2),
+            mock_track(spotify_id="popularity is 1", popularity=1)
         ]
         self.mock_spotify.get_tracks = MagicMock(
             return_value=[])
@@ -103,15 +105,17 @@ class TestMusicUtil(unittest.TestCase):
         self.assertIsNotNone(input_tracks[0].popularity)
         self.assertEqual(2, len(input_tracks))
         self.assertEqual(2, input_tracks[0].popularity)
-        self.assertEqual("popularity is 2", input_tracks[0].spotify_uri)
+        self.assertEqual("popularity is 2", input_tracks[0].spotify_id)
         self.assertEqual(1, input_tracks[1].popularity)
-        self.assertEqual("popularity is 1", input_tracks[1].spotify_uri)
+        self.assertEqual("popularity is 1", input_tracks[1].spotify_id)
 
     def test_populate_popularity_if_absent__some_no_popularity__only_fetches_data_for_those(self):
+        track_with_popularity_missing = mock_track(spotify_id="popularity=None", popularity=None)
+        track_with_popularity_missing_2 = mock_track(spotify_id="popularity=None #2", popularity=None)
         input_tracks = [
-            mock_track(spotify_uri="popularity=None", popularity=None),
-            mock_track(spotify_uri="popularity is set", popularity=1),
-            mock_track(spotify_uri="popularity=None #2", popularity=None),
+            track_with_popularity_missing,
+            mock_track(spotify_id="popularity is set", popularity=1),
+            track_with_popularity_missing_2,
         ]
         self.mock_spotify.get_tracks = MagicMock(
             return_value=[])
@@ -120,29 +124,35 @@ class TestMusicUtil(unittest.TestCase):
 
         self.mock_spotify.get_tracks.assert_called_once()
         self.mock_spotify.get_tracks.assert_called_once_with(
-            ["popularity=None", "popularity=None #2"])
+            [track_with_popularity_missing, track_with_popularity_missing_2])
 
     def test_get_recommendations_based_on_tracks__groups_recommendations_with_same_percentage(self):
-        track_ids = ["mock-track-id-1", "mock-track-id-10", "mock-track-id-2"]
+        mock_track1 = mock_track(spotify_id="mock-track-id-1")
+        mock_track10 = mock_track(spotify_id="mock-track-id-10")
+        mock_track2 = mock_track(spotify_id="mock-track-id-2")
+        tracks = [mock_track1, mock_track10, mock_track2]
         song_attribute_ranges = mock_song_attribute_ranges()
-        mock_recommendations = {"mock-track-id-1": 1.0, "mock-track-id-10": 0.5, "mock-track-id-2": 0.5}
+        mock_recommendations = dict()
+        mock_recommendations[mock_track1] = 1.0
+        mock_recommendations[mock_track10] = 0.5
+        mock_recommendations[mock_track2] = 0.5
         self.music_util._get_recommendations_based_on_tracks_in_batches = MagicMock(
             return_value=mock_recommendations)
 
         recommendations_by_percent = self.music_util.get_recommendations_based_on_tracks(
-            track_ids, song_attribute_ranges)
+            tracks, song_attribute_ranges)
 
         self.assertEqual(2, len(recommendations_by_percent))
         self.assertIn(1.0, recommendations_by_percent)
         self.assertIn(0.5, recommendations_by_percent)
         self.assertEqual(
-            ["mock-track-id-1"],
-            recommendations_by_percent[1.0]
-        )
+            1, len(recommendations_by_percent[1.0]))
+        self.assertIn(
+            mock_track1, recommendations_by_percent[1.0])
         self.assertEqual(
-            sorted(["mock-track-id-10", "mock-track-id-2"]),
-            sorted(recommendations_by_percent[0.5])
-        )
+            2, len(recommendations_by_percent[0.5]))
+        self.assertIn(mock_track10, recommendations_by_percent[0.5])
+        self.assertIn(mock_track2, recommendations_by_percent[0.5])
 
     def test__get_recommendations_based_on_tracks_in_batches__recommended_for_all_tracks__specifies_100_percent(self):
         track_ids, song_attribute_ranges = ["mock-seed-track"], mock_song_attribute_ranges()
@@ -213,71 +223,72 @@ class TestMusicUtil(unittest.TestCase):
         self.assertEqual(1.0/3.0, recommendations_with_percentage[recommended_track2])
 
     def test_get_artist_ids(self):
-        mock_artists = [mock_artist(spotify_id="mock-id-123")]
+        artist = mock_artist(spotify_id="mock-id-123")
+        mock_artists = [artist]
         mock_tracks = [mock_track(artists=mock_artists)]
         self.mock_spotify.get_playlist = MagicMock(
             return_value=mock_playlist(tracks=mock_tracks))
 
-        artist_ids = self.music_util.get_artist_ids("mock_playlist_id")
+        artists = self.music_util.get_artists("mock_playlist_id")
 
-        self.assertEqual(["mock-id-123"], artist_ids)
+        self.assertEqual([artist], artists)
 
     def test_get_genres_by_album(self):
-        album_ids = [
-            "6YabPKtZAjxwyWbuO9p4ZD", # Highway 61 Revisited
-            "2xG5VLMFnDKhjJhsiJDcGm", # I Walk The Line
-        ]
+        bob_dylan = mock_artist(spotify_id="bob-dylan-id")
         bob_dylan_album = mock_album(
             spotify_id="bob-dylan-album-id",
-            artists=[mock_artist(spotify_id="bob-dylan-id")]
+            artists=[bob_dylan]
         )
+        johnny_cash = mock_artist(spotify_id="johnny-cash-id")
         johnny_cash_album = mock_album(
             spotify_id="johnny-cash-album-id",
-            artists=[mock_artist(spotify_id="johnny-cash-id")]
+            artists=[johnny_cash]
         )
         mock_albums = [bob_dylan_album, johnny_cash_album]
         self.mock_spotify.get_albums = MagicMock(
             return_value=mock_albums)
-        def mock_get_artist_genres(artist_id):
-            if artist_id == "bob-dylan-id":
+        def mock_get_artist_genres(artist):
+            if artist == bob_dylan:
                 return ["folk rock"]
-            elif artist_id == "johnny-cash-id":
+            elif artist == johnny_cash:
                 return ["country folk"]
             raise ValueError("unexpected artist ID")
         self.mock_spotify.get_artist_genres = MagicMock(
             side_effect=mock_get_artist_genres)
 
-        genres_by_album = self.music_util.get_genres_by_album(album_ids)
+        genres_by_album = self.music_util.get_genres_by_album(mock_albums)
 
         self.assertEqual(["folk rock"], genres_by_album[bob_dylan_album])
         self.assertEqual(["country folk"], genres_by_album[johnny_cash_album])
 
     def test__add_artist_genres__single_album_single_genre(self):
         self.mock_spotify.get_artist_genres = MagicMock(return_value = ["jazz"])
-        mock_albums = [mock_album(
-            genres=[], artists=[mock_artist(spotify_id="mock-artist-id")], spotify_id="mock-album-id")]
+        mock_album1 = mock_album(
+            genres=[], artists=[mock_artist(spotify_id="mock-artist-id")], spotify_id="mock-album-id")
+        mock_albums = [mock_album1]
 
         albums_with_genres = self.music_util._add_artist_genres(mock_albums)
 
-        self.assertEqual(albums_with_genres["mock-album-id"].genres, ["jazz"])
+        self.assertEqual(albums_with_genres[mock_album1].genres, ["jazz"])
 
     def test__add_artist_genres__multiple_albums_multiple_genres(self):
-        mock_albums = [
-            mock_album(
-                genres=[],
-                artists=[mock_artist(spotify_id="mock-artist-id-1")],
-                spotify_id="mock-album-id-1"
-            ),
-            mock_album(
-                genres=[],
-                artists=[mock_artist(spotify_id="mock-artist-id-2")],
-                spotify_id="mock-album-id-2"
-            ),
-        ]
-        def mock_get_artist_genres(artist_id):
-            if artist_id == "mock-artist-id-1":
+        mock_artist_1 = mock_artist(spotify_id="mock-artist-id-1")
+        mock_artist_2 = mock_artist(spotify_id="mock-artist-id-2")
+        mock_album_1 = mock_album(
+            genres=[],
+            artists=[mock_artist_1],
+            spotify_id="mock-album-id-1"
+        )
+        mock_album_2 = mock_album(
+            genres=[],
+            artists=[mock_artist_2],
+            spotify_id="mock-album-id-2"
+        )
+        mock_albums = [mock_album_1, mock_album_2]
+        def mock_get_artist_genres(artist):
+            if artist == mock_artist_1:
                 return ["jazz"]
-            elif artist_id == "mock-artist-id-2":
+            elif artist == mock_artist_2:
                 return ["rock", "prog rock"]
             raise ValueError("unexpected artist ID")
         self.mock_spotify.get_artist_genres = MagicMock(
@@ -285,9 +296,9 @@ class TestMusicUtil(unittest.TestCase):
 
         albums_with_genres = self.music_util._add_artist_genres(mock_albums)
 
-        self.assertEqual(albums_with_genres["mock-album-id-1"].genres, ["jazz"])
+        self.assertEqual(albums_with_genres[mock_album_1].genres, ["jazz"])
         self.assertEqual(
-            sorted(albums_with_genres["mock-album-id-2"].genres), ["prog rock", "rock"])
+            sorted(albums_with_genres[mock_album_2].genres), ["prog rock", "rock"])
 
     def test_is_same_album_name__with_metadata_in_parentheses__returns_true(self):
         album, album_expand_edition = "The Prisoner", "The Prisoner (Expanded Edition)"
@@ -489,105 +500,142 @@ class TestMusicUtil(unittest.TestCase):
         self.assertEqual(0, len(albums_by_genre.keys()))
 
     def test__detect_genre_matches__2_albums_1_genre(self):
+        mock_album1 = mock_album(spotify_id='id1', genres=['hip hop'])
+        mock_album2 = mock_album(spotify_id='id2', genres=['hip hop'])
         mock_albums = {
-            'id1': mock_album(spotify_id='id1', genres=['hip hop']),
-            'id2': mock_album(spotify_id='id2', genres=['hip hop'])
+            mock_album1: mock_album(spotify_id='id1', genres=['hip hop']),
+            mock_album2: mock_album(spotify_id='id2', genres=['hip hop'])
         }
 
         genre_matches = self.music_util._detect_genre_matches(mock_albums)
 
-        self.assertEqual(sorted(['id1', 'id2']), sorted(list(genre_matches.keys())))
-        self.assertEqual(['id2'], list(genre_matches['id1'].keys()))
-        self.assertEqual(['id1'], list(genre_matches['id2'].keys()))
-        self.assertEqual(['hip hop'], list(genre_matches['id1']['id2']))
-        self.assertEqual(['hip hop'], list(genre_matches['id2']['id1']))
+        self.assertEqual(mock_albums.keys(), genre_matches.keys())
+        self.assertIn(mock_album1, genre_matches)
+        self.assertIn(mock_album2, genre_matches)
+        self.assertIn(mock_album2, genre_matches[mock_album1])
+        self.assertIn(mock_album1, genre_matches[mock_album2])
+        self.assertEqual(['hip hop'], genre_matches[mock_album1][mock_album2])
+        self.assertEqual(['hip hop'], genre_matches[mock_album2][mock_album1])
 
     def test__detect_genre_matches__3_albums_1_genre(self):
+        mock_album1 = mock_album(spotify_id='id1', genres=['hip hop'])
+        mock_album2 = mock_album(spotify_id='id2', genres=['hip hop'])
+        mock_album3 = mock_album(spotify_id='id3', genres=['hip hop'])
         mock_albums = {
-            'id1': mock_album(spotify_id='id1', genres=['hip hop']),
-            'id2': mock_album(spotify_id='id2', genres=['hip hop']),
-            'id3': mock_album(spotify_id='id3', genres=['hip hop']),
+            mock_album1: mock_album(spotify_id='id1', genres=['hip hop']),
+            mock_album2: mock_album(spotify_id='id2', genres=['hip hop']),
+            mock_album3: mock_album(spotify_id='id3', genres=['hip hop']),
         }
 
         genre_matches = self.music_util._detect_genre_matches(mock_albums)
 
-        self.assertEqual(sorted(['id1', 'id2', 'id3']), sorted(list(genre_matches.keys())))
-        self.assertEqual(sorted(['id2', 'id3']), sorted(list(genre_matches['id1'].keys())))
-        self.assertEqual(sorted(['id1', 'id3']), sorted(list(genre_matches['id2'].keys())))
-        self.assertEqual(sorted(['id1', 'id2']), sorted(list(genre_matches['id3'].keys())))
-        self.assertEqual(sorted(['hip hop']), sorted(list(genre_matches['id1']['id2'])))
-        self.assertEqual(sorted(['hip hop']), sorted(list(genre_matches['id1']['id3'])))
-        self.assertEqual(sorted(['hip hop']), sorted(list(genre_matches['id2']['id1'])))
-        self.assertEqual(sorted(['hip hop']), sorted(list(genre_matches['id2']['id3'])))
-        self.assertEqual(sorted(['hip hop']), sorted(list(genre_matches['id3']['id1'])))
-        self.assertEqual(sorted(['hip hop']), sorted(list(genre_matches['id3']['id2'])))
+        self.assertEqual(mock_albums.keys(), genre_matches.keys())
+        self.assertIn(mock_album1, genre_matches)
+        self.assertIn(mock_album2, genre_matches)
+        self.assertIn(mock_album3, genre_matches)
+        self.assertIn(mock_album2, genre_matches[mock_album1])
+        self.assertIn(mock_album3, genre_matches[mock_album1])
+        self.assertIn(mock_album1, genre_matches[mock_album2])
+        self.assertIn(mock_album3, genre_matches[mock_album2])
+        self.assertIn(mock_album1, genre_matches[mock_album3])
+        self.assertIn(mock_album2, genre_matches[mock_album3])
+        self.assertEqual(['hip hop'], genre_matches[mock_album1][mock_album2])
+        self.assertEqual(['hip hop'], genre_matches[mock_album1][mock_album3])
+        self.assertEqual(['hip hop'], genre_matches[mock_album2][mock_album1])
+        self.assertEqual(['hip hop'], genre_matches[mock_album2][mock_album3])
+        self.assertEqual(['hip hop'], genre_matches[mock_album3][mock_album1])
+        self.assertEqual(['hip hop'], genre_matches[mock_album3][mock_album2])
 
     def test__detect_genre_matches__2_albums_2_genres(self):
+        mock_album1 = mock_album(spotify_id='id1', genres=['hip hop', 'rap'])
+        mock_album2 = mock_album(spotify_id='id2', genres=['hip hop', 'rap'])
         mock_albums = {
-            'id1': mock_album(spotify_id='id1', genres=['hip hop', 'rap']),
-            'id2': mock_album(spotify_id='id2', genres=['hip hop', 'rap'])
+            mock_album1: mock_album1,
+            mock_album2: mock_album2,
         }
 
         genre_matches = self.music_util._detect_genre_matches(mock_albums)
 
-        self.assertEqual(sorted(['id1', 'id2']), sorted(list(genre_matches.keys())))
-        self.assertEqual(['id2'], list(genre_matches['id1'].keys()))
-        self.assertEqual(['id1'], list(genre_matches['id2'].keys()))
-        self.assertEqual(sorted(['hip hop', 'rap']), sorted(list(genre_matches['id1']['id2'])))
+        self.assertEqual(mock_albums.keys(), genre_matches.keys())
+        self.assertIn(mock_album1, genre_matches)
+        self.assertIn(mock_album2, genre_matches)
+        self.assertIn(mock_album2, genre_matches[mock_album1])
+        self.assertIn(mock_album1, genre_matches[mock_album2])
+        self.assertEqual(['hip hop', 'rap'], genre_matches[mock_album1][mock_album2])
+        self.assertEqual(['hip hop', 'rap'], genre_matches[mock_album2][mock_album1])
 
     def test__detect_genre_matches__3_albums_3_genres(self):
+        mock_album1 = mock_album(spotify_id='id1', genres=['hip hop', 'rap', 'trap'])
+        mock_album2 = mock_album(spotify_id='id2', genres=['hip hop', 'rap', 'trap'])
+        mock_album3 = mock_album(spotify_id='id3', genres=['hip hop', 'rap', 'trap'])
         mock_albums = {
-            'id1': mock_album(spotify_id='id1', genres=['hip hop', 'rap', 'trap']),
-            'id2': mock_album(spotify_id='id2', genres=['hip hop', 'rap', 'trap']),
-            'id3': mock_album(spotify_id='id3', genres=['hip hop', 'rap', 'trap'])
+            mock_album1: mock_album1,
+            mock_album2: mock_album2,
+            mock_album3: mock_album3,
         }
 
         genre_matches = self.music_util._detect_genre_matches(mock_albums)
 
-        self.assertEqual(sorted(['id1', 'id2', 'id3']), sorted(list(genre_matches.keys())))
-        self.assertEqual(sorted(['id2', 'id3']), sorted(list(genre_matches['id1'].keys())))
-        self.assertEqual(sorted(['id1', 'id3']), sorted(list(genre_matches['id2'].keys())))
-        self.assertEqual(sorted(['id1', 'id2']), sorted(list(genre_matches['id3'].keys())))
-        self.assertEqual(sorted(['hip hop', 'rap', 'trap']), sorted(list(genre_matches['id1']['id2'])))
-        self.assertEqual(sorted(['hip hop', 'rap', 'trap']), sorted(list(genre_matches['id1']['id3'])))
-        self.assertEqual(sorted(['hip hop', 'rap', 'trap']), sorted(list(genre_matches['id2']['id1'])))
-        self.assertEqual(sorted(['hip hop', 'rap', 'trap']), sorted(list(genre_matches['id2']['id3'])))
-        self.assertEqual(sorted(['hip hop', 'rap', 'trap']), sorted(list(genre_matches['id3']['id1'])))
-        self.assertEqual(sorted(['hip hop', 'rap', 'trap']), sorted(list(genre_matches['id3']['id2'])))
+        self.assertEqual(mock_albums.keys(), genre_matches.keys())
+        self.assertIn(mock_album1, genre_matches)
+        self.assertIn(mock_album2, genre_matches)
+        self.assertIn(mock_album3, genre_matches)
+        self.assertIn(mock_album2, genre_matches[mock_album1])
+        self.assertIn(mock_album3, genre_matches[mock_album1])
+        self.assertIn(mock_album1, genre_matches[mock_album2])
+        self.assertIn(mock_album3, genre_matches[mock_album2])
+        self.assertIn(mock_album1, genre_matches[mock_album3])
+        self.assertIn(mock_album2, genre_matches[mock_album3])
+        self.assertEqual(['hip hop', 'rap', 'trap'], genre_matches[mock_album1][mock_album2])
+        self.assertEqual(['hip hop', 'rap', 'trap'], genre_matches[mock_album1][mock_album3])
+        self.assertEqual(['hip hop', 'rap', 'trap'], genre_matches[mock_album2][mock_album1])
+        self.assertEqual(['hip hop', 'rap', 'trap'], genre_matches[mock_album2][mock_album3])
+        self.assertEqual(['hip hop', 'rap', 'trap'], genre_matches[mock_album3][mock_album1])
+        self.assertEqual(['hip hop', 'rap', 'trap'], genre_matches[mock_album3][mock_album2])
 
     def test__group_albums__2_albums_1_genre(self):
-        album_ids= ['id1', 'id2']
+        mock_album1 = mock_album(spotify_id='id1')
+        mock_album2 = mock_album(spotify_id='id2')
+        albums = [ mock_album1, mock_album2]
         genre_matches = {
-            'id1': {
-                'id2': ['rap']
+            mock_album1: {
+                mock_album2: ['rap']
             },
-            'id2': {
-                'id1': ['rap']
+            mock_album2: {
+                mock_album1: ['rap']
             },
         }
 
-        album_groups = self.music_util._group_albums(album_ids, genre_matches)
+        album_groups = self.music_util._group_albums(albums, genre_matches)
 
-        self.assertEqual([{
-                'album ids': {'id1', 'id2'},
+        self.assertEqual(
+            [{
+                'albums': {mock_album1, mock_album2},
                 'genres': ['rap']
-            }], album_groups)
+            }],
+            album_groups,
+        )
 
     def test__group_albums__2_albums_2_genre(self):
-        album_ids= ['id1', 'id2']
+        mock_album1 = mock_album(spotify_id='id1')
+        mock_album2 = mock_album(spotify_id='id2')
+        albums = [ mock_album1, mock_album2]
         genre_matches = {
-            'id1': {
-                'id2': ['rap', 'hip hop']
+            mock_album1: {
+                mock_album2: ['rap', 'hip hop']
             },
-            'id2': {
-                'id1': ['rap', 'hip hop']
+            mock_album2: {
+                mock_album1: ['rap', 'hip hop']
             },
         }
 
-        album_groups = self.music_util._group_albums(album_ids, genre_matches)
+        album_groups = self.music_util._group_albums(albums, genre_matches)
 
         self.assertEqual(1, len(album_groups))
-        self.assertEqual({'id1', 'id2'}, album_groups[0]['album ids'])
+        self.assertEqual(
+            {mock_album1, mock_album2},
+            album_groups[0]['albums']
+        )
         self.assertEqual(sorted(['rap', 'hip hop']), sorted(album_groups[0]['genres']))
 
     @unittest.skip("needs to be fixed")

@@ -41,6 +41,9 @@ class Album:
     def set_popularity(self, popularity):
         self.popularity = popularity
 
+    def contains_track(self, track):
+        return self.spotify_id == track.spotify_album_id
+
     def from_spotify_album(spotify_album):
         return Album(
             spotify_album['name'],
@@ -56,6 +59,19 @@ class Album:
             spotify_album['total_tracks'],
             spotify_id=spotify_album['id'],
             popularity=spotify_album['popularity'],
+        )
+
+    def from_spotify_artist_album(spotify_album):
+        return Album(
+            spotify_album['name'],
+            None,
+            [
+                Artist.from_spotify_album_artist(artist)
+                for artist in spotify_album['artists']
+            ],
+            Album._parse_date(spotify_album['release_date']),
+            spotify_album['total_tracks'],
+            spotify_id=spotify_album['id'],
         )
 
     def _parse_date(spotify_release_date):

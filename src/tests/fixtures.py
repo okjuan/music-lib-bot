@@ -11,8 +11,24 @@ def mock_album(spotify_id="", genres=[], artists=[], name=""):
 def mock_artist(name="", spotify_id="", spotify_uri="", popularity=0, genres=[], albums=None):
     return Artist(name, spotify_id, spotify_uri, popularity, genres, albums)
 
-def mock_track(name="", spotify_id="", spotify_uri="", album=mock_album(), artists=[mock_artist()], disc_number=1, duration_ms=0, popularity=0, track_number=1, audio_features=None):
-    audio_features = mock_audio_features() if audio_features is None else audio_features
+def mock_audio_features(danceability=1, energy=1, loudness=1, speechiness=1, acousticness=1, instrumentalness=1, liveness=1, valence=1, tempo=0, duration_ms=0, popularity=0, key=0, mode=1, time_signature=0):
+    return AudioFeatures(
+        danceability,
+        energy,
+        loudness,
+        speechiness,
+        acousticness,
+        instrumentalness,
+        liveness,
+        valence,
+        tempo,
+        duration_ms,
+        key,
+        mode,
+        time_signature
+    )
+
+def mock_track(name="", spotify_id="", spotify_uri="", album=mock_album(), artists=[mock_artist()], disc_number=1, duration_ms=0, popularity=0, track_number=1, audio_features=mock_audio_features()):
     return Track(
         name,
         artists,
@@ -45,21 +61,4 @@ def mock_song_attribute_ranges(danceability_range=[0,1], energy_range=[0,1], lou
         key_range,
         mode_range,
         time_signature_range
-    )
-
-def mock_audio_features(danceability=1, energy=1, loudness=1, speechiness=1, acousticness=1, instrumentalness=1, liveness=1, valence=1, tempo=0, duration_ms=0, popularity=0, key=0, mode=1, time_signature=0):
-    return AudioFeatures(
-        danceability,
-        energy,
-        loudness,
-        speechiness,
-        acousticness,
-        instrumentalness,
-        liveness,
-        valence,
-        tempo,
-        duration_ms,
-        key,
-        mode,
-        time_signature
     )

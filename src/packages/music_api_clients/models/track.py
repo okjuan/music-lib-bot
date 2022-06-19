@@ -28,6 +28,12 @@ class Track:
             return self.__key() == other.__key()
         return NotImplemented
 
+    def on_spotify(self):
+        return self.spotify_id[:13] != "spotify:local"
+
+    def in_any_of_albums(self, albums):
+        return self.spotify_album_id in [album.spotify_id for album in albums]
+
     def from_spotify_playlist_track(spotify_playlist_track):
         """
         Params:
