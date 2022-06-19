@@ -9,14 +9,14 @@ class MusicUtil:
         self.music_api_client = music_api_client
         self.info_logger = info_logger
 
-    def get_genres_by_album_ids(self, album_ids):
+    def get_genres_by_album(self, album_ids):
         "album_ids ([str]) -> genres_by_album_id (dict) with key (str) album ID, value ([str]) genres"
-        genres_by_album_ids = defaultdict(list)
+        genres_by_album = defaultdict(list)
         for album in self.music_api_client.get_albums(album_ids):
             for artist in album.artists:
-                genres_by_album_ids[album.spotify_id].extend(
+                genres_by_album[album].extend(
                     self.music_api_client.get_artist_genres(artist.spotify_id))
-        return genres_by_album_ids
+        return genres_by_album
 
     def group_albums_by_genre(self, albums, min_genres_per_group):
         """
@@ -435,13 +435,13 @@ class MusicUtil:
                     'genres': {'rock', 'punk'}
                 }].
         """
-        genres_by_album_ids = self.get_genres_by_album_ids(list(album_ids))
+        genres_by_album = self.get_genres_by_album(list(album_ids))
         return [
             {
-                "album ids": {album_id},
+                "album ids": {album.id},
                 "genres": set(genres)
             }
-            for album_id, genres in genres_by_album_ids.items()
+            for album, genres in genres_by_album.items()
         ]
 
     def _group_albums(self, album_ids, genre_matches):

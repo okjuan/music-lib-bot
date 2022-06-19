@@ -222,21 +222,20 @@ class TestMusicUtil(unittest.TestCase):
 
         self.assertEqual(["mock-id-123"], artist_ids)
 
-    def test_get_genres_by_album_ids(self):
+    def test_get_genres_by_album(self):
         album_ids = [
             "6YabPKtZAjxwyWbuO9p4ZD", # Highway 61 Revisited
             "2xG5VLMFnDKhjJhsiJDcGm", # I Walk The Line
         ]
-        mock_albums = [
-            mock_album(
-                spotify_id="bob-dylan-album-id",
-                artists=[mock_artist(spotify_id="bob-dylan-id")]
-            ),
-            mock_album(
-                spotify_id="johnny-cash-album-id",
-                artists=[mock_artist(spotify_id="johnny-cash-id")]
-            ),
-        ]
+        bob_dylan_album = mock_album(
+            spotify_id="bob-dylan-album-id",
+            artists=[mock_artist(spotify_id="bob-dylan-id")]
+        )
+        johnny_cash_album = mock_album(
+            spotify_id="johnny-cash-album-id",
+            artists=[mock_artist(spotify_id="johnny-cash-id")]
+        )
+        mock_albums = [bob_dylan_album, johnny_cash_album]
         self.mock_spotify.get_albums = MagicMock(
             return_value=mock_albums)
         def mock_get_artist_genres(artist_id):
@@ -248,10 +247,10 @@ class TestMusicUtil(unittest.TestCase):
         self.mock_spotify.get_artist_genres = MagicMock(
             side_effect=mock_get_artist_genres)
 
-        genres_by_album_id = self.music_util.get_genres_by_album_ids(album_ids)
+        genres_by_album = self.music_util.get_genres_by_album(album_ids)
 
-        self.assertEqual(["folk rock"], genres_by_album_id["bob-dylan-album-id"])
-        self.assertEqual(["country folk"], genres_by_album_id["johnny-cash-album-id"])
+        self.assertEqual(["folk rock"], genres_by_album[bob_dylan_album])
+        self.assertEqual(["country folk"], genres_by_album[johnny_cash_album])
 
     def test__add_artist_genres__single_album_single_genre(self):
         self.mock_spotify.get_artist_genres = MagicMock(return_value = ["jazz"])
