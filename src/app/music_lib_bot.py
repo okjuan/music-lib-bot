@@ -9,7 +9,7 @@ from packages.music_management.playlist_creator import PlaylistCreator
 from packages.music_management.playlist_stats import PlaylistStats
 from packages.music_management.playlist_updater import PlaylistUpdater
 from app.lib.interactive_option_picker import InteractiveOptionPicker
-from packages.spotify.spotify_client_wrapper import SpotifyClientWrapper
+from packages.music_api_clients.spotify_client_wrapper import SpotifyClientWrapper
 from app.lib.console_ui import ConsoleUI
 
 DEFAULT_LOOK_AT_ENTIRE_LIBRARY = False

@@ -1,4 +1,4 @@
-from packages.spotify.models.audio_features import AudioFeatures
+from packages.music_api_clients.models.audio_features import AudioFeatures
 from statistics import quantiles
 
 

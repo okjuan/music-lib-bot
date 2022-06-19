@@ -1,7 +1,7 @@
 from collections import defaultdict
 from re import match
-from packages.spotify.models.audio_features import AudioFeatures
-from packages.spotify.models.song_attribute_ranges import SongAttributeRanges
+from packages.music_api_clients.models.audio_features import AudioFeatures
+from packages.music_api_clients.models.song_attribute_ranges import SongAttributeRanges
 
 
 class MusicUtil:

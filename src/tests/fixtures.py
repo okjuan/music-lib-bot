@@ -1,9 +1,9 @@
-from packages.spotify.models.album import Album
-from packages.spotify.models.artist import Artist
-from packages.spotify.models.audio_features import AudioFeatures
-from packages.spotify.models.playlist import Playlist
-from packages.spotify.models.track import Track
-from packages.spotify.models.song_attribute_ranges import SongAttributeRanges
+from packages.music_api_clients.models.album import Album
+from packages.music_api_clients.models.artist import Artist
+from packages.music_api_clients.models.audio_features import AudioFeatures
+from packages.music_api_clients.models.playlist import Playlist
+from packages.music_api_clients.models.track import Track
+from packages.music_api_clients.models.song_attribute_ranges import SongAttributeRanges
 
 def mock_album(id="", genres=[], artists=[], name=""):
     return Album(name, id, [], artists, release_date="", num_tracks=0, genres=genres)

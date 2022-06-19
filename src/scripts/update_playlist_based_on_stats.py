@@ -7,7 +7,7 @@ from packages.music_management.music_util import MusicUtil
 from packages.music_management.my_music_lib import MyMusicLib
 from packages.music_management.playlist_updater import PlaylistUpdater
 from packages.music_management.playlist_stats import PlaylistStats
-from packages.spotify.spotify_client_wrapper import SpotifyClientWrapper
+from packages.music_api_clients.spotify_client_wrapper import SpotifyClientWrapper
 
 
 def main():
