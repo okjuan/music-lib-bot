@@ -1,9 +1,9 @@
 class PlaylistUpdater:
-    def __init__(self, playlist, my_music_lib, music_util, spotify_client, info_logger, playlist_stats):
+    def __init__(self, playlist, my_music_lib, music_util, music_api_client, info_logger, playlist_stats):
         self.playlist = playlist
         self.my_music_lib = my_music_lib
         self.music_util = music_util
-        self.spotify_client = spotify_client
+        self.music_api_client = music_api_client
         self.info_logger = info_logger
         self.playlist_genres = None
         self.playlist_stats = playlist_stats
@@ -88,7 +88,7 @@ class PlaylistUpdater:
         num_tracks_to_add = min(len(highly_recommended_tracks), get_num_songs_to_add())
         highly_recommended_tracks = highly_recommended_tracks[:num_tracks_to_add]
         self.info_logger(f"Adding {num_tracks_to_add} tracks to the playlist..")
-        self.spotify_client.add_tracks(
+        self.music_api_client.add_tracks(
             self.playlist.id, [track.id for track in highly_recommended_tracks])
         return num_tracks_to_add
 

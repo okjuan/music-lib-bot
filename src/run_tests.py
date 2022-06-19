@@ -1,7 +1,7 @@
 import unittest
 from tests.test_music_util import TestMusicUtil
 from tests.test_my_music_lib import TestMyMusicLib
-from tests.test_spotify_client_wrapper import TestSpotifyClientWrapper
+from tests.test_spotify import TestSpotify
 from tests.test_playlist_stats import TestPlaylistStats
 
 

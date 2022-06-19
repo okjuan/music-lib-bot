@@ -7,8 +7,8 @@ from packages.music_management.music_util import MusicUtil
 
 class TestMusicUtil(unittest.TestCase):
     def setUp(self):
-        self.mock_spotify_client = MagicMock()
-        self.music_util = MusicUtil(self.mock_spotify_client, MagicMock())
+        self.mock_spotify = MagicMock()
+        self.music_util = MusicUtil(self.mock_spotify, MagicMock())
 
     def test_get_highly_common_genres__none_in_top_perecent__returns_genres_in_2nd_top_percent(self):
         mock_playlist_id = "mock-playlist-id"
@@ -62,7 +62,7 @@ class TestMusicUtil(unittest.TestCase):
     def test_populate_popularity_if_absent__no_popularity__populates(self):
         tracks_without_popularity = [mock_track(popularity=None)]
         track_with_popularity = [mock_track(popularity=1)]
-        self.mock_spotify_client.get_tracks = MagicMock(
+        self.mock_spotify.get_tracks = MagicMock(
             return_value=track_with_popularity)
 
         self.music_util.populate_popularity_if_absent(tracks_without_popularity)
@@ -78,7 +78,7 @@ class TestMusicUtil(unittest.TestCase):
         track_with_popularity = [
             mock_track(uri="popularity=None", popularity=2),
         ]
-        self.mock_spotify_client.get_tracks = MagicMock(
+        self.mock_spotify.get_tracks = MagicMock(
             return_value=track_with_popularity)
 
         self.music_util.populate_popularity_if_absent(input_tracks)
@@ -95,7 +95,7 @@ class TestMusicUtil(unittest.TestCase):
             mock_track(uri="popularity is 2", popularity=2),
             mock_track(uri="popularity is 1", popularity=1)
         ]
-        self.mock_spotify_client.get_tracks = MagicMock(
+        self.mock_spotify.get_tracks = MagicMock(
             return_value=[])
 
         self.music_util.populate_popularity_if_absent(input_tracks)
@@ -113,13 +113,13 @@ class TestMusicUtil(unittest.TestCase):
             mock_track(uri="popularity is set", popularity=1),
             mock_track(uri="popularity=None #2", popularity=None),
         ]
-        self.mock_spotify_client.get_tracks = MagicMock(
+        self.mock_spotify.get_tracks = MagicMock(
             return_value=[])
 
         self.music_util.populate_popularity_if_absent(input_tracks)
 
-        self.mock_spotify_client.get_tracks.assert_called_once()
-        self.mock_spotify_client.get_tracks.assert_called_once_with(
+        self.mock_spotify.get_tracks.assert_called_once()
+        self.mock_spotify.get_tracks.assert_called_once_with(
             ["popularity=None", "popularity=None #2"])
 
     def test_get_recommendations_based_on_tracks__groups_recommendations_with_same_percentage(self):
@@ -146,10 +146,10 @@ class TestMusicUtil(unittest.TestCase):
 
     def test__get_recommendations_based_on_tracks_in_batches__recommended_for_all_tracks__specifies_100_percent(self):
         track_ids, song_attribute_ranges = ["mock-seed-track"], mock_song_attribute_ranges()
-        self.mock_spotify_client.get_recommendation_seed_limit = MagicMock(
+        self.mock_spotify.get_recommendation_seed_limit = MagicMock(
             return_value=1)
         recommended_track = mock_track(id_="mock-recommendation")
-        self.mock_spotify_client.get_recommendations_based_on_tracks = MagicMock(
+        self.mock_spotify.get_recommendations_based_on_tracks = MagicMock(
             return_value=[recommended_track])
 
         recommendations_with_percentage = self.music_util._get_recommendations_based_on_tracks_in_batches(
@@ -162,7 +162,7 @@ class TestMusicUtil(unittest.TestCase):
     def test__get_recommendations_based_on_tracks_in_batches__recommended_for_half_the_tracks__specifies_50_percent(self):
         track_ids = ["mock-seed-track-1", "mock-seed-track-2"]
         song_attribute_ranges = mock_song_attribute_ranges()
-        self.mock_spotify_client.get_recommendation_seed_limit = MagicMock(
+        self.mock_spotify.get_recommendation_seed_limit = MagicMock(
             return_value=1)
         recommended_track = mock_track(id_="mock-recommendation")
         def mock_get_recommendations(track_ids, _):
@@ -171,7 +171,7 @@ class TestMusicUtil(unittest.TestCase):
             elif track_ids == ["mock-seed-track-2"]:
                 return []
             raise NotImplemented()
-        self.mock_spotify_client.get_recommendations_based_on_tracks = MagicMock(
+        self.mock_spotify.get_recommendations_based_on_tracks = MagicMock(
             side_effect=mock_get_recommendations)
 
         recommendations_with_percentage = self.music_util._get_recommendations_based_on_tracks_in_batches(
@@ -184,7 +184,7 @@ class TestMusicUtil(unittest.TestCase):
     def test__get_recommendations_based_on_tracks_in_batches__multiple_percentages__recommends_all(self):
         track_ids = ["mock-seed-track-1", "mock-seed-track-2", "mock-seed-track-3"]
         song_attribute_ranges = mock_song_attribute_ranges()
-        self.mock_spotify_client.get_recommendation_seed_limit = MagicMock(
+        self.mock_spotify.get_recommendation_seed_limit = MagicMock(
             return_value=1)
         recommended_track1 = mock_track(id_="mock-recommendation-1")
         recommended_track2 = mock_track(id_="mock-recommendation-2")
@@ -196,17 +196,17 @@ class TestMusicUtil(unittest.TestCase):
             elif track_ids == ["mock-seed-track-3"]:
                 return []
             raise NotImplemented()
-        self.mock_spotify_client.get_recommendations_based_on_tracks = MagicMock(
+        self.mock_spotify.get_recommendations_based_on_tracks = MagicMock(
             side_effect=mock_get_recommendations)
 
         recommendations_with_percentage = self.music_util._get_recommendations_based_on_tracks_in_batches(
             track_ids, song_attribute_ranges)
 
-        self.mock_spotify_client.get_recommendations_based_on_tracks.assert_any_call(
+        self.mock_spotify.get_recommendations_based_on_tracks.assert_any_call(
             ["mock-seed-track-1"], song_attribute_ranges)
-        self.mock_spotify_client.get_recommendations_based_on_tracks.assert_any_call(
+        self.mock_spotify.get_recommendations_based_on_tracks.assert_any_call(
             ["mock-seed-track-2"], song_attribute_ranges)
-        self.mock_spotify_client.get_recommendations_based_on_tracks.assert_any_call(
+        self.mock_spotify.get_recommendations_based_on_tracks.assert_any_call(
             ["mock-seed-track-3"], song_attribute_ranges)
         self.assertEqual(2, len(recommendations_with_percentage))
         self.assertEqual(2.0/3.0, recommendations_with_percentage[recommended_track1])
@@ -215,7 +215,7 @@ class TestMusicUtil(unittest.TestCase):
     def test_get_artist_ids(self):
         mock_artists = [mock_artist(id="mock-id-123")]
         mock_tracks = [mock_track(artists=mock_artists)]
-        self.mock_spotify_client.get_playlist = MagicMock(
+        self.mock_spotify.get_playlist = MagicMock(
             return_value=mock_playlist(tracks=mock_tracks))
 
         artist_ids = self.music_util.get_artist_ids("mock_playlist_id")
@@ -237,7 +237,7 @@ class TestMusicUtil(unittest.TestCase):
                 artists=[mock_artist(id="johnny-cash-id")]
             ),
         ]
-        self.mock_spotify_client.get_albums = MagicMock(
+        self.mock_spotify.get_albums = MagicMock(
             return_value=mock_albums)
         def mock_get_artist_genres(artist_id):
             if artist_id == "bob-dylan-id":
@@ -245,7 +245,7 @@ class TestMusicUtil(unittest.TestCase):
             elif artist_id == "johnny-cash-id":
                 return ["country folk"]
             raise ValueError("unexpected artist ID")
-        self.mock_spotify_client.get_artist_genres = MagicMock(
+        self.mock_spotify.get_artist_genres = MagicMock(
             side_effect=mock_get_artist_genres)
 
         genres_by_album_id = self.music_util.get_genres_by_album_ids(album_ids)
@@ -254,7 +254,7 @@ class TestMusicUtil(unittest.TestCase):
         self.assertEqual(["country folk"], genres_by_album_id["johnny-cash-album-id"])
 
     def test__add_artist_genres__single_album_single_genre(self):
-        self.mock_spotify_client.get_artist_genres = MagicMock(return_value = ["jazz"])
+        self.mock_spotify.get_artist_genres = MagicMock(return_value = ["jazz"])
         mock_albums = [mock_album(
             genres=[], artists=[mock_artist(id="mock-artist-id")], id="mock-album-id")]
 
@@ -281,7 +281,7 @@ class TestMusicUtil(unittest.TestCase):
             elif artist_id == "mock-artist-id-2":
                 return ["rock", "prog rock"]
             raise ValueError("unexpected artist ID")
-        self.mock_spotify_client.get_artist_genres = MagicMock(
+        self.mock_spotify.get_artist_genres = MagicMock(
             side_effect = mock_get_artist_genres)
 
         albums_with_genres = self.music_util._add_artist_genres(mock_albums)

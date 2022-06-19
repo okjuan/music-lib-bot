@@ -5,17 +5,17 @@ from packages.music_api_clients.models.song_attribute_ranges import SongAttribut
 
 
 class MusicUtil:
-    def __init__(self, spotify_client_wrapper, info_logger):
-        self.spotify_client_wrapper = spotify_client_wrapper
+    def __init__(self, music_api_client, info_logger):
+        self.music_api_client = music_api_client
         self.info_logger = info_logger
 
     def get_genres_by_album_ids(self, album_ids):
         "album_ids ([str]) -> genres_by_album_id (dict) with key (str) album ID, value ([str]) genres"
         genres_by_album_ids = defaultdict(list)
-        for album in self.spotify_client_wrapper.get_albums(album_ids):
+        for album in self.music_api_client.get_albums(album_ids):
             for artist in album.artists:
                 genres_by_album_ids[album.id].extend(
-                    self.spotify_client_wrapper.get_artist_genres(artist.id))
+                    self.music_api_client.get_artist_genres(artist.id))
         return genres_by_album_ids
 
     def group_albums_by_genre(self, albums, min_genres_per_group):
@@ -70,7 +70,7 @@ class MusicUtil:
         if len(track_uris_popularity_missing) == 0:
             return
 
-        tracks_w_popularity = self.spotify_client_wrapper.get_tracks(
+        tracks_w_popularity = self.music_api_client.get_tracks(
             track_uris_popularity_missing)
         for track in tracks_w_popularity:
             index = track_index_by_uri[track.uri]
@@ -108,7 +108,7 @@ class MusicUtil:
         return list(set([track.album_id for track in tracks]))
 
     def get_common_genres_in_playlist(self, spotify_playlist_id):
-        playlist = self.spotify_client_wrapper.get_playlist(spotify_playlist_id)
+        playlist = self.music_api_client.get_playlist(spotify_playlist_id)
         genres_in_common = set()
         for track in playlist.get_tracks():
             genres = self.get_genres([
@@ -124,7 +124,7 @@ class MusicUtil:
     def get_genres(self, artist_ids):
         all_genres = set()
         for artist_id in artist_ids:
-            artist_genres = self.spotify_client_wrapper.get_artist_genres(artist_id)
+            artist_genres = self.music_api_client.get_artist_genres(artist_id)
             all_genres |= set(artist_genres)
         return all_genres
 
@@ -170,14 +170,14 @@ class MusicUtil:
         """
         genre_count = defaultdict(int)
         for artist_id in self.get_artist_ids(spotify_playlist_id):
-            genres = self.spotify_client_wrapper.get_artist_genres(artist_id)
+            genres = self.music_api_client.get_artist_genres(artist_id)
             for genre in genres:
                 genre_count[genre] += 1
         return dict(genre_count)
 
     def get_artist_ids(self, spotify_playlist_id):
         "spotify_playlist_id (str) -> [set] where each element is an artist id (str)"
-        playlist = self.spotify_client_wrapper.get_playlist(spotify_playlist_id)
+        playlist = self.music_api_client.get_playlist(spotify_playlist_id)
         return list({
             artist.id
             for track in playlist.get_tracks()
@@ -188,7 +188,7 @@ class MusicUtil:
         return sorted(albums, key=lambda album: album.release_date)
 
     def get_discography(self, artist):
-        return self.spotify_client_wrapper.get_artist_albums(artist.id)
+        return self.music_api_client.get_artist_albums(artist.id)
 
     def is_live(self, album):
         # '(?i)' is a flag that enables cap insensitivity
@@ -255,9 +255,9 @@ class MusicUtil:
 
     def get_album_by_artist(self, album_name, artist):
         "Returns list of matching albums"
-        matching_artists = self.spotify_client_wrapper.get_matching_artists(artist)
+        matching_artists = self.music_api_client.get_matching_artists(artist)
         artist = self.get_most_popular_artist(matching_artists)
-        albums = self.spotify_client_wrapper.get_artist_albums(artist.id)
+        albums = self.music_api_client.get_artist_albums(artist.id)
         return [
             album
             for album in albums
@@ -270,7 +270,7 @@ class MusicUtil:
             track.album_id
             for track in playlist.get_tracks()
         })
-        return self.spotify_client_wrapper.get_albums(album_ids)
+        return self.music_api_client.get_albums(album_ids)
 
     def populate_track_audio_features(self, playlist):
         """Fetches and sets track.audio_features for each track in the playlist.
@@ -278,7 +278,7 @@ class MusicUtil:
         Params:
             playlist (Playlist).
         """
-        audio_features_by_track_ids = self.spotify_client_wrapper.get_audio_features_by_track_id([
+        audio_features_by_track_ids = self.music_api_client.get_audio_features_by_track_id([
             track.uri
             for track in playlist.get_tracks()
             if track.audio_features is None
@@ -406,7 +406,7 @@ class MusicUtil:
             genres = list(set([
                 genre
                 for artist_id in artist_ids
-                for genre in self.spotify_client_wrapper.get_artist_genres(artist_id)
+                for genre in self.music_api_client.get_artist_genres(artist_id)
             ]))
             album.set_genres(genres)
             albums_by_id[album.id] = album
@@ -504,12 +504,12 @@ class MusicUtil:
         Returns:
             (dict): key (Track), value (float) in [0,1].
         """
-        recommendation_limit = self.spotify_client_wrapper.get_recommendation_seed_limit()
+        recommendation_limit = self.music_api_client.get_recommendation_seed_limit()
         recommendations_with_count, num_batches = defaultdict(int), 0
         for min_index in range(0, len(track_ids), recommendation_limit):
             num_batches += 1
             max_index = min(min_index+recommendation_limit, len(track_ids))
-            recommendations = self.spotify_client_wrapper.get_recommendations_based_on_tracks(
+            recommendations = self.music_api_client.get_recommendations_based_on_tracks(
                 track_ids[min_index:max_index], song_attribute_ranges)
             for track in recommendations:
                 if track.id not in track_ids:

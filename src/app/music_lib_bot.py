@@ -9,7 +9,7 @@ from packages.music_management.playlist_creator import PlaylistCreator
 from packages.music_management.playlist_stats import PlaylistStats
 from packages.music_management.playlist_updater import PlaylistUpdater
 from app.lib.interactive_option_picker import InteractiveOptionPicker
-from packages.music_api_clients.spotify_client_wrapper import SpotifyClientWrapper
+from packages.music_api_clients.spotify import Spotify
 from app.lib.console_ui import ConsoleUI
 
 DEFAULT_LOOK_AT_ENTIRE_LIBRARY = False
@@ -26,13 +26,13 @@ MAX_NUM_TRACKS_TO_ADD = 100
 
 
 class MusicLibBot:
-    def __init__(self, spotify_client, my_music_lib, music_util, ui):
-        self.spotify_client = spotify_client
+    def __init__(self, music_api_client, my_music_lib, music_util, ui):
+        self.music_api_client = music_api_client
         self.my_music_lib = my_music_lib
         self.music_util = music_util
         self.ui = ui
         self.playlist_creator = PlaylistCreator(
-            self.spotify_client,
+            self.music_api_client,
             self.my_music_lib,
             self.music_util,
             self.ui.tell_user,
@@ -50,7 +50,7 @@ class MusicLibBot:
             playlist,
             self.my_music_lib,
             self.music_util,
-            self.spotify_client,
+            self.music_api_client,
             self.ui.tell_user,
             self.playlist_stats,
         )
@@ -251,7 +251,7 @@ class MusicLibBot:
 
     def _get_artist_from_user(self):
         artist_name = self.ui.get_non_empty_string("What artist interests you?")
-        matching_artists = self.spotify_client.get_matching_artists(artist_name)
+        matching_artists = self.music_api_client.get_matching_artists(artist_name)
         if matching_artists == []:
             self.ui.tell_user(f"Sorry, I couldn't find an artist by the name '{artist_name}'")
             return None
@@ -302,11 +302,11 @@ class MusicLibBot:
 
 
 def main():
-    spotify_client_wrapper = SpotifyClientWrapper()
+    spotify = Spotify()
     ui = ConsoleUI()
-    music_util = MusicUtil(spotify_client_wrapper, ui.tell_user)
-    my_music_lib = MyMusicLib(spotify_client_wrapper, music_util, ui.tell_user)
-    MusicLibBot(spotify_client_wrapper, my_music_lib, music_util, ui).run()
+    music_util = MusicUtil(spotify, ui.tell_user)
+    my_music_lib = MyMusicLib(spotify, music_util, ui.tell_user)
+    MusicLibBot(spotify, my_music_lib, music_util, ui).run()
 
 
 if __name__ == "__main__":

@@ -16,7 +16,7 @@ RECOMMENDATION_SEED_LIMIT = 5
 RECOMMENDATIONS_LIMIT = 100
 
 
-class SpotifyClientWrapper:
+class Spotify:
     def __init__(self):
         auth = SpotifyOAuth(scope=SPOTIFY_SCOPES)
         self.client = spotipy.Spotify(auth_manager=auth)

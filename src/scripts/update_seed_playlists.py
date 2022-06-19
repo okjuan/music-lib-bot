@@ -5,15 +5,15 @@ sys.path.extend(['.', '../'])
 
 from packages.music_management.my_music_lib import MyMusicLib
 from packages.music_management.music_util import MusicUtil
-from packages.music_api_clients.spotify_client_wrapper import SpotifyClientWrapper
+from packages.music_api_clients.spotify import Spotify
 
 NUM_TRACKS_PER_ALBUM = 3
 
 
 def main():
-    spotify_client_wrapper = SpotifyClientWrapper()
-    music_util = MusicUtil(spotify_client_wrapper, print)
-    my_music_lib = MyMusicLib(spotify_client_wrapper, music_util, print)
+    spotify = Spotify()
+    music_util = MusicUtil(spotify, print)
+    my_music_lib = MyMusicLib(spotify, music_util, print)
 
     seed_playlists = my_music_lib.search_my_playlists("seed: ")
     print(f"Found {len(seed_playlists)} matching playlists.")

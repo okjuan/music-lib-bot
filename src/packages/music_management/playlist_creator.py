@@ -3,8 +3,8 @@ from random import shuffle
 
 
 class PlaylistCreator:
-    def __init__(self, spotify_client, my_music_lib, music_util, info_logger):
-        self.spotify_client = spotify_client
+    def __init__(self, music_api_client, my_music_lib, music_util, info_logger):
+        self.music_api_client = music_api_client
         self.my_music_lib = my_music_lib
         self.music_util = music_util
         self.info_logger = info_logger

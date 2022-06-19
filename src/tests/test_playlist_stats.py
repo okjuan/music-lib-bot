@@ -8,8 +8,8 @@ from tests.fixtures import mock_audio_features, mock_playlist, mock_track
 
 class TestPlaylistStats(unittest.TestCase):
     def setUp(self):
-        self.mock_spotify_client = MagicMock()
-        self.music_util = MusicUtil(self.mock_spotify_client, MagicMock())
+        self.mock_spotify = MagicMock()
+        self.music_util = MusicUtil(self.mock_spotify, MagicMock())
         self.my_music_lib = MyMusicLib(MagicMock(), MagicMock(), MagicMock())
         self.playlist_stats = PlaylistStats(self.my_music_lib, self.music_util, MagicMock())
 
