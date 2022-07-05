@@ -3,17 +3,17 @@
 import sys
 sys.path.extend(['.', '../'])
 
-from app.lib.music_util import MusicUtil
-from app.lib.spotify_client_wrapper import SpotifyClientWrapper
+from packages.music_management.music_util import MusicUtil
+from packages.music_api_clients.spotify import Spotify
 
 
 def main():
-    spotify_client_wrapper = SpotifyClientWrapper()
-    music_util = MusicUtil(spotify_client_wrapper, print)
+    spotify = Spotify()
+    music_util = MusicUtil(spotify, print)
 
-    matching_artists = spotify_client_wrapper.get_matching_artists("beatles")
+    matching_artists = spotify.get_matching_artists("beatles")
     artist = music_util.get_most_popular_artist(matching_artists)
-    for album in spotify_client_wrapper.get_artist_albums(artist.id):
+    for album in spotify.get_artist_albums(artist):
         print(album.name)
 
 

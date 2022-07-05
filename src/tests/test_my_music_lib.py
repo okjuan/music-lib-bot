@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch, MagicMock
 
-from app.lib.my_music_lib import MyMusicLib
+from packages.music_management.my_music_lib import MyMusicLib
 
 
 class TestMyMusicLib(unittest.TestCase):

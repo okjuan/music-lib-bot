@@ -3,8 +3,8 @@ from random import shuffle
 
 
 class PlaylistCreator:
-    def __init__(self, spotify_client, my_music_lib, music_util, info_logger):
-        self.spotify_client = spotify_client
+    def __init__(self, music_api_client, my_music_lib, music_util, info_logger):
+        self.music_api_client = music_api_client
         self.my_music_lib = my_music_lib
         self.music_util = music_util
         self.info_logger = info_logger
@@ -17,7 +17,7 @@ class PlaylistCreator:
         self.info_logger(f"Creating '{album_group['description']}' playlist from {len(album_group['albums'])} albums...")
         self.my_music_lib.create_playlist(
             album_group["description"],
-            [track.uri for track in tracks],
+            tracks,
             description="created by playlist_creator"
         )
         self.info_logger(f"Playlist created!")
@@ -50,7 +50,7 @@ class PlaylistCreator:
         self.info_logger(f"Creating '{playlist_title}' playlist...")
         self.my_music_lib.create_playlist(
             playlist_title,
-            [track.uri for track in tracks],
+            tracks,
             description="created by playlist_creator"
         )
 
@@ -61,7 +61,7 @@ class PlaylistCreator:
         tracks_by_album = defaultdict(list)
         playlist = get_playlist()
         for track in playlist.get_tracks():
-            tracks_by_album[track.album_id].append(track)
+            tracks_by_album[track].append(track)
 
         most_popular_tracks_per_album, num_tracks_per_album = [], get_num_tracks_per_album()
         for _, tracks in tracks_by_album.items():
@@ -72,9 +72,9 @@ class PlaylistCreator:
         new_playlist_name = get_new_playlist_name()
         self.info_logger(f"Created your new playlist '{new_playlist_name}' containing {len(most_popular_tracks_per_album)} tracks!")
 
-        track_uris = [track.id for track in most_popular_tracks_per_album]
-        shuffle(track_uris)
-        self.my_music_lib.create_playlist(new_playlist_name, track_uris)
+        shuffle(most_popular_tracks_per_album)
+        self.my_music_lib.create_playlist(
+            new_playlist_name, most_popular_tracks_per_album)
 
     def _get_discography(self, get_artist):
         artist = get_artist()

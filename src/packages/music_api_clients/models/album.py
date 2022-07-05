@@ -1,31 +1,31 @@
-from app.models.track import Track
-from app.models.artist import Artist
+from packages.music_api_clients.models.track import Track
+from packages.music_api_clients.models.artist import Artist
 from datetime import datetime
 
 
 class Album:
-    def __init__(self, name, id_, tracks, artists, release_date, num_tracks, genres=None, popularity=None):
+    def __init__(self, name, tracks, artists, release_date, num_tracks, spotify_id=None, genres=None, popularity=None):
         """
         Params:
             name (str).
-            id (str).
             artists ([dict]).
             release_date (datetime).
             num_tracks (int).
+            spotify_id (str).
             genres ([str]), optional.
             popularity (int) in range [0, 100], optional.
         """
         self.name = name
-        self.id = id_
         self.tracks = tracks
         self.artists = artists
         self.release_date = release_date
         self.num_tracks = num_tracks
+        self.spotify_id = spotify_id
         self.genres = genres
         self.popularity = popularity
 
     def __key(self):
-        return self.id
+        return self.spotify_id
 
     def __hash__(self):
         return hash(self.__key())
@@ -41,10 +41,12 @@ class Album:
     def set_popularity(self, popularity):
         self.popularity = popularity
 
+    def contains_track(self, track):
+        return self.spotify_id == track.spotify_album_id
+
     def from_spotify_album(spotify_album):
         return Album(
             spotify_album['name'],
-            spotify_album['id'],
             [
                 Track.from_spotify_album_track(track, spotify_album['id'])
                 for track in spotify_album['tracks']['items']
@@ -55,7 +57,21 @@ class Album:
             ],
             Album._parse_date(spotify_album['release_date']),
             spotify_album['total_tracks'],
+            spotify_id=spotify_album['id'],
             popularity=spotify_album['popularity'],
+        )
+
+    def from_spotify_artist_album(spotify_album):
+        return Album(
+            spotify_album['name'],
+            None,
+            [
+                Artist.from_spotify_album_artist(artist)
+                for artist in spotify_album['artists']
+            ],
+            Album._parse_date(spotify_album['release_date']),
+            spotify_album['total_tracks'],
+            spotify_id=spotify_album['id'],
         )
 
     def _parse_date(spotify_release_date):

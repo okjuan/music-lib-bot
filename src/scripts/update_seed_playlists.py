@@ -1,31 +1,33 @@
 # allows me to run:
 # $ python scripts/dump_playlist_genres.py
+from pydoc import plain
 import sys
 sys.path.extend(['.', '../'])
 
-from app.lib.my_music_lib import MyMusicLib
-from app.lib.music_util import MusicUtil
-from app.lib.spotify_client_wrapper import SpotifyClientWrapper
+from packages.music_management.my_music_lib import MyMusicLib
+from packages.music_management.music_util import MusicUtil
+from packages.music_api_clients.spotify import Spotify
 
 NUM_TRACKS_PER_ALBUM = 3
 
 
 def main():
-    spotify_client_wrapper = SpotifyClientWrapper()
-    music_util = MusicUtil(spotify_client_wrapper, print)
-    my_music_lib = MyMusicLib(spotify_client_wrapper, music_util, print)
+    spotify = Spotify()
+    music_util = MusicUtil(spotify, print)
+    my_music_lib = MyMusicLib(spotify, music_util, print)
 
     seed_playlists = my_music_lib.search_my_playlists("seed: ")
     print(f"Found {len(seed_playlists)} matching playlists.")
 
     for seed_playlist in seed_playlists:
-        print("Checking for playlist", seed_playlist.name, seed_playlist.id)
+        print("Checking for playlist", seed_playlist.name, seed_playlist.spotify_id)
         target_playlist_name = seed_playlist.name[len("seed: "):]
         target_playlist = my_music_lib.get_or_create_playlist(target_playlist_name)
 
-        seed_albums = music_util.get_albums_in_playlist(seed_playlist)
+        seed_albums = music_util.get_albums_of_tracks(seed_playlist.get_tracks())
         if target_playlist.get_num_tracks() > 0:
-            current_albums = music_util.get_albums_in_playlist(target_playlist)
+            current_albums = music_util.get_albums_of_tracks(
+                target_playlist.get_tracks())
         else:
             current_albums = []
 
@@ -38,7 +40,7 @@ def main():
                 albums_to_add, NUM_TRACKS_PER_ALBUM)
             print(f"Adding {len(tracks_to_add)} tracks.")
             my_music_lib.add_tracks_in_random_positions(
-                target_playlist, [track.uri for track in tracks_to_add])
+                target_playlist, [track for track in tracks_to_add])
         else:
             print(f"Playlist '{target_playlist.name}' is all up-to-date!")
 
@@ -48,7 +50,7 @@ def main():
         #        target_playlist.tracks, albums_to_remove)
         #    print(f"Removing {len(tracks_to_remove)} tracks.")
         #    my_music_lib.remove_tracks_from_playlist(
-        #        target_playlist, [track.uri for track in tracks_to_remove])
+        #        target_playlist, tracks_to_remove)
 
 
 if __name__ == "__main__":

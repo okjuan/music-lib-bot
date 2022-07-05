@@ -95,7 +95,7 @@ Adding 15 randomly throughout your playlist: 'Hova!'
 ### Testing
 ```
 python run_tests.py
-python run_tests.py TestSpotifyClientWrapper
+python run_tests.py TestSpotify
 python run_tests.py TestMusicLibBot
 python run_tests.py TestMyMusicLib
 python run_tests.py TestMusicUtil
