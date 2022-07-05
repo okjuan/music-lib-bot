@@ -1,5 +1,6 @@
 # allows me to run:
 # $ python scripts/dump_playlist_genres.py
+from pydoc import plain
 import sys
 sys.path.extend(['.', '../'])
 
@@ -23,9 +24,10 @@ def main():
         target_playlist_name = seed_playlist.name[len("seed: "):]
         target_playlist = my_music_lib.get_or_create_playlist(target_playlist_name)
 
-        seed_albums = music_util.get_albums_in_playlist(seed_playlist)
+        seed_albums = music_util.get_albums_of_tracks(seed_playlist.get_tracks())
         if target_playlist.get_num_tracks() > 0:
-            current_albums = music_util.get_albums_in_playlist(target_playlist)
+            current_albums = music_util.get_albums_of_tracks(
+                target_playlist.get_tracks())
         else:
             current_albums = []
 
@@ -38,7 +40,7 @@ def main():
                 albums_to_add, NUM_TRACKS_PER_ALBUM)
             print(f"Adding {len(tracks_to_add)} tracks.")
             my_music_lib.add_tracks_in_random_positions(
-                target_playlist, [track.spotify_uri for track in tracks_to_add])
+                target_playlist, [track for track in tracks_to_add])
         else:
             print(f"Playlist '{target_playlist.name}' is all up-to-date!")
 

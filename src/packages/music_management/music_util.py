@@ -260,13 +260,8 @@ class MusicUtil:
             if self.is_same_album_name(album_name, album.name)
         ]
 
-    def get_albums_in_playlist(self, playlist):
-        "Returns list of unique album IDs."
-        return self.get_albums_of_tracks(playlist.get_tracks())
-
     def get_albums_of_tracks(self, tracks):
-        albums = {track.album for track in tracks}
-        return self.music_api_client.get_albums(albums)
+        return self.music_api_client.get_albums_of_tracks(tracks)
 
     def populate_track_audio_features(self, playlist):
         """Fetches and sets track.audio_features for each track in the playlist.

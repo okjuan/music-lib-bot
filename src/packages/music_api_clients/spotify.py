@@ -120,17 +120,25 @@ class Spotify:
         return self._fetch_in_batches(tracks, track_fetcher)
 
     def get_albums(self, albums):
-        def album_fetcher(albums):
+        return self._get_albums_from_ids([album.spotify_id for album in albums])
+
+    def _get_albums_from_ids(self, album_ids):
+        def album_fetcher(album_ids):
             results = self.client.albums([
-                album.spotify_id
-                for album in albums
+                album_id
+                for album_id in album_ids
             ])
             return results['albums']
-        albums = self._fetch_in_batches(albums, album_fetcher)
+        albums = self._fetch_in_batches(album_ids, album_fetcher)
         return [
             Album.from_spotify_album(album)
             for album in albums
         ]
+
+    def get_albums_of_tracks(self, tracks):
+        "Returns list of albums that the tracks belong to. Duplicates excluded."
+        album_ids = list({track.spotify_album_id for track in tracks})
+        return self._get_albums_from_ids(album_ids)
 
     def create_playlist(self, name, description):
         user_id = self._get_current_user_id()
