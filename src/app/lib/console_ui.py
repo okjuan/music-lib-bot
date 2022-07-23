@@ -14,6 +14,15 @@ class ConsoleUI:
             str_ = self._prompt_user(prompt)
         return str_
 
+    def get_string(self, prompt, default):
+        """
+        Params:
+            prompt (string): the message to display to user.
+            default (boolean): value to use if user doesn't give a value.
+        """
+        return self._default_if_empty(self._prompt_user(prompt), default)
+
+
     def get_string_from_options(self, message, options):
         user_selection = None
         while user_selection is None:
@@ -72,6 +81,10 @@ class ConsoleUI:
 
     def _default_if_none(self, val, default):
         return default if val is None else val
+
+    def _default_if_empty(self, val, default):
+        """Returns val unless it's len(val) == 0 then returns default"""
+        return default if len(val) == 0 else val
 
     def _prompt_for_int(self, prompt):
         return self._parse_int(self._prompt_user(prompt))

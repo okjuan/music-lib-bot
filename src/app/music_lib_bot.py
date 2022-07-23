@@ -23,6 +23,7 @@ MAX_NUM_TRACKS_PER_ALBUM = 10
 DEFAULT_NUM_TRACKS_TO_ADD = 0
 MIN_NUM_TRACKS_TO_ADD = 1
 MAX_NUM_TRACKS_TO_ADD = 100
+DEFAULT_SEED_PREFIX = "seed "
 
 
 class MusicLibBot:
@@ -42,6 +43,20 @@ class MusicLibBot:
             self.music_util,
             self.ui.tell_user,
         )
+
+    def run_update_target_playlists_from_seed_playlists(self):
+        messages = [
+            "",
+            "Ok, so this is how this works..",
+            "First, I'll find all your playlists that have a certain prefix in their name...",
+            "Then, for each of them, I'll create a 'target' playlist (or find an existing one because I may have done this for you in the past.)",
+            "(A target playlist is named the same as its seed playlist minus the prefix.)",
+            "Then I'll add songs from the seed to the target, avoiding duplicates!",
+        ]
+        self.ui.tell_user("\n".join(messages))
+        seed_prefix = self.ui.get_string(
+            f"What's your seed prefix? (default is '{DEFAULT_SEED_PREFIX}')", DEFAULT_SEED_PREFIX)
+        self.ui.tell_user(f"Ok, gonna look for playlists that look like '{seed_prefix}blah blah'")
 
     def run_add_tracks_from_my_saved_albums_with_similar_genres(self):
         playlist = self.get_playlist_from_user(
@@ -226,16 +241,18 @@ class MusicLibBot:
         options = {
             "a": "Create playlist from an artist's discography.",
             "b": "Create playlist from a playlist full of albums.",
-            "c": "Create playlist from albums in your library that have matching genres.",
-            "d": "Update existing playlist with tracks from my saved albums with similar genres.",
-            "e": "Update existing playlist with recommended tracks with similar attributes.",
+            "c": "Update target playlists from seed playlists.",
+            "d": "Create playlist from albums in your library that have matching genres.",
+            "e": "Update existing playlist with tracks from my saved albums with similar genres.",
+            "f": "Update existing playlist with recommended tracks with similar attributes.",
         }
         functions = {
             "a": self._get_create_playlist_from_an_artists_discography_callback(),
             "b": self._get_create_playlist_based_on_existing_playlist_callback(),
-            "c": self.launch_playlist_picker,
-            "d": self.run_add_tracks_from_my_saved_albums_with_similar_genres,
-            "e": self.run_add_recommended_tracks_with_similar_attributes,
+            "c": self.run_update_target_playlists_from_seed_playlists,
+            "d": self.launch_playlist_picker,
+            "e": self.run_add_tracks_from_my_saved_albums_with_similar_genres,
+            "f": self.run_add_recommended_tracks_with_similar_attributes,
         }
         def option_pick_handler(pick):
             functions[pick]()
