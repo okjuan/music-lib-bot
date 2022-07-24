@@ -288,7 +288,7 @@ class MusicLibBot:
         }
         functions = {
             "a": self._get_create_playlist_from_an_artists_discography_callback(),
-            "b": self._get_create_playlist_based_on_existing_playlist_callback(),
+            "b": self.run_create_playlist_based_on_existing_playlist(),
             "c": self.run_create_or_update_target_from_seed,
             "d": self.run_interactive_playlist_picker,
             "e": self.run_add_tracks_from_my_saved_albums_with_similar_genres,
@@ -328,21 +328,19 @@ class MusicLibBot:
             )
         return callback
 
-    def _get_create_playlist_based_on_existing_playlist_callback(self):
+    def run_create_playlist_based_on_existing_playlist(self):
         get_new_playlist_name = lambda: self.ui.get_non_empty_string(
             "What should your new playlist be called?")
         _get_num_tracks_per_album = lambda: self.ui.get_int(
             f"How many tracks per album? default is {DEFAULT_NUM_TRACKS_PER_ALBUM}",
             DEFAULT_NUM_TRACKS_PER_ALBUM
         )
-        def callback():
-            self.playlist_creator.create_playlist_based_on_existing_playlist(
-                lambda: self._get_playlist_from_user(
-                    self.my_music_lib.get_playlist_by_name),
-                get_new_playlist_name,
-                _get_num_tracks_per_album,
-            )
-        return callback
+        self.playlist_creator.create_playlist_based_on_existing_playlist(
+            lambda: self._get_playlist_from_user(
+                self.my_music_lib.get_playlist_by_name),
+            get_new_playlist_name,
+            _get_num_tracks_per_album,
+        )
 
     def _get_playlist_description(self, album_group):
         artists = list({
