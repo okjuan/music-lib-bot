@@ -44,7 +44,7 @@ class MusicLibBot:
             self.ui.tell_user,
         )
 
-    def run_update_target_playlists_from_seed_playlists(self):
+    def run_create_or_update_target_from_seed(self):
         messages = [
             "",
             "Ok, so this is how this works..",
@@ -288,7 +288,7 @@ class MusicLibBot:
         functions = {
             "a": self._get_create_playlist_from_an_artists_discography_callback(),
             "b": self._get_create_playlist_based_on_existing_playlist_callback(),
-            "c": self.run_update_target_playlists_from_seed_playlists,
+            "c": self.run_create_or_update_target_from_seed,
             "d": self.launch_playlist_picker,
             "e": self.run_add_tracks_from_my_saved_albums_with_similar_genres,
             "f": self.run_add_recommended_tracks_with_similar_attributes,
