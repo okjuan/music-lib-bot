@@ -156,7 +156,7 @@ class MusicLibBot:
             recommended_track_pick_handler,
             self.ui,
             get_recommended_track_description,
-        ).launch_interactive_picker()
+        ).run()
 
     def _get_playlist_from_user(self, get_playlist_by_name):
         playlist = None
@@ -275,7 +275,7 @@ class MusicLibBot:
             playlist_pick_handler,
             self.ui,
             self._get_playlist_description,
-        ).launch_interactive_picker()
+        ).run()
 
     def run(self):
         options = {
@@ -303,7 +303,7 @@ class MusicLibBot:
             option_pick_handler,
             self.ui,
             get_option_description,
-        ).launch_interactive_picker()
+        ).run()
 
     def _get_artist_from_user(self):
         artist_name = self.ui.get_non_empty_string("What artist interests you?")

@@ -9,7 +9,7 @@ class InteractiveOptionPicker:
         self.ui = ui
         self.get_option_description = get_option_description
 
-    def launch_interactive_picker(self):
+    def run(self):
         while True:
             selection = self.get_selection()
             if selection is QUIT:
