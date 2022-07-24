@@ -69,18 +69,24 @@ class MusicLibBot:
             DEFAULT_NUM_TRACKS_PER_ALBUM
         )
 
-        updated_playlists = PlaylistUpdater(
-            None,
-            self.my_music_lib,
-            self.music_util,
-            self.music_api_client,
-            self.ui.tell_user,
-            self.playlist_stats,
-        ).create_or_update_targets_from_seeds(
-            seed_playlists,
-            num_tracks_per_album,
-            lambda seed_playlist_name: seed_playlist_name[len(seed_prefix):],
-        )
+        updated_playlists = []
+        for seed_playlist in seed_playlists:
+            playlist_updater = PlaylistUpdater(
+                seed_playlist,
+                self.my_music_lib,
+                self.music_util,
+                self.music_api_client,
+                self.ui.tell_user,
+                self.playlist_stats,
+            )
+            target_playlist = playlist_updater.create_or_update_target_from_seed(
+                seed_playlists,
+                num_tracks_per_album,
+                lambda seed_playlist_name: seed_playlist_name[len(seed_prefix):],
+            )
+            if target_playlist is not None:
+                updated_playlists += target_playlist
+            del playlist_updater
 
         num_playlists_updated = len(updated_playlists)
         if num_playlists_updated > 0:
