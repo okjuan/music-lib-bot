@@ -27,6 +27,20 @@ DEFAULT_SEED_PREFIX = "seed: "
 
 
 class MusicLibBot:
+    """This is an interactive app for music library management. It presents the user
+    with options for creating and updating playlists and prompts them for parameters
+    such as the number of songs per album to add to a playlist.
+
+    The goal of this module is to interact with a user to allow them to configure and
+    issue commands. However, it should be possible to run the same commands in other
+    modules. Hence, there should be little-to-no command logic here. All command-specific
+    logic should exist in other modules which are imported here e.g. PlaylistUpdater.
+
+    For example, notice that `run_create_or_update_target_from_seed` literally runs
+    `create_or_update_target_from_seed`. All other logic in that function is for
+    collecting configuration parameters from the user and informing the user.
+    """
+
     def __init__(self, music_api_client, my_music_lib, music_util, ui):
         self.music_api_client = music_api_client
         self.my_music_lib = my_music_lib
