@@ -49,7 +49,8 @@ class MusicLibBot:
             "",
             "Ok, so this is how this works..",
             "First, I'll find all your playlists that have a certain prefix in their name...",
-            "Then, for each of them, I'll create a 'target' playlist (or find an existing one because I may have done this for you in the past.)",
+            "Then, for each of them, I'll create a 'target' playlist"
+            "(or find an existing one because I may have done this for you in the past.)",
             "(A target playlist is named the same as its seed playlist minus the prefix.)",
             "Then I'll add songs from the seed to the target, avoiding duplicates!",
         ]
