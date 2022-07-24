@@ -9,7 +9,7 @@ class PlaylistUpdater:
         self.playlist_stats = playlist_stats
 
     def create_or_update_target_from_seed(self, num_tracks_per_album, get_target_playlist_name):
-        """
+        """Creates or updates a 'target' playlist with songs in source playlist, avoiding duplicates!
         Params:
             seed_playlists [Playlist].
             num_tracks_per_album (int).
