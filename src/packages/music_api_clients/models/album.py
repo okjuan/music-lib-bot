@@ -1,5 +1,5 @@
-from packages.music_api_clients.models.track import Track
-from packages.music_api_clients.models.artist import Artist
+from .track import Track
+from .artist import Artist
 from datetime import datetime
 
 

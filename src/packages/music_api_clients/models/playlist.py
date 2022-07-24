@@ -1,4 +1,4 @@
-from packages.music_api_clients.models.track import Track
+from .track import Track
 
 class Playlist:
     def __init__(self, name, description, tracks_fetcher, spotify_id=None):

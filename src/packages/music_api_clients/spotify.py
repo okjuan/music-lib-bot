@@ -1,11 +1,11 @@
 from spotipy.oauth2 import SpotifyOAuth
 import spotipy
 
-from packages.music_api_clients.models.album import Album
-from packages.music_api_clients.models.audio_features import AudioFeatures
-from packages.music_api_clients.models.artist import Artist
-from packages.music_api_clients.models.playlist import Playlist
-from packages.music_api_clients.models.track import Track
+from .models.album import Album
+from .models.audio_features import AudioFeatures
+from .models.artist import Artist
+from .models.playlist import Playlist
+from .models.track import Track
 
 
 API_BATCH_SIZE = 20

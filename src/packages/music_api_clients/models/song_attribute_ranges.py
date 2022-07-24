@@ -1,4 +1,4 @@
-from packages.music_api_clients.models.audio_features import AudioFeatures
+from .audio_features import AudioFeatures
 
 
 class SongAttributeRanges:

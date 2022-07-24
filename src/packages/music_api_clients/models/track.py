@@ -1,4 +1,4 @@
-from packages.music_api_clients.models.artist import Artist
+from .artist import Artist
 
 
 class Track:
