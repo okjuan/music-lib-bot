@@ -27,6 +27,20 @@ DEFAULT_SEED_PREFIX = "seed: "
 
 
 class MusicLibBot:
+    """This is an interactive app for music library management. It presents the user
+    with options for creating and updating playlists and prompts them for parameters
+    such as the number of songs per album to add to a playlist.
+
+    The goal of this module is to interact with a user to allow them to configure and
+    issue commands. However, it should be possible to run the same commands in other
+    modules. Hence, there should be little-to-no command logic here. All command-specific
+    logic should exist in other modules which are imported here e.g. PlaylistUpdater.
+
+    For example, notice that `run_create_or_update_target_from_seed` literally runs
+    `create_or_update_target_from_seed`. All other logic in that function is for
+    collecting configuration parameters from the user and informing the user.
+    """
+
     def __init__(self, music_api_client, my_music_lib, music_util, ui):
         self.music_api_client = music_api_client
         self.my_music_lib = my_music_lib
@@ -45,6 +59,7 @@ class MusicLibBot:
         )
 
     def run_create_or_update_target_from_seed(self):
+        self.ui.tell_user("Let's update target playlists from seed playlists.")
         messages = [
             "",
             "Ok, so this is how this works..",
@@ -81,7 +96,6 @@ class MusicLibBot:
                 self.playlist_stats,
             )
             target_playlist = playlist_updater.create_or_update_target_from_seed(
-                seed_playlists,
                 num_tracks_per_album,
                 lambda seed_playlist_name: seed_playlist_name[len(seed_prefix):],
             )
@@ -99,7 +113,8 @@ class MusicLibBot:
         self.ui.tell_user(summary_message + ".")
 
     def run_add_tracks_from_my_saved_albums_with_similar_genres(self):
-        playlist = self.get_playlist_from_user(
+        self.ui.tell_user("Let's update an existing playlist with tracks from my saved albums with similar genres.")
+        playlist = self._get_playlist_from_user(
             self.my_music_lib.get_playlist_by_name)
         playlist_updater = PlaylistUpdater(
             playlist,
@@ -110,15 +125,16 @@ class MusicLibBot:
             self.playlist_stats,
         )
         num_tracks_added = playlist_updater.add_tracks_from_my_saved_albums_with_same_genres(
-            self.get_num_tracks_per_album, self.get_num_albums_to_fetch)
+            self._get_num_tracks_per_album, self._get_num_albums_to_fetch)
         if num_tracks_added > 0:
             return
         self.ui.tell_user("Will try to add songs with similar genres..")
         playlist_updater.add_tracks_from_my_saved_albums_with_similar_genres(
-            self.get_num_tracks_per_album, self.get_num_albums_to_fetch)
+            self._get_num_tracks_per_album, self._get_num_albums_to_fetch)
 
     def run_add_recommended_tracks_with_similar_attributes(self):
-        playlist = self.get_playlist_from_user(
+        self.ui.tell_user("Let's update an existing playlist with recommended tracks with similar attributes.")
+        playlist = self._get_playlist_from_user(
             self.my_music_lib.get_playlist_by_name)
         self.music_util.populate_track_audio_features(playlist)
         song_attribute_ranges = self.music_util.get_lenient_song_attribute_ranges(
@@ -156,126 +172,50 @@ class MusicLibBot:
             recommended_track_pick_handler,
             self.ui,
             get_recommended_track_description,
-        ).launch_interactive_picker()
+        ).run()
 
-    def get_playlist_from_user(self, get_playlist_by_name):
-        playlist = None
-        while playlist is None:
-            playlist_name = self.ui.get_non_empty_string(
-                "What's the name of your playlist?")
-            playlist = get_playlist_by_name(playlist_name)
-            if playlist is None:
-                self.ui.tell_user(f"I couldn't find '{playlist_name}' in your playlists.")
-        return playlist
-
-    def get_num_tracks_to_add(self):
-        return self.ui.get_int_from_range(
-            f"# of tracks to add to playlist?",
-            DEFAULT_NUM_TRACKS_TO_ADD,
-            MIN_NUM_TRACKS_TO_ADD,
-            MAX_NUM_TRACKS_TO_ADD
-        )
-
-    def get_num_tracks_per_album(self):
-        return self.ui.get_int_from_range(
-            f"# of tracks per album to add to playlist? default is {DEFAULT_NUM_TRACKS_PER_ALBUM}",
-            DEFAULT_NUM_TRACKS_PER_ALBUM,
-            MIN_NUM_TRACKS_PER_ALBUM,
-            MAX_NUM_TRACKS_PER_ALBUM
-        )
-
-    def get_num_albums_to_fetch(self):
-        return self.ui.get_int(
-            f"# of albums to fetch from your library? default is {DEFAULT_NUM_ALBUMS_TO_FETCH}",
-            DEFAULT_NUM_ALBUMS_TO_FETCH
-        )
-
-    def get_min_albums_per_playlist(self):
-        return self.ui.get_int(
-            f"Minimum # of albums per playlist? default is {DEFAULT_MIN_ALBUMS_PER_PLAYLIST}",
-            DEFAULT_MIN_ALBUMS_PER_PLAYLIST
-        )
-
-    def get_min_artists_per_playlist(self):
-        return self.ui.get_int(
-            f"Minimum # of artists per playlist? default is {DEFAULT_MIN_NUM_ARTISTS_PER_PLAYLIST}",
-            DEFAULT_MIN_NUM_ARTISTS_PER_PLAYLIST
-        )
-
-    def get_min_genres_per_group(self):
-        return self.ui.get_int(
-            f"Minimum # of genres per playlist? default is {DEFAULT_MIN_GENRES_PER_PLAYLIST}",
-            DEFAULT_MIN_GENRES_PER_PLAYLIST
-        )
-
-    def look_at_entire_library(self):
-        return self.ui.get_yes_or_no(
-            f"Should I look at your entire library? y or n - default is {'y' if DEFAULT_LOOK_AT_ENTIRE_LIBRARY else 'n'}",
-            DEFAULT_LOOK_AT_ENTIRE_LIBRARY
-        )
-
-    def get_albums_by_genre(self):
-        min_genres_per_group = self.get_min_genres_per_group()
-        if self.look_at_entire_library():
-            albums_by_genre = self.my_music_lib.get_all_my_albums_grouped_by_genre(
-                min_genres_per_group)
-        else:
-            albums_by_genre = self.my_music_lib.get_my_albums_grouped_by_genre(
-                self.get_num_albums_to_fetch(), min_genres_per_group)
-        return albums_by_genre
-
-    def get_suggested_playlists(self, albums_by_genre):
-        """
-        Returns:
-            ([dict]): each with 2 key-value pairs:
-                key "description", value (str).
-                key "albums", value ([Album]).
-        """
-        min_albums_per_playlist = self.get_min_albums_per_playlist()
-        min_artists_per_playlist = self.get_min_artists_per_playlist()
-        playlist_criteria = lambda albums: len(albums) >= min_albums_per_playlist and self.music_util.get_num_diff_artists(albums) >= min_artists_per_playlist
-        return [
-            dict(
-                description=', '.join(album_group['genres']),
-                albums=album_group['albums']
-            )
-            for album_group in albums_by_genre
-            if playlist_criteria(album_group['albums'])
-        ]
-
-    def get_playlist_options(self):
-        """
-        Returns:
-            ([dict]): each dict with 2 key-value pairs:
-                - key "description", value (str).
-                - key "albums", value ([Album]).
-                sorted in descending order by number of albums,
-        """
-        albums_by_genre = self.get_albums_by_genre()
-        if len(albums_by_genre) == 0:
-            self.ui.tell_user("Couldn't match the albums into groups.. the genres didn't match :/")
-            return
-
-        return sorted(
-            self.get_suggested_playlists(albums_by_genre),
-            key=lambda album_group: len(album_group['albums']),
-            reverse=True
-        )
-
-    def launch_playlist_picker(self):
-        suggested_playlists = self.get_playlist_options()
+    def run_interactive_playlist_picker(self):
+        self.ui.tell_user("Let's create a playlist from albums in your library that have matching genres.")
+        suggested_playlists = self._get_playlist_options()
         if len(suggested_playlists) == 0:
             self.ui.tell_user("Couldn't find any suggested playlists!")
             return
         def playlist_pick_handler(playlist):
             return self.playlist_creator.create_playlist_from_albums(
-                playlist, self.get_num_tracks_per_album)
+                playlist, self._get_num_tracks_per_album)
         InteractiveOptionPicker(
             suggested_playlists,
             playlist_pick_handler,
             self.ui,
             self._get_playlist_description,
-        ).launch_interactive_picker()
+        ).run()
+
+    def run_create_playlist_from_an_artists_discography(self):
+        self.ui.tell_user("Let's create a playlist from an artist's discography.")
+        _get_num_tracks_per_album = lambda: self.ui.get_int_from_options(
+                "How many tracks do you want from each album?", [1, 2, 3, 4, 5])
+        get_new_playlist_name = lambda: self.ui.get_non_empty_string(
+            "What do you want to call your playlist?")
+        self.playlist_creator.create_playlist_from_an_artists_discography(
+            self._get_artist_from_user,
+            _get_num_tracks_per_album,
+            get_new_playlist_name,
+        )
+
+    def run_create_playlist_based_on_existing_playlist(self):
+        self.ui.tell_user("Let's create a playlist from a playlist full of albums.")
+        get_new_playlist_name = lambda: self.ui.get_non_empty_string(
+            "What should your new playlist be called?")
+        _get_num_tracks_per_album = lambda: self.ui.get_int(
+            f"How many tracks per album? default is {DEFAULT_NUM_TRACKS_PER_ALBUM}",
+            DEFAULT_NUM_TRACKS_PER_ALBUM
+        )
+        self.playlist_creator.create_playlist_based_on_existing_playlist(
+            lambda: self._get_playlist_from_user(
+                self.my_music_lib.get_playlist_by_name),
+            get_new_playlist_name,
+            _get_num_tracks_per_album,
+        )
 
     def run(self):
         options = {
@@ -287,10 +227,10 @@ class MusicLibBot:
             "f": "Update existing playlist with recommended tracks with similar attributes.",
         }
         functions = {
-            "a": self._get_create_playlist_from_an_artists_discography_callback(),
-            "b": self._get_create_playlist_based_on_existing_playlist_callback(),
+            "a": self.run_create_playlist_from_an_artists_discography,
+            "b": self.run_create_playlist_based_on_existing_playlist,
             "c": self.run_create_or_update_target_from_seed,
-            "d": self.launch_playlist_picker,
+            "d": self.run_interactive_playlist_picker,
             "e": self.run_add_tracks_from_my_saved_albums_with_similar_genres,
             "f": self.run_add_recommended_tracks_with_similar_attributes,
         }
@@ -303,7 +243,111 @@ class MusicLibBot:
             option_pick_handler,
             self.ui,
             get_option_description,
-        ).launch_interactive_picker()
+        ).run()
+
+    def _get_playlist_from_user(self, get_playlist_by_name):
+        playlist = None
+        while playlist is None:
+            playlist_name = self.ui.get_non_empty_string(
+                "What's the name of your playlist?")
+            playlist = get_playlist_by_name(playlist_name)
+            if playlist is None:
+                self.ui.tell_user(f"I couldn't find '{playlist_name}' in your playlists.")
+        return playlist
+
+    def _get_num_tracks_to_add(self):
+        return self.ui.get_int_from_range(
+            f"# of tracks to add to playlist?",
+            DEFAULT_NUM_TRACKS_TO_ADD,
+            MIN_NUM_TRACKS_TO_ADD,
+            MAX_NUM_TRACKS_TO_ADD
+        )
+
+    def _get_num_tracks_per_album(self):
+        return self.ui.get_int_from_range(
+            f"# of tracks per album to add to playlist? default is {DEFAULT_NUM_TRACKS_PER_ALBUM}",
+            DEFAULT_NUM_TRACKS_PER_ALBUM,
+            MIN_NUM_TRACKS_PER_ALBUM,
+            MAX_NUM_TRACKS_PER_ALBUM
+        )
+
+    def _get_num_albums_to_fetch(self):
+        return self.ui.get_int(
+            f"# of albums to fetch from your library? default is {DEFAULT_NUM_ALBUMS_TO_FETCH}",
+            DEFAULT_NUM_ALBUMS_TO_FETCH
+        )
+
+    def _get_min_albums_per_playlist(self):
+        return self.ui.get_int(
+            f"Minimum # of albums per playlist? default is {DEFAULT_MIN_ALBUMS_PER_PLAYLIST}",
+            DEFAULT_MIN_ALBUMS_PER_PLAYLIST
+        )
+
+    def _get_min_artists_per_playlist(self):
+        return self.ui.get_int(
+            f"Minimum # of artists per playlist? default is {DEFAULT_MIN_NUM_ARTISTS_PER_PLAYLIST}",
+            DEFAULT_MIN_NUM_ARTISTS_PER_PLAYLIST
+        )
+
+    def _get_min_genres_per_group(self):
+        return self.ui.get_int(
+            f"Minimum # of genres per playlist? default is {DEFAULT_MIN_GENRES_PER_PLAYLIST}",
+            DEFAULT_MIN_GENRES_PER_PLAYLIST
+        )
+
+    def _look_at_entire_library(self):
+        return self.ui.get_yes_or_no(
+            f"Should I look at your entire library? y or n - default is {'y' if DEFAULT_LOOK_AT_ENTIRE_LIBRARY else 'n'}",
+            DEFAULT_LOOK_AT_ENTIRE_LIBRARY
+        )
+
+    def _get_albums_by_genre(self):
+        min_genres_per_group = self._get_min_genres_per_group()
+        if self._look_at_entire_library():
+            albums_by_genre = self.my_music_lib.get_all_my_albums_grouped_by_genre(
+                min_genres_per_group)
+        else:
+            albums_by_genre = self.my_music_lib.get_my_albums_grouped_by_genre(
+                self._get_num_albums_to_fetch(), min_genres_per_group)
+        return albums_by_genre
+
+    def _get_suggested_playlists(self, albums_by_genre):
+        """
+        Returns:
+            ([dict]): each with 2 key-value pairs:
+                key "description", value (str).
+                key "albums", value ([Album]).
+        """
+        min_albums_per_playlist = self._get_min_albums_per_playlist()
+        min_artists_per_playlist = self._get_min_artists_per_playlist()
+        playlist_criteria = lambda albums: len(albums) >= min_albums_per_playlist and self.music_util.get_num_diff_artists(albums) >= min_artists_per_playlist
+        return [
+            dict(
+                description=', '.join(album_group['genres']),
+                albums=album_group['albums']
+            )
+            for album_group in albums_by_genre
+            if playlist_criteria(album_group['albums'])
+        ]
+
+    def _get_playlist_options(self):
+        """
+        Returns:
+            ([dict]): each dict with 2 key-value pairs:
+                - key "description", value (str).
+                - key "albums", value ([Album]).
+                sorted in descending order by number of albums,
+        """
+        albums_by_genre = self._get_albums_by_genre()
+        if len(albums_by_genre) == 0:
+            self.ui.tell_user("Couldn't match the albums into groups.. the genres didn't match :/")
+            return
+
+        return sorted(
+            self._get_suggested_playlists(albums_by_genre),
+            key=lambda album_group: len(album_group['albums']),
+            reverse=True
+        )
 
     def _get_artist_from_user(self):
         artist_name = self.ui.get_non_empty_string("What artist interests you?")
@@ -314,35 +358,6 @@ class MusicLibBot:
         artist = self.music_util.get_most_popular_artist(matching_artists)
         self.ui.tell_user(f"I found: {artist.name}, with genres {artist.genres}, with popularity {artist.popularity}")
         return artist
-
-    def _get_create_playlist_from_an_artists_discography_callback(self):
-        get_num_tracks_per_album = lambda: self.ui.get_int_from_options(
-                "How many tracks do you want from each album?", [1, 2, 3, 4, 5])
-        get_new_playlist_name = lambda: self.ui.get_non_empty_string(
-            "What do you want to call your playlist?")
-        def callback():
-            self.playlist_creator.create_playlist_from_an_artists_discography(
-                self._get_artist_from_user,
-                get_num_tracks_per_album,
-                get_new_playlist_name,
-            )
-        return callback
-
-    def _get_create_playlist_based_on_existing_playlist_callback(self):
-        get_new_playlist_name = lambda: self.ui.get_non_empty_string(
-            "What should your new playlist be called?")
-        get_num_tracks_per_album = lambda: self.ui.get_int(
-            f"How many tracks per album? default is {DEFAULT_NUM_TRACKS_PER_ALBUM}",
-            DEFAULT_NUM_TRACKS_PER_ALBUM
-        )
-        def callback():
-            self.playlist_creator.create_playlist_based_on_existing_playlist(
-                lambda: self.get_playlist_from_user(
-                    self.my_music_lib.get_playlist_by_name),
-                get_new_playlist_name,
-                get_num_tracks_per_album,
-            )
-        return callback
 
     def _get_playlist_description(self, album_group):
         artists = list({

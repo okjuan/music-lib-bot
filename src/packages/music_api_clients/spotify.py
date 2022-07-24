@@ -278,6 +278,9 @@ class Spotify:
             items_to_fetch ([Track|Album|Playlist]): sole argument for fetch_items.
             fetch_items (func): takes [str], returns list of items.
         """
+        if len(items_to_fetch) == 0:
+            return []
+
         batch_size = min(API_BATCH_SIZE, len(items_to_fetch))
         fetched_items = []
         for batch_start_index in range(0, len(items_to_fetch), batch_size):
