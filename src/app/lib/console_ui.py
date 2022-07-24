@@ -14,6 +14,15 @@ class ConsoleUI:
             str_ = self._prompt_user(prompt)
         return str_
 
+    def get_string(self, prompt, default):
+        """
+        Params:
+            prompt (string): the message to display to user.
+            default (boolean): value to use if user doesn't give a value.
+        """
+        return self._default_if_empty(self._prompt_user(prompt), default)
+
+
     def get_string_from_options(self, message, options):
         user_selection = None
         while user_selection is None:
@@ -35,6 +44,11 @@ class ConsoleUI:
         return self._default_if_none(selected_int, default)
 
     def get_yes_or_no(self, prompt, default):
+        """
+        Params:
+            prompt (string): the message to display to user.
+            default (boolean): value to use if user doesn't give a value.
+        """
         return self._default_if_none(
             self._parse_yes_or_no(self._prompt_user(prompt)),
             default
@@ -62,6 +76,13 @@ class ConsoleUI:
         return None
 
     def _parse_yes_or_no(self, input_str):
+        """
+        Params:
+            input_str (string): string to parse 'y' or 'n' out of.
+
+        Returns:
+            (boolean | None): true if 'y', false if 'n', None o.w.
+        """
         answer = input_str.strip().lower()
         if answer == "y":
             return True
@@ -71,12 +92,24 @@ class ConsoleUI:
             return None
 
     def _default_if_none(self, val, default):
+        """Returns val unless it's None then returns default"""
         return default if val is None else val
+
+    def _default_if_empty(self, val, default):
+        """Returns val unless it's len(val) == 0 then returns default"""
+        return default if len(val) == 0 else val
 
     def _prompt_for_int(self, prompt):
         return self._parse_int(self._prompt_user(prompt))
 
     def _prompt_user(self, msg):
+        """
+        Params:
+            msg (string): the message to display to user.
+
+        Returns:
+            (string): user input.
+        """
         return input(f"\n> {msg}\n")
 
     def _parse_int(self, input_str):

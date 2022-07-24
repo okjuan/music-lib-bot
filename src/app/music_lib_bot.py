@@ -23,6 +23,7 @@ MAX_NUM_TRACKS_PER_ALBUM = 10
 DEFAULT_NUM_TRACKS_TO_ADD = 0
 MIN_NUM_TRACKS_TO_ADD = 1
 MAX_NUM_TRACKS_TO_ADD = 100
+DEFAULT_SEED_PREFIX = "seed: "
 
 
 class MusicLibBot:
@@ -42,6 +43,68 @@ class MusicLibBot:
             self.music_util,
             self.ui.tell_user,
         )
+
+    def run_update_target_playlists_from_seed_playlists(self):
+        messages = [
+            "",
+            "Ok, so this is how this works..",
+            "First, I'll find all your playlists that have a certain prefix in their name...",
+            "Then, for each of them, I'll create a 'target' playlist (or find an existing one because I may have done this for you in the past.)",
+            "(A target playlist is named the same as its seed playlist minus the prefix.)",
+            "Then I'll add songs from the seed to the target, avoiding duplicates!",
+        ]
+        self.ui.tell_user("\n".join(messages))
+        seed_prefix = self.ui.get_string(
+            f"What's your seed prefix? (default is '{DEFAULT_SEED_PREFIX}')", DEFAULT_SEED_PREFIX)
+        self.ui.tell_user(f"Ok, gonna look for playlists that look like '{seed_prefix}blah blah'")
+
+        seed_playlists = self.my_music_lib.search_my_playlists(seed_prefix)
+        if len(seed_playlists) == 0:
+            self.ui.tell_user("No seed playlists found!")
+            return
+        self.ui.tell_user(f"Found {len(seed_playlists)} matching playlists.")
+
+        num_tracks_per_album = self.ui.get_int(
+            f"How many tracks per album do you want in the target playlist? default is {DEFAULT_NUM_TRACKS_PER_ALBUM}",
+            DEFAULT_NUM_TRACKS_PER_ALBUM
+        )
+        num_playlists_updated, first_updated_playlist, second_updated_playlist = 0, None, None
+        for seed_playlist in seed_playlists:
+            target_playlist_name = seed_playlist.name[len(seed_prefix):]
+            seed_albums = self.music_util.get_albums_of_tracks(seed_playlist.get_tracks())
+
+            target_playlist = self.my_music_lib.get_or_create_playlist(target_playlist_name)
+            if target_playlist.get_num_tracks() > 0:
+                current_albums = self.music_util.get_albums_of_tracks(
+                    target_playlist.get_tracks())
+            else:
+                current_albums = []
+
+            albums_to_add = set(seed_albums) - set(current_albums)
+
+            if len(albums_to_add) == 0:
+                continue
+
+            num_playlists_updated += 1
+            if num_playlists_updated == 1:
+                first_updated_playlist = target_playlist.name
+            if num_playlists_updated == 2:
+                second_updated_playlist = target_playlist.name
+
+            tracks_to_add = self.music_util.get_most_popular_tracks_from_each(
+                albums_to_add, num_tracks_per_album)
+            self.my_music_lib.add_tracks_in_random_positions(
+                target_playlist, [track for track in tracks_to_add])
+
+        if num_playlists_updated > 0:
+            summary_message = f"I updated {num_playlists_updated} playlists"
+        else:
+            summary_message = "Didn't update any playlists!"
+        if first_updated_playlist is not None:
+            summary_message += f" including '{first_updated_playlist}'"
+        if second_updated_playlist is not None:
+            summary_message += f" and '{second_updated_playlist}'"
+        self.ui.tell_user(summary_message + ".")
 
     def run_add_tracks_from_my_saved_albums_with_similar_genres(self):
         playlist = self.get_playlist_from_user(
@@ -226,16 +289,18 @@ class MusicLibBot:
         options = {
             "a": "Create playlist from an artist's discography.",
             "b": "Create playlist from a playlist full of albums.",
-            "c": "Create playlist from albums in your library that have matching genres.",
-            "d": "Update existing playlist with tracks from my saved albums with similar genres.",
-            "e": "Update existing playlist with recommended tracks with similar attributes.",
+            "c": "Update target playlists from seed playlists.",
+            "d": "Create playlist from albums in your library that have matching genres.",
+            "e": "Update existing playlist with tracks from my saved albums with similar genres.",
+            "f": "Update existing playlist with recommended tracks with similar attributes.",
         }
         functions = {
             "a": self._get_create_playlist_from_an_artists_discography_callback(),
             "b": self._get_create_playlist_based_on_existing_playlist_callback(),
-            "c": self.launch_playlist_picker,
-            "d": self.run_add_tracks_from_my_saved_albums_with_similar_genres,
-            "e": self.run_add_recommended_tracks_with_similar_attributes,
+            "c": self.run_update_target_playlists_from_seed_playlists,
+            "d": self.launch_playlist_picker,
+            "e": self.run_add_tracks_from_my_saved_albums_with_similar_genres,
+            "f": self.run_add_recommended_tracks_with_similar_attributes,
         }
         def option_pick_handler(pick):
             functions[pick]()
