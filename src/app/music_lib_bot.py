@@ -59,6 +59,7 @@ class MusicLibBot:
         )
 
     def run_create_or_update_target_from_seed(self):
+        self.ui.tell_user("Let's update target playlists from seed playlists.")
         messages = [
             "",
             "Ok, so this is how this works..",
@@ -112,6 +113,7 @@ class MusicLibBot:
         self.ui.tell_user(summary_message + ".")
 
     def run_add_tracks_from_my_saved_albums_with_similar_genres(self):
+        self.ui.tell_user("Let's update an existing playlist with tracks from my saved albums with similar genres.")
         playlist = self._get_playlist_from_user(
             self.my_music_lib.get_playlist_by_name)
         playlist_updater = PlaylistUpdater(
@@ -131,6 +133,7 @@ class MusicLibBot:
             self._get_num_tracks_per_album, self._get_num_albums_to_fetch)
 
     def run_add_recommended_tracks_with_similar_attributes(self):
+        self.ui.tell_user("Let's update an existing playlist with recommended tracks with similar attributes.")
         playlist = self._get_playlist_from_user(
             self.my_music_lib.get_playlist_by_name)
         self.music_util.populate_track_audio_features(playlist)
@@ -172,6 +175,7 @@ class MusicLibBot:
         ).run()
 
     def run_interactive_playlist_picker(self):
+        self.ui.tell_user("Let's create a playlist from albums in your library that have matching genres.")
         suggested_playlists = self._get_playlist_options()
         if len(suggested_playlists) == 0:
             self.ui.tell_user("Couldn't find any suggested playlists!")
@@ -187,6 +191,7 @@ class MusicLibBot:
         ).run()
 
     def run_create_playlist_from_an_artists_discography(self):
+        self.ui.tell_user("Let's create a playlist from an artist's discography.")
         _get_num_tracks_per_album = lambda: self.ui.get_int_from_options(
                 "How many tracks do you want from each album?", [1, 2, 3, 4, 5])
         get_new_playlist_name = lambda: self.ui.get_non_empty_string(
@@ -198,6 +203,7 @@ class MusicLibBot:
         )
 
     def run_create_playlist_based_on_existing_playlist(self):
+        self.ui.tell_user("Let's create a playlist from a playlist full of albums.")
         get_new_playlist_name = lambda: self.ui.get_non_empty_string(
             "What should your new playlist be called?")
         _get_num_tracks_per_album = lambda: self.ui.get_int(
