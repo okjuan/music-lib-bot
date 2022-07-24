@@ -287,7 +287,7 @@ class MusicLibBot:
             "f": "Update existing playlist with recommended tracks with similar attributes.",
         }
         functions = {
-            "a": self._get_create_playlist_from_an_artists_discography_callback(),
+            "a": self.run_create_playlist_from_an_artists_discography(),
             "b": self.run_create_playlist_based_on_existing_playlist(),
             "c": self.run_create_or_update_target_from_seed,
             "d": self.run_interactive_playlist_picker,
@@ -315,18 +315,16 @@ class MusicLibBot:
         self.ui.tell_user(f"I found: {artist.name}, with genres {artist.genres}, with popularity {artist.popularity}")
         return artist
 
-    def _get_create_playlist_from_an_artists_discography_callback(self):
+    def run_create_playlist_from_an_artists_discography(self):
         _get_num_tracks_per_album = lambda: self.ui.get_int_from_options(
                 "How many tracks do you want from each album?", [1, 2, 3, 4, 5])
         get_new_playlist_name = lambda: self.ui.get_non_empty_string(
             "What do you want to call your playlist?")
-        def callback():
-            self.playlist_creator.create_playlist_from_an_artists_discography(
-                self._get_artist_from_user,
-                _get_num_tracks_per_album,
-                get_new_playlist_name,
-            )
-        return callback
+        self.playlist_creator.create_playlist_from_an_artists_discography(
+            self._get_artist_from_user,
+            _get_num_tracks_per_album,
+            get_new_playlist_name,
+        )
 
     def run_create_playlist_based_on_existing_playlist(self):
         get_new_playlist_name = lambda: self.ui.get_non_empty_string(
