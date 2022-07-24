@@ -81,7 +81,6 @@ class MusicLibBot:
                 self.playlist_stats,
             )
             target_playlist = playlist_updater.create_or_update_target_from_seed(
-                seed_playlists,
                 num_tracks_per_album,
                 lambda seed_playlist_name: seed_playlist_name[len(seed_prefix):],
             )
@@ -156,6 +155,74 @@ class MusicLibBot:
             recommended_track_pick_handler,
             self.ui,
             get_recommended_track_description,
+        ).run()
+
+    def run_interactive_playlist_picker(self):
+        suggested_playlists = self._get_playlist_options()
+        if len(suggested_playlists) == 0:
+            self.ui.tell_user("Couldn't find any suggested playlists!")
+            return
+        def playlist_pick_handler(playlist):
+            return self.playlist_creator.create_playlist_from_albums(
+                playlist, self._get_num_tracks_per_album)
+        InteractiveOptionPicker(
+            suggested_playlists,
+            playlist_pick_handler,
+            self.ui,
+            self._get_playlist_description,
+        ).run()
+
+    def run_create_playlist_from_an_artists_discography(self):
+        _get_num_tracks_per_album = lambda: self.ui.get_int_from_options(
+                "How many tracks do you want from each album?", [1, 2, 3, 4, 5])
+        get_new_playlist_name = lambda: self.ui.get_non_empty_string(
+            "What do you want to call your playlist?")
+        self.playlist_creator.create_playlist_from_an_artists_discography(
+            self._get_artist_from_user,
+            _get_num_tracks_per_album,
+            get_new_playlist_name,
+        )
+
+    def run_create_playlist_based_on_existing_playlist(self):
+        get_new_playlist_name = lambda: self.ui.get_non_empty_string(
+            "What should your new playlist be called?")
+        _get_num_tracks_per_album = lambda: self.ui.get_int(
+            f"How many tracks per album? default is {DEFAULT_NUM_TRACKS_PER_ALBUM}",
+            DEFAULT_NUM_TRACKS_PER_ALBUM
+        )
+        self.playlist_creator.create_playlist_based_on_existing_playlist(
+            lambda: self._get_playlist_from_user(
+                self.my_music_lib.get_playlist_by_name),
+            get_new_playlist_name,
+            _get_num_tracks_per_album,
+        )
+
+    def run(self):
+        options = {
+            "a": "Create playlist from an artist's discography.",
+            "b": "Create playlist from a playlist full of albums.",
+            "c": "Update target playlists from seed playlists.",
+            "d": "Create playlist from albums in your library that have matching genres.",
+            "e": "Update existing playlist with tracks from my saved albums with similar genres.",
+            "f": "Update existing playlist with recommended tracks with similar attributes.",
+        }
+        functions = {
+            "a": self.run_create_playlist_from_an_artists_discography,
+            "b": self.run_create_playlist_based_on_existing_playlist,
+            "c": self.run_create_or_update_target_from_seed,
+            "d": self.run_interactive_playlist_picker,
+            "e": self.run_add_tracks_from_my_saved_albums_with_similar_genres,
+            "f": self.run_add_recommended_tracks_with_similar_attributes,
+        }
+        def option_pick_handler(pick):
+            functions[pick]()
+        def get_option_description(pick):
+            return options[pick]
+        InteractiveOptionPicker(
+            list(options.keys()),
+            option_pick_handler,
+            self.ui,
+            get_option_description,
         ).run()
 
     def _get_playlist_from_user(self, get_playlist_by_name):
@@ -262,49 +329,6 @@ class MusicLibBot:
             reverse=True
         )
 
-    def run_interactive_playlist_picker(self):
-        suggested_playlists = self._get_playlist_options()
-        if len(suggested_playlists) == 0:
-            self.ui.tell_user("Couldn't find any suggested playlists!")
-            return
-        def playlist_pick_handler(playlist):
-            return self.playlist_creator.create_playlist_from_albums(
-                playlist, self._get_num_tracks_per_album)
-        InteractiveOptionPicker(
-            suggested_playlists,
-            playlist_pick_handler,
-            self.ui,
-            self._get_playlist_description,
-        ).run()
-
-    def run(self):
-        options = {
-            "a": "Create playlist from an artist's discography.",
-            "b": "Create playlist from a playlist full of albums.",
-            "c": "Update target playlists from seed playlists.",
-            "d": "Create playlist from albums in your library that have matching genres.",
-            "e": "Update existing playlist with tracks from my saved albums with similar genres.",
-            "f": "Update existing playlist with recommended tracks with similar attributes.",
-        }
-        functions = {
-            "a": self.run_create_playlist_from_an_artists_discography(),
-            "b": self.run_create_playlist_based_on_existing_playlist(),
-            "c": self.run_create_or_update_target_from_seed,
-            "d": self.run_interactive_playlist_picker,
-            "e": self.run_add_tracks_from_my_saved_albums_with_similar_genres,
-            "f": self.run_add_recommended_tracks_with_similar_attributes,
-        }
-        def option_pick_handler(pick):
-            functions[pick]()
-        def get_option_description(pick):
-            return options[pick]
-        InteractiveOptionPicker(
-            list(options.keys()),
-            option_pick_handler,
-            self.ui,
-            get_option_description,
-        ).run()
-
     def _get_artist_from_user(self):
         artist_name = self.ui.get_non_empty_string("What artist interests you?")
         matching_artists = self.music_api_client.get_matching_artists(artist_name)
@@ -314,31 +338,6 @@ class MusicLibBot:
         artist = self.music_util.get_most_popular_artist(matching_artists)
         self.ui.tell_user(f"I found: {artist.name}, with genres {artist.genres}, with popularity {artist.popularity}")
         return artist
-
-    def run_create_playlist_from_an_artists_discography(self):
-        _get_num_tracks_per_album = lambda: self.ui.get_int_from_options(
-                "How many tracks do you want from each album?", [1, 2, 3, 4, 5])
-        get_new_playlist_name = lambda: self.ui.get_non_empty_string(
-            "What do you want to call your playlist?")
-        self.playlist_creator.create_playlist_from_an_artists_discography(
-            self._get_artist_from_user,
-            _get_num_tracks_per_album,
-            get_new_playlist_name,
-        )
-
-    def run_create_playlist_based_on_existing_playlist(self):
-        get_new_playlist_name = lambda: self.ui.get_non_empty_string(
-            "What should your new playlist be called?")
-        _get_num_tracks_per_album = lambda: self.ui.get_int(
-            f"How many tracks per album? default is {DEFAULT_NUM_TRACKS_PER_ALBUM}",
-            DEFAULT_NUM_TRACKS_PER_ALBUM
-        )
-        self.playlist_creator.create_playlist_based_on_existing_playlist(
-            lambda: self._get_playlist_from_user(
-                self.my_music_lib.get_playlist_by_name),
-            get_new_playlist_name,
-            _get_num_tracks_per_album,
-        )
 
     def _get_playlist_description(self, album_group):
         artists = list({
