@@ -8,6 +8,36 @@ class PlaylistUpdater:
         self.playlist_genres = None
         self.playlist_stats = playlist_stats
 
+    def create_or_update_target_from_seed(self, num_tracks_per_album, get_target_playlist_name):
+        """Creates or updates a 'target' playlist with songs in source playlist, avoiding duplicates!
+        Params:
+            seed_playlists [Playlist].
+            num_tracks_per_album (int).
+            get_target_playlist_name ((str) => (str)): param: seed playlist's name.
+
+        Returns:
+            (Playlist | None): target playlist that was updated or None if none was updated.
+        """
+        target_playlist_name = get_target_playlist_name(self.playlist.name)
+        target_playlist = self.my_music_lib.get_or_create_playlist(target_playlist_name)
+        if target_playlist.get_num_tracks() > 0:
+            current_albums = self.music_util.get_albums_of_tracks(
+                target_playlist.get_tracks())
+        else:
+            current_albums = []
+
+        seed_albums = self.music_util.get_albums_of_tracks(self.playlist.get_tracks())
+        albums_to_add = set(seed_albums) - set(current_albums)
+
+        if len(albums_to_add) == 0:
+            return None
+
+        tracks_to_add = self.music_util.get_most_popular_tracks_from_each(
+            albums_to_add, num_tracks_per_album)
+        self.my_music_lib.add_tracks_in_random_positions(
+            target_playlist, [track for track in tracks_to_add])
+        return target_playlist
+
     def add_tracks_from_my_saved_albums_with_same_genres(self, get_num_tracks_per_album, get_num_albums_to_fetch):
         "Returns (int) number of tracks added to playlist"
         tracks = self._get_tracks_from_my_saved_albums_with_same_genres(

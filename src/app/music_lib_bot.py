@@ -44,12 +44,13 @@ class MusicLibBot:
             self.ui.tell_user,
         )
 
-    def run_update_target_playlists_from_seed_playlists(self):
+    def run_create_or_update_target_from_seed(self):
         messages = [
             "",
             "Ok, so this is how this works..",
             "First, I'll find all your playlists that have a certain prefix in their name...",
-            "Then, for each of them, I'll create a 'target' playlist (or find an existing one because I may have done this for you in the past.)",
+            "Then, for each of them, I'll create a 'target' playlist"
+            "(or find an existing one because I may have done this for you in the past.)",
             "(A target playlist is named the same as its seed playlist minus the prefix.)",
             "Then I'll add songs from the seed to the target, avoiding duplicates!",
         ]
@@ -68,42 +69,33 @@ class MusicLibBot:
             f"How many tracks per album do you want in the target playlist? default is {DEFAULT_NUM_TRACKS_PER_ALBUM}",
             DEFAULT_NUM_TRACKS_PER_ALBUM
         )
-        num_playlists_updated, first_updated_playlist, second_updated_playlist = 0, None, None
+
+        updated_playlists = []
         for seed_playlist in seed_playlists:
-            target_playlist_name = seed_playlist.name[len(seed_prefix):]
-            seed_albums = self.music_util.get_albums_of_tracks(seed_playlist.get_tracks())
+            playlist_updater = PlaylistUpdater(
+                seed_playlist,
+                self.my_music_lib,
+                self.music_util,
+                self.music_api_client,
+                self.ui.tell_user,
+                self.playlist_stats,
+            )
+            target_playlist = playlist_updater.create_or_update_target_from_seed(
+                seed_playlists,
+                num_tracks_per_album,
+                lambda seed_playlist_name: seed_playlist_name[len(seed_prefix):],
+            )
+            if target_playlist is not None:
+                updated_playlists += target_playlist
+            del playlist_updater
 
-            target_playlist = self.my_music_lib.get_or_create_playlist(target_playlist_name)
-            if target_playlist.get_num_tracks() > 0:
-                current_albums = self.music_util.get_albums_of_tracks(
-                    target_playlist.get_tracks())
-            else:
-                current_albums = []
-
-            albums_to_add = set(seed_albums) - set(current_albums)
-
-            if len(albums_to_add) == 0:
-                continue
-
-            num_playlists_updated += 1
-            if num_playlists_updated == 1:
-                first_updated_playlist = target_playlist.name
-            if num_playlists_updated == 2:
-                second_updated_playlist = target_playlist.name
-
-            tracks_to_add = self.music_util.get_most_popular_tracks_from_each(
-                albums_to_add, num_tracks_per_album)
-            self.my_music_lib.add_tracks_in_random_positions(
-                target_playlist, [track for track in tracks_to_add])
-
+        num_playlists_updated = len(updated_playlists)
         if num_playlists_updated > 0:
-            summary_message = f"I updated {num_playlists_updated} playlists"
+            summary_message = f"I updated {num_playlists_updated} playlists including '{updated_playlists[0].name}'"
+            if num_playlists_updated > 1:
+                summary_message += f" and '{updated_playlists[1].name}'"
         else:
             summary_message = "Didn't update any playlists!"
-        if first_updated_playlist is not None:
-            summary_message += f" including '{first_updated_playlist}'"
-        if second_updated_playlist is not None:
-            summary_message += f" and '{second_updated_playlist}'"
         self.ui.tell_user(summary_message + ".")
 
     def run_add_tracks_from_my_saved_albums_with_similar_genres(self):
@@ -297,7 +289,7 @@ class MusicLibBot:
         functions = {
             "a": self._get_create_playlist_from_an_artists_discography_callback(),
             "b": self._get_create_playlist_based_on_existing_playlist_callback(),
-            "c": self.run_update_target_playlists_from_seed_playlists,
+            "c": self.run_create_or_update_target_from_seed,
             "d": self.launch_playlist_picker,
             "e": self.run_add_tracks_from_my_saved_albums_with_similar_genres,
             "f": self.run_add_recommended_tracks_with_similar_attributes,
