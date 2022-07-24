@@ -22,7 +22,7 @@ When you run `python music_lib_bot.py` for the first time, a browser window shou
 
 ### Example: Create a Playlist from an Artist's Discography
 ```
-$ python app/music_lib_bot.py
+$ python music_lib_bot/music_lib_bot.py
 
 Here are your options:
 (0): Create playlist from an artist's discography.
@@ -54,7 +54,7 @@ Playlist created!
 
 ### Example: Add Songs to Your Existing Playlist from Your Saved Albums
 ```
-$ python app/music_lib_bot.py
+$ python music_lib_bot/music_lib_bot.py
 
 Here are your options:
 (0): Create playlist from an artist's discography.

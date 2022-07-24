@@ -3,8 +3,8 @@
 import sys
 sys.path.extend(['.', '../'])
 
-from app.lib.console_ui import ConsoleUI
-from app.music_lib_bot import MusicLibBot
+from music_lib_bot.lib.console_ui import ConsoleUI
+from music_lib_bot.music_lib_bot import MusicLibBot
 from packages.music_management.music_util import MusicUtil
 from packages.music_management.my_music_lib import MyMusicLib
 from packages.music_api_clients.spotify import Spotify

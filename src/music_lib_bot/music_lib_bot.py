@@ -1,5 +1,5 @@
 # allows me to run:
-# $ python app/music_lib_bot.py
+# $ python music_lib_bot/music_lib_bot.py
 import sys
 sys.path.extend(['.', '../'])
 
@@ -8,9 +8,9 @@ from packages.music_management.my_music_lib import MyMusicLib
 from packages.music_management.playlist_creator import PlaylistCreator
 from packages.music_management.playlist_stats import PlaylistStats
 from packages.music_management.playlist_updater import PlaylistUpdater
-from app.lib.interactive_option_picker import InteractiveOptionPicker
+from music_lib_bot.lib.interactive_option_picker import InteractiveOptionPicker
 from packages.music_api_clients.spotify import Spotify
-from app.lib.console_ui import ConsoleUI
+from music_lib_bot.lib.console_ui import ConsoleUI
 
 DEFAULT_LOOK_AT_ENTIRE_LIBRARY = False
 DEFAULT_MIN_ALBUMS_PER_PLAYLIST = 4
