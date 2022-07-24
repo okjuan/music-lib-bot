@@ -68,42 +68,27 @@ class MusicLibBot:
             f"How many tracks per album do you want in the target playlist? default is {DEFAULT_NUM_TRACKS_PER_ALBUM}",
             DEFAULT_NUM_TRACKS_PER_ALBUM
         )
-        num_playlists_updated, first_updated_playlist, second_updated_playlist = 0, None, None
-        for seed_playlist in seed_playlists:
-            target_playlist_name = seed_playlist.name[len(seed_prefix):]
-            seed_albums = self.music_util.get_albums_of_tracks(seed_playlist.get_tracks())
 
-            target_playlist = self.my_music_lib.get_or_create_playlist(target_playlist_name)
-            if target_playlist.get_num_tracks() > 0:
-                current_albums = self.music_util.get_albums_of_tracks(
-                    target_playlist.get_tracks())
-            else:
-                current_albums = []
+        updated_playlists = PlaylistUpdater(
+            None,
+            self.my_music_lib,
+            self.music_util,
+            self.music_api_client,
+            self.ui.tell_user,
+            self.playlist_stats,
+        ).create_or_update_targets_from_seeds(
+            seed_playlists,
+            num_tracks_per_album,
+            lambda seed_playlist_name: seed_playlist_name[len(seed_prefix):],
+        )
 
-            albums_to_add = set(seed_albums) - set(current_albums)
-
-            if len(albums_to_add) == 0:
-                continue
-
-            num_playlists_updated += 1
-            if num_playlists_updated == 1:
-                first_updated_playlist = target_playlist.name
-            if num_playlists_updated == 2:
-                second_updated_playlist = target_playlist.name
-
-            tracks_to_add = self.music_util.get_most_popular_tracks_from_each(
-                albums_to_add, num_tracks_per_album)
-            self.my_music_lib.add_tracks_in_random_positions(
-                target_playlist, [track for track in tracks_to_add])
-
+        num_playlists_updated = len(updated_playlists)
         if num_playlists_updated > 0:
-            summary_message = f"I updated {num_playlists_updated} playlists"
+            summary_message = f"I updated {num_playlists_updated} playlists including '{updated_playlists[0].name}'"
+            if num_playlists_updated > 1:
+                summary_message += f" and '{updated_playlists[1].name}'"
         else:
             summary_message = "Didn't update any playlists!"
-        if first_updated_playlist is not None:
-            summary_message += f" including '{first_updated_playlist}'"
-        if second_updated_playlist is not None:
-            summary_message += f" and '{second_updated_playlist}'"
         self.ui.tell_user(summary_message + ".")
 
     def run_add_tracks_from_my_saved_albums_with_similar_genres(self):
