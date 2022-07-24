@@ -262,7 +262,7 @@ class MusicLibBot:
             reverse=True
         )
 
-    def _launch_playlist_picker(self):
+    def run_interactive_playlist_picker(self):
         suggested_playlists = self._get_playlist_options()
         if len(suggested_playlists) == 0:
             self.ui.tell_user("Couldn't find any suggested playlists!")
@@ -290,7 +290,7 @@ class MusicLibBot:
             "a": self._get_create_playlist_from_an_artists_discography_callback(),
             "b": self._get_create_playlist_based_on_existing_playlist_callback(),
             "c": self.run_create_or_update_target_from_seed,
-            "d": self._launch_playlist_picker,
+            "d": self.run_interactive_playlist_picker,
             "e": self.run_add_tracks_from_my_saved_albums_with_similar_genres,
             "f": self.run_add_recommended_tracks_with_similar_attributes,
         }
