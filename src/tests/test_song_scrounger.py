@@ -1001,7 +1001,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(results.keys()), 1)
         self.assertTrue("Sorry" in results.keys())
         self.assertTrue(
-            TestSongScroungerHelper.is_the_artist_in_X_of_these(results["Sorry"], "Justin Bieber", X=2))
+            TestSongScroungerHelper.is_an_artist_in_X_of_these(results["Sorry"], "Justin Bieber", X=2))
         self.assertTrue(
             TestSongScroungerHelper.is_one_of_the_artists(results["Sorry"], "Nothing But Thieves"))
 
@@ -1166,10 +1166,10 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
 class TestSongScroungerHelper():
     @classmethod
     def is_one_of_the_artists(cls, songs_or_albums, artist_name):
-        return cls.is_the_artist_in_X_of_these(songs_or_albums, artist_name, 1)
+        return cls.is_an_artist_in_X_of_these(songs_or_albums, artist_name, 1)
 
     @classmethod
-    def is_the_artist_in_X_of_these(cls, songs_or_albums, artist_name, X):
+    def is_an_artist_in_X_of_these(cls, songs_or_albums, artist_name, X):
         count = 0
         for album in songs_or_albums:
             if artist_name in [artist.name for artist in album.artists]:
