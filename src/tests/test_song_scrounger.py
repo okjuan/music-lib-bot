@@ -1016,7 +1016,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(results["Socially Awkward"]), 1)
         self.assertEqual(list(results['Socially Awkward'])[0].artists[0].name, "Kiefer")
 
-    @unittest.skip("Integration tests disabled by default")
+    @unittest.skip("BROKEN :( and anyway, integration tests disabled by default")
     async def test_find_songs__real_world_input_example(self):
         input_file_name = "history_rock_n_roll_ch4_snippet.txt"
         expected_songs = [
