@@ -992,7 +992,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(song.artists), 1)
         self.assertEqual(song.artists[0].name, "Nothing But Thieves")
 
-    #@unittest.skip("Integration tests disabled by default")
+    @unittest.skip("Integration tests disabled by default")
     async def test_find_songs__multi_paragraph_artist_detection(self):
         input_file_name = "test_multiparagraph_artist_detection.txt"
 
