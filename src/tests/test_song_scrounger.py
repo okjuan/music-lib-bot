@@ -1138,14 +1138,15 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(list(results["Revolver"])[0].tracks[-1].name, "Tomorrow Never Knows - Remastered 2009")
 
     @unittest.skip("Integration tests disabled by default")
-    @patch("packages.song_scrounger.song_scrounger.read_file_contents", return_value="\"Revolver\" by Slaine")
+    @patch("packages.song_scrounger.song_scrounger.read_file_contents", return_value="\"Revolver\" by T-Pain")
     async def test_find_albums__artists_mentioned__picks_version_by_artist(self, _):
         results = await self._run_find_albums_test("mock file path")
 
         self.assertEqual(len(results.keys()), 1)
         self.assertIn("Revolver", results)
         self.assertEqual(len(results["Revolver"]), 1)
-        self.assertEqual(list(results["Revolver"])[0].artists, ["Slaine"])
+        self.assertEqual(len(list(results["Revolver"])[0].artists), 1)
+        self.assertEqual(list(results["Revolver"])[0].artists[0].name, "T-Pain")
 
     @unittest.skip("Integration tests disabled by default")
     @patch("packages.song_scrounger.song_scrounger.read_file_contents", return_value="\"Revolver\"")
