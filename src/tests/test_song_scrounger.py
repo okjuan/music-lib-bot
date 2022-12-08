@@ -773,7 +773,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
 
         self.assertTrue(is_mentioned)
 
-    @patch("song_scrounger.song_scrounger.read_file_contents", return_value="When Don McLean recorded \"American Pie\"")
+    @patch("packages.song_scrounger.song_scrounger.read_file_contents", return_value="When Don McLean recorded \"American Pie\"")
     async def test_find_songs__mocked_spotify_client__song_w_single_artist(self, mock_read_file_contents):
         self.mock_spotify_client.find_song.return_value = [
             mock_track(
@@ -795,7 +795,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
             set([song.spotify_uri for song in results["American Pie"]]),
             set(["spotify:track:1fDsrQ23eTAVFElUMaf38X"]))
 
-    @patch("song_scrounger.song_scrounger.read_file_contents", return_value="The song \"Time Is On My Side\" by the Rolling Stones cannot be found verbatim on Spotify")
+    @patch("packages.song_scrounger.song_scrounger.read_file_contents", return_value="The song \"Time Is On My Side\" by the Rolling Stones cannot be found verbatim on Spotify")
     async def test_find_songs__spotify_song_title_contains_metadata__song_is_matched_regardless(
         self, mock_read_file_contents):
         self.mock_spotify_client.find_song.return_value = [
@@ -827,7 +827,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         self.assertIn("The Rolling Stones", list(results["Time Is On My Side"])[0].artists[0].name)
 
     # NOTE: 'Allen' is a substr of 'challenges', and 'Stone' of 'stoned'
-    @patch("song_scrounger.song_scrounger.read_file_contents", return_value="The song \"Satisfaction\" challenges stoned hippies")
+    @patch("packages.song_scrounger.song_scrounger.read_file_contents", return_value="The song \"Satisfaction\" challenges stoned hippies")
     async def test_find_songs__artist_name_appears_as_substr_only__artist_not_matched(
         self, mock_read_file_contents):
         # NOTE: its important that the spotify URIs don't match
@@ -856,7 +856,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         self.assertIn("MOCKARTIST", artists)
         self.assertIn("Allen Stone", artists)
 
-    @patch("song_scrounger.song_scrounger.read_file_contents", return_value="\"Mock Song Name\"")
+    @patch("packages.song_scrounger.song_scrounger.read_file_contents", return_value="\"Mock Song Name\"")
     async def test_find_songs__song_dups_same_artist__returns_most_popular_version_only(
         self, mock_read_file_contents):
         self.mock_spotify_client.find_song.return_value = [
@@ -888,7 +888,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(results["Mock Song Name"]), 1)
 
     @patch(
-        "song_scrounger.song_scrounger.read_file_contents",
+        "packages.song_scrounger.song_scrounger.read_file_contents",
         return_value="\"Mock Song Name\" by Mock Artist\nOther Mock Artist"
     )
     async def test_find_songs__multiple_artists_match__prefers_artist_in_same_paragraph(self, mock_read_file_contents):
@@ -1124,7 +1124,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         return await song_scrounger.find_songs(input_file_path)
 
     @unittest.skip("Integration tests disabled by default")
-    @patch("song_scrounger.song_scrounger.read_file_contents", return_value="\"Revolver\" by The Beatles")
+    @patch("packages.song_scrounger.song_scrounger.read_file_contents", return_value="\"Revolver\" by The Beatles")
     async def test_find_albums__artists_mentioned__gets_all_songs(self, _):
         results = await self._run_find_albums_test("mock file path")
 
@@ -1137,7 +1137,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(list(results["Revolver"])[0].songs[-1].name, "Tomorrow Never Knows - Remastered 2009")
 
     @unittest.skip("Integration tests disabled by default")
-    @patch("song_scrounger.song_scrounger.read_file_contents", return_value="\"Revolver\" by Slaine")
+    @patch("packages.song_scrounger.song_scrounger.read_file_contents", return_value="\"Revolver\" by Slaine")
     async def test_find_albums__artists_mentioned__picks_version_by_artist(self, _):
         results = await self._run_find_albums_test("mock file path")
 
@@ -1147,7 +1147,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(list(results["Revolver"])[0].artists, ["Slaine"])
 
     @unittest.skip("Integration tests disabled by default")
-    @patch("song_scrounger.song_scrounger.read_file_contents", return_value="\"Revolver\"")
+    @patch("packages.song_scrounger.song_scrounger.read_file_contents", return_value="\"Revolver\"")
     async def test_find_albums__no_artist__returns_multiple_results(self, _):
         results = await self._run_find_albums_test("mock file path")
 
@@ -1158,7 +1158,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(found_beatles_album, "Expected to find album by The Beatles")
 
     @unittest.skip("Integration tests disabled by default")
-    @patch("song_scrounger.song_scrounger.read_file_contents", return_value="\"Revolver\", \"Highway 61 Revisited\", \"Pet Sounds\"")
+    @patch("packages.song_scrounger.song_scrounger.read_file_contents", return_value="\"Revolver\", \"Highway 61 Revisited\", \"Pet Sounds\"")
     async def test_find_albums__multiple_albums__finds_all(self, _):
         results = await self._run_find_albums_test("mock file path")
 
