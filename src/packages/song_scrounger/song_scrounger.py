@@ -12,7 +12,7 @@ class SongScrounger:
 
     async def find_songs(self, input_file_path):
         text = read_file_contents(input_file_path)
-        songs = await self.find_media_items(text, self.spotify_client.find_song)
+        songs = self.find_media_items(text, self.spotify_client.get_matching_tracks)
         return songs
 
     async def find_albums(self, input_file_path):

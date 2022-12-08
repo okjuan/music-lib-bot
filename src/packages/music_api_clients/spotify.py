@@ -28,6 +28,24 @@ class Spotify:
             for item in results["artists"]["items"]
         ]
 
+    def get_matching_tracks(self, track_name):
+        """Finds the given track, ignoring case.
+        Params:
+            track_name (str).
+        Returns:
+            (set(music_api_clients.models.track.Track)): resulting Spotify tracks.
+        """
+        if len(track_name) == 0:
+            raise ValueError("Track name cannot be empty.")
+
+        results = self.client.search(q=f"track:{track_name}", type="track")
+        return {
+            Track.from_spotify_track(track)
+            for track in results['tracks']['items']
+            if track['name'].lower() == track_name.lower() or
+                self._strip_song_metadata(track['name']).lower() == track_name.lower()
+        }
+
     def get_matching_albums(self, album_name):
         """Finds the given album, ignoring case.
         Params:
@@ -311,6 +329,16 @@ class Spotify:
 
     def _get_current_user_id(self):
         return self.client.me()['id']
+
+    def _strip_song_metadata(self, name):
+        """
+        Assumptions:
+            - Everything after '-' is metadata
+        """
+        name = name.strip()
+        if (tokens := name.split("-")) != [name]:
+            name = tokens[0].strip()
+        return name
 
     def _strip_album_metadata(self, name):
         """
