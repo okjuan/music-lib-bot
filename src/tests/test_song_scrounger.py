@@ -342,38 +342,6 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
             results[0].spotify_uri
         )
 
-    async def test_set_union__no_dups__keeps_all(self):
-        song_A = mock_track("Song A", "URI A", "Artist A")
-        song_B = mock_track("Song B", "URI B", "Artist B")
-
-        set_union = self.song_scrounger.set_union(set([song_A]), set([song_B]))
-
-        self.assertEqual(len(set_union), 2)
-        self.assertTrue(song_A in set_union)
-        self.assertTrue(song_B in set_union)
-
-    async def test_set_union__all_dups__keeps_one(self):
-        song_A = mock_track("Song A", "URI A", "Artist A")
-        song_A_dup = mock_track("Song A", "URI A", "Artist A")
-
-        set_union = self.song_scrounger.set_union(set([song_A]), set([song_A_dup]))
-
-        self.assertEqual(len(set_union), 1)
-        self.assertTrue(song_A in set_union or song_A_dup in set_union)
-
-    async def test_set_union__one_dups__removes_dup_keeps_others(self):
-        song_A = mock_track("Song A", "URI A", "Artist A")
-        song_B = mock_track("Song B", "URI B", "Artist B")
-        song_B_dup = mock_track("Song B", "URI B", "Artist B")
-        song_C = mock_track("Song C", "URI C", "Artist C")
-
-        set_union = self.song_scrounger.set_union(set([song_A, song_B]), set([song_B_dup, song_C]))
-
-        self.assertEqual(len(set_union), 3)
-        self.assertTrue(song_A in set_union)
-        self.assertTrue(song_B in set_union or song_B_dup in set_union)
-        self.assertTrue(song_C in set_union)
-
     async def test_filter_if_any_artists_mentioned__only_keeps_mentioned_artist(self):
         text = "\"Sorry\""
         songs = [
