@@ -1131,10 +1131,11 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(results.keys()), 1)
         self.assertIn("Revolver", results)
         self.assertEqual(len(results["Revolver"]), 1)
-        self.assertEqual(list(results["Revolver"])[0].artists, ["The Beatles"])
-        self.assertEqual(len(list(results["Revolver"])[0].songs), 14)
-        self.assertEqual(list(results["Revolver"])[0].songs[0].name, "Taxman - Remastered 2009")
-        self.assertEqual(list(results["Revolver"])[0].songs[-1].name, "Tomorrow Never Knows - Remastered 2009")
+        self.assertEqual(len(list(results["Revolver"])[0].artists), 1)
+        self.assertEqual(list(results["Revolver"])[0].artists[0].name, "The Beatles")
+        self.assertEqual(len(list(results["Revolver"])[0].tracks), 14)
+        self.assertEqual(list(results["Revolver"])[0].tracks[0].name, "Taxman - Remastered 2009")
+        self.assertEqual(list(results["Revolver"])[0].tracks[-1].name, "Tomorrow Never Knows - Remastered 2009")
 
     @unittest.skip("Integration tests disabled by default")
     @patch("packages.song_scrounger.song_scrounger.read_file_contents", return_value="\"Revolver\" by Slaine")
@@ -1181,14 +1182,11 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(found_bob_dylan_album, "Expected to find album by The Beach Boys")
 
     async def _run_find_albums_test(self, input_file_name):
-        from packages.song_scrounger.spotify_client import SpotifyClient
+        from packages.music_api_clients.spotify import Spotify
         from packages.song_scrounger.util import get_spotify_creds
         from tests import helper
 
-        spotify_client_id, spotify_secret_key = get_spotify_creds()
-        spotify_client = SpotifyClient(spotify_client_id, spotify_secret_key)
-
-        song_scrounger = SongScrounger(spotify_client)
+        song_scrounger = SongScrounger(Spotify())
         input_file_path = helper.get_path_to_test_input_file(input_file_name)
         return await song_scrounger.find_albums(input_file_path)
 

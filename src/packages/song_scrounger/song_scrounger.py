@@ -17,10 +17,10 @@ class SongScrounger:
 
     async def find_albums(self, input_file_path):
         text = read_file_contents(input_file_path)
-        albums = await self.find_media_items(text, self.spotify_client.find_album)
+        albums = self.find_media_items(text, self.spotify_client.get_matching_albums)
         return albums
 
-    async def find_media_items(self, text, name_lookup):
+    def find_media_items(self, text, name_lookup):
         """Parses given text for names of media items (songs or albums),
         matching with artists if mentioned.
 
@@ -41,7 +41,7 @@ class SongScrounger:
         for paragraph in paragraphs:
             names = self.find_names(paragraph)
             for name in names:
-                media_items = await name_lookup(name)
+                media_items = name_lookup(name)
                 media_items = self.filter_if_any_artists_mentioned_greedy(media_items, paragraph, text)
                 media_items = self.reduce_by_popularity_per_artist(media_items)
                 results[name] = self.set_union(results[name], media_items)

@@ -28,6 +28,26 @@ class Spotify:
             for item in results["artists"]["items"]
         ]
 
+    def get_matching_albums(self, album_name):
+        """Finds the given album, ignoring case.
+        Params:
+            album_name (str).
+        Returns:
+            [set(music_api_clients.models.album.Album)]: matching Spotify albums.
+        """
+        if len(album_name) == 0:
+            raise ValueError("Album name cannot be empty.")
+
+        results = self.client.search(q=f"album:{album_name}", type="album")
+        matching_album_ids = [
+            album['id']
+            for album in results['albums']['items']
+            if album['name'].lower() == album_name.lower() or
+                self._strip_album_metadata(album['name']).lower() == album_name.lower()
+        ]
+        albums = self._get_albums_from_ids(matching_album_ids)
+        return set(albums)
+
     def get_current_user_playlist_by_name(self, name):
         playlist_id = self.find_current_user_playlist(name)
         if playlist_id is None:
@@ -291,3 +311,24 @@ class Spotify:
 
     def _get_current_user_id(self):
         return self.client.me()['id']
+
+    def _strip_album_metadata(self, name):
+        """
+        Assumptions:
+            - Everything after '-' is metadata
+            - Parentheses contain metadata depending on where they occur
+                - If parentheses occur at the beginning of name, they don't contain metadata
+                - Otherwise, they contain metadata
+            - If at all, only 1 set of parentheses occurs
+            - Parentheses are balanced
+        """
+        name = name.strip()
+
+        if (tokens := name.split("-")) != [name]:
+            name = tokens[0].strip()
+        if "(" in name:
+            open_paren_idx = name.index("(")
+            if open_paren_idx > 0:
+                tokens = name.split("(")
+                name = tokens[0].strip()
+        return name
