@@ -38,7 +38,7 @@ class Spotify:
         if len(track_name) == 0:
             raise ValueError("Track name cannot be empty.")
 
-        results = self.client.search(q=f"track:{track_name}", type="track")
+        results = self.client.search(q=f"track:{track_name}", type="track", limit=20)
         return {
             Track.from_spotify_track(track)
             for track in results['tracks']['items']

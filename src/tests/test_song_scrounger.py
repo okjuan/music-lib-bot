@@ -941,11 +941,13 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(1, len(results.keys()))
         self.assertIn("American Pie", results.keys())
-        self.assertEqual(len(results["American Pie"]), 2)
-        self.assertEqual(
-            set([song.spotify_uri for song in results["American Pie"]]),
-            set(["spotify:track:1fDsrQ23eTAVFElUMaf38X", "spotify:track:4wpuHehFEEpWAlkw3vjH0s"])
-        )
+        self.assertEqual(len(results["American Pie"]), 3)
+        self.assertTrue(
+            TestSongScroungerHelper.is_one_of_the_artists(results["American Pie"], "Don McLean"))
+        self.assertTrue(
+            TestSongScroungerHelper.is_one_of_the_artists(results["American Pie"], "L'Tric"))
+        self.assertTrue(
+            TestSongScroungerHelper.is_one_of_the_artists(results["American Pie"], "Catch 22"))
 
     @unittest.skip("Integration tests disabled by default")
     async def test_find_songs__no_artists_filtered__multiple_results_without_duplicate_artists(self):
