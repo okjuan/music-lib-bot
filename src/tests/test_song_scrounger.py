@@ -959,7 +959,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         self.assertIn("American Pie", results.keys())
         artist_count = defaultdict(int)
         for song in results["American Pie"]:
-            artist_count["-".join(song.artists)] += 1
+            artist_count["-".join([artist.name for artist in song.artists])] += 1
         for artist_count, count in artist_count.items():
             self.assertEqual(count, 1, f"{artist_count} has {count}")
         self.assertGreater(len(results["American Pie"]), 10)
@@ -972,11 +972,9 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(len(results.keys()), 1)
         self.assertTrue("Sorry" in results.keys())
-        self.assertEqual(len(results["Sorry"]), 1)
-        self.assertIsNotNone(list(results["Sorry"])[0])
-        self.assertEqual(list(results["Sorry"])[0].name, "Sorry")
-        self.assertIn("spotify:track:09CtPGIpYB4BrO8qb1RGsF", list(results["Sorry"])[0].spotify_uri)
-        self.assertEqual(len(list(results["Sorry"])[0].artists), 1)
+        self.assertTrue(
+            TestSongScroungerHelper.is_one_of_the_artists(
+                results['Sorry'], "Justin Bieber"))
 
     @unittest.skip("Integration tests disabled by default")
     async def test_find_songs__simple_artist_detection(self):

@@ -8,7 +8,8 @@ from packages.music_api_clients.models.playlist import Playlist
 from packages.music_api_clients.models.track import Track
 
 
-API_BATCH_SIZE = 20
+API_BATCH_SIZE = 30
+API_FETCH_LIMIT = 100
 SPOTIFY_ALBUMS_API_LIMIT = 50
 SPOTIFY_ADD_TRACKS_TO_PLAYLIST_API_LIMIT = 100
 SPOTIFY_SCOPES = "user-library-read,playlist-modify-private,playlist-modify-private,playlist-read-private,playlist-read-collaborative"
@@ -38,13 +39,21 @@ class Spotify:
         if len(track_name) == 0:
             raise ValueError("Track name cannot be empty.")
 
-        results = self.client.search(q=f"track:{track_name}", type="track", limit=20)
-        return {
-            Track.from_spotify_track(track)
-            for track in results['tracks']['items']
-            if track['name'].lower() == track_name.lower() or
-                self._strip_song_metadata(track['name']).lower() == track_name.lower()
-        }
+        def track_searcher(batch_size=API_BATCH_SIZE, offset=0):
+            results = self.client.search(
+                q=f"track:{track_name}",
+                type="track",
+                offset=offset,
+                limit=batch_size,
+            )
+            matching_tracks = {
+                Track.from_spotify_track(track)
+                for track in results['tracks']['items']
+                if track['name'].lower() == track_name.lower() or
+                    self._strip_song_metadata(track['name']).lower() == track_name.lower()
+            }
+            return matching_tracks, len(results['tracks']['items']) == 0 or offset > API_FETCH_LIMIT
+        return self._fetch_until_all_items_returned(track_searcher)
 
     def get_matching_albums(self, album_name):
         """Finds the given album, ignoring case.
@@ -100,8 +109,9 @@ class Spotify:
     def find_current_user_matching_playlists(self, keyword):
         def get_playlist_tracks(spotify_playlist_id):
             return lambda: self._get_playlist_tracks(spotify_playlist_id)
-        def playlist_fetcher(offset=0):
-            results = self.client.current_user_playlists(offset=offset)
+        def playlist_fetcher(batch_size=API_BATCH_SIZE, offset=0):
+            results = self.client.current_user_playlists(
+                offset=offset, limit=batch_size)
             matching_playlists = [
                 Playlist.from_spotify_playlist_search_results(
                     playlist, get_playlist_tracks(playlist['id']))
@@ -117,9 +127,13 @@ class Spotify:
         return self.client.artist(artist.spotify_id)['genres']
 
     def get_artist_albums(self, artist):
-        def album_fetcher(offset=0):
+        def album_fetcher(batch_size=API_BATCH_SIZE, offset=0):
             results = self.client.artist_albums(
-                artist.spotify_id, album_type="album", offset=offset)
+                artist.spotify_id,
+                album_type="album",
+                offset=offset,
+                limit=batch_size,
+            )
             albums = [
                 Album.from_spotify_artist_album(item)
                 for item in results['items']
@@ -130,8 +144,9 @@ class Spotify:
         return self.get_albums(albums)
 
     def get_my_albums(self, max_albums_to_fetch):
-        def my_album_fetcher(offset=0):
-            results = self.client.current_user_saved_albums(offset=offset)
+        def my_album_fetcher(batch_size=API_BATCH_SIZE, offset=0):
+            results = self.client.current_user_saved_albums(
+                offset=offset, limit=batch_size)
             num_results = len(results['items'])
             items = results['items'][:min(num_results, max_albums_to_fetch)]
             albums = [
@@ -277,9 +292,9 @@ class Spotify:
         return RECOMMENDATION_SEED_LIMIT
 
     def _get_playlist_tracks(self, playlist_id):
-        def track_fetcher(offset=0):
+        def track_fetcher(batch_size=API_BATCH_SIZE, offset=0):
             results = self.client.playlist_tracks(
-                playlist_id, offset=offset)
+                playlist_id, offset=offset, limit=batch_size)
             finished = len(results['items']) + offset >= results['total']
             tracks = [
                 Track.from_spotify_playlist_track(track)
@@ -293,7 +308,10 @@ class Spotify:
         """Skips duplicates that Spotify returns for some reason.
 
         Params:
-            fetch_func (func): optional param 'offset',
+            fetch_func (func):
+                optional params:
+                - (int) offset: index of results to request
+                - (int) batch_size: how many results to fetch
                 returning a 2-tuple where:
                 - (List) the fetched items
                 - (bool) whether fetching has finished
@@ -306,7 +324,7 @@ class Spotify:
         offset, batch_size = 0, API_BATCH_SIZE
         while not finished:
             offset += batch_size
-            items, finished = fetch_func(offset=offset)
+            items, finished = fetch_func(batch_size=batch_size, offset=offset)
             all_items |= set(items)
         return list(all_items)
 
