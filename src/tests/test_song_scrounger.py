@@ -990,7 +990,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(song.name, "Sorry")
         self.assertEqual(song.spotify_uri, "spotify:track:6rAXHPd18PZ6W8m9EectzH")
         self.assertEqual(len(song.artists), 1)
-        self.assertEqual(song.artists, ["Nothing But Thieves"])
+        self.assertEqual(song.artists[0].name, "Nothing But Thieves")
 
     @unittest.skip("Integration tests disabled by default")
     async def test_find_songs__multi_paragraph_artist_detection(self):
