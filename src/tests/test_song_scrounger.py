@@ -1195,6 +1195,6 @@ class TestSongScroungerHelper():
     @classmethod
     def is_one_of_the_artists(cls, songs_or_albums, artist_name):
         for album in songs_or_albums:
-            if artist_name in [artist for artist in album.artists]:
+            if artist_name in [artist.name for artist in album.artists]:
                 return True
         return False

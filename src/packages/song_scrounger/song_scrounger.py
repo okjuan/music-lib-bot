@@ -44,7 +44,7 @@ class SongScrounger:
                 media_items = name_lookup(name)
                 media_items = self.filter_if_any_artists_mentioned_greedy(media_items, paragraph, text)
                 media_items = self.reduce_by_popularity_per_artist(media_items)
-                results[name] = self.set_union(results[name], media_items)
+                results[name] = results[name] | media_items
         return results
 
     def filter_if_any_artists_mentioned_greedy(self, songs_or_albums, subset_text, whole_text):
@@ -52,14 +52,6 @@ class SongScrounger:
         if len(filtered) > 1 and len(filtered) == len(songs_or_albums):
             filtered = self.filter_if_any_artists_mentioned(songs_or_albums, whole_text)
         return filtered
-
-    def set_union(self, song_or_album_set_A, song_or_album_set_B):
-        spotify_uris_seen_already, union = set(), set()
-        for song_or_album in song_or_album_set_A | song_or_album_set_B:
-            if song_or_album.spotify_uri not in spotify_uris_seen_already:
-                union.add(song_or_album)
-                spotify_uris_seen_already.add(song_or_album.spotify_uri)
-        return union
 
     def filter_if_any_artists_mentioned(self, songs_or_albums, text):
         """
