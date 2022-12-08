@@ -192,11 +192,13 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
             mock_track(
                 name="Sorry",
                 spotify_uri="spotify:track:09CtPGIpYB4BrO8qb1RGsF",
+                spotify_id="09CtPGIpYB4BrO8qb1RGsF",
                 artists=[mock_artist("Justin Bieber")]
             ),
             mock_track(
                 name="Sorry",
                 spotify_uri="spotify:track:6rAXHPd18PZ6W8m9EectzH",
+                spotify_id="6rAXHPd18PZ6W8m9EectzH",
                 artists=[mock_artist("Nothing But Thieves")]
             )
         ]
@@ -254,6 +256,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
             mock_album(
                 name="Sweetener",
                 #"https://open.spotify.com/album/3tx8gQqWbGwqIGZHqDNrGe?si=FiUckKM4QIq0OlNdEQGrVw",
+                spotify_uri="spotify:album:3tx8gQqWbGwqIGZHqDNrGe",
                 spotify_id="3tx8gQqWbGwqIGZHqDNrGe",
                 artists=[mock_artist("Ariana Grande")],
             )
@@ -507,11 +510,13 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         song_by_artist1 = mock_track(
             name="American Pie",
             spotify_uri="spotify:track:1fDsrQ23eTAVFElUMaf38X",
+            spotify_id="1fDsrQ23eTAVFElUMaf38X",
             artists=[mock_artist("Don McLean")]
         )
         song_by_artist2 = mock_track(
             name="American Pie",
             spotify_uri="spotify:track:1vo6TY0FyLRBTXohxvflhJ",
+            spotify_id="1vo6TY0FyLRBTXohxvflhJ",
             artists=[mock_artist("Madonna")]
         )
         songs = [song_by_artist1, song_by_artist2]
@@ -828,11 +833,13 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
             mock_track(
                 "Satisfaction",
                 spotify_uri="spotify:track:mock1",
+                spotify_id="mock1",
                 artists=[mock_artist("MOCKARTIST")],
             ),
             mock_track(
                 "Satisfaction",
                 spotify_uri="spotify:track:mock2",
+                spotify_id="mock2",
                 artists=[mock_artist("Allen Stone")],
             ),
         ]

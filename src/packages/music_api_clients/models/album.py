@@ -4,7 +4,7 @@ from datetime import datetime
 
 
 class Album:
-    def __init__(self, name, tracks, artists, release_date, num_tracks, spotify_id=None, genres=None, popularity=None):
+    def __init__(self, name, tracks, artists, release_date, num_tracks, spotify_id=None, genres=None, popularity=None, spotify_uri=None):
         """
         Params:
             name (str).
@@ -21,6 +21,7 @@ class Album:
         self.release_date = release_date
         self.num_tracks = num_tracks
         self.spotify_id = spotify_id
+        self.spotify_uri = spotify_uri
         self.genres = genres
         self.popularity = popularity
 
