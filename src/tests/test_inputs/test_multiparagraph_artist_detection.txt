@@ -1,0 +1,3 @@
+In this case, this song "Sorry" should be detected to be by Justin Bieber because I mentioned him.
+
+Even though, in this separate paragraph, I mention Nothing But Thieves, who also has a song named "Sorry". Now, in this case, this song should be detected to be by them. This means that the duplicate detection needs to be smart enough to find this out.

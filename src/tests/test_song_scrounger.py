@@ -992,7 +992,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(song.artists), 1)
         self.assertEqual(song.artists[0].name, "Nothing But Thieves")
 
-    @unittest.skip("Integration tests disabled by default")
+    #@unittest.skip("Integration tests disabled by default")
     async def test_find_songs__multi_paragraph_artist_detection(self):
         input_file_name = "test_multiparagraph_artist_detection.txt"
 
@@ -1000,30 +1000,10 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(len(results.keys()), 1)
         self.assertTrue("Sorry" in results.keys())
-        self.assertEqual(len(results["Sorry"]), 2)
-        song_list = list(results["Sorry"])
-        self.assertIsNotNone(song_list[0])
-        self.assertIsNotNone(song_list[1])
-        self.assertEqual(song_list[0].name, "Sorry")
-        self.assertEqual(song_list[1].name, "Sorry")
-        self.assertIn(
-            "spotify:track:6rAXHPd18PZ6W8m9EectzH",
-            [song_list[0].spotify_uri, song_list[1].spotify_uri]
-        )
-        self.assertIn(
-            "spotify:track:09CtPGIpYB4BrO8qb1RGsF",
-            [song_list[0].spotify_uri, song_list[1].spotify_uri]
-        )
-        self.assertEqual(len(song_list[0].artists), 1)
-        self.assertEqual(len(song_list[1].artists), 1)
-        self.assertIn(
-            "Nothing But Thieves",
-            [song_list[0].artists[0], song_list[1].artists[0]]
-        )
-        self.assertIn(
-            "Justin Bieber",
-            [song_list[0].artists[0], song_list[1].artists[0]]
-        )
+        self.assertTrue(
+            TestSongScroungerHelper.is_the_artist_in_X_of_these(results["Sorry"], "Justin Bieber", X=2))
+        self.assertTrue(
+            TestSongScroungerHelper.is_one_of_the_artists(results["Sorry"], "Nothing But Thieves"))
 
     @unittest.skip("Integration tests disabled by default")
     async def test_find_songs__cross_paragraph_artist_detection(self):
@@ -1191,7 +1171,12 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
 class TestSongScroungerHelper():
     @classmethod
     def is_one_of_the_artists(cls, songs_or_albums, artist_name):
+        return cls.is_the_artist_in_X_of_these(songs_or_albums, artist_name, 1)
+
+    @classmethod
+    def is_the_artist_in_X_of_these(cls, songs_or_albums, artist_name, X):
+        count = 0
         for album in songs_or_albums:
             if artist_name in [artist.name for artist in album.artists]:
-                return True
-        return False
+                count += 1
+        return count == X
