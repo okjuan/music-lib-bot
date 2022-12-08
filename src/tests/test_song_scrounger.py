@@ -1,6 +1,3 @@
-import asyncio
-import os
-import random
 import unittest
 
 from collections import defaultdict
@@ -9,8 +6,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from packages.song_scrounger.song_scrounger import SongScrounger
 from packages.song_scrounger.models.song import Song
 from packages.song_scrounger.models.album import Album
-from packages.song_scrounger.util import read_file_contents
-from tests.helper import get_num_times_called, mock_spotify_artist_factory, mock_spotify_track_factory
+from tests.helper import get_num_times_called
 
 
 class TestSongScrounger(unittest.IsolatedAsyncioTestCase):

@@ -1,14 +1,9 @@
-import asyncio
 import re
-import sys
 
 from collections import defaultdict
 from functools import reduce
 
-from .models.song import Song
-from .models.album import Album
-from .spotify_client import SpotifyClient
-from .util import read_file_contents, get_spotify_creds, get_spotify_bearer_token
+from .util import read_file_contents
 
 
 class SongScrounger:
