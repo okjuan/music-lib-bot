@@ -5,8 +5,8 @@ from packages.music_api_clients.models.playlist import Playlist
 from packages.music_api_clients.models.track import Track
 from packages.music_api_clients.models.song_attribute_ranges import SongAttributeRanges
 
-def mock_album(spotify_id="", genres=[], artists=[], name=""):
-    return Album(name, [], artists, spotify_id=spotify_id, release_date="", num_tracks=0, genres=genres)
+def mock_album(spotify_id="", genres=[], artists=[], name="", spotify_uri=None):
+    return Album(name, [], artists, spotify_id=spotify_id, release_date="", num_tracks=0, genres=genres, popularity=None, spotify_uri=spotify_uri)
 
 def mock_artist(name="", spotify_id="", spotify_uri="", popularity=0, genres=[], albums=None):
     return Artist(name, spotify_id, spotify_uri, popularity, genres, albums)
