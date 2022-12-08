@@ -8,7 +8,7 @@ from packages.music_api_clients.models.playlist import Playlist
 from packages.music_api_clients.models.track import Track
 
 
-API_BATCH_SIZE = 30
+API_BATCH_SIZE = 20
 API_FETCH_LIMIT = 100
 SPOTIFY_ALBUMS_API_LIMIT = 50
 SPOTIFY_ADD_TRACKS_TO_PLAYLIST_API_LIMIT = 100
