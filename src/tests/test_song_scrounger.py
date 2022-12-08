@@ -10,7 +10,7 @@ from tests.helper import get_num_times_called
 
 class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
-        self.mock_spotify_client = AsyncMock()
+        self.mock_spotify_client = MagicMock()
         self.song_scrounger = SongScrounger(self.mock_spotify_client)
 
     async def test_find_quoted_tokens__returns_single_token(self):
@@ -136,7 +136,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
                 artists=[mock_artist("Nothing But Thieves")]
             )
         ]
-        self.mock_spotify_client.find_song = AsyncMock(
+        self.mock_spotify_client.get_matching_tracks = MagicMock(
             return_value = set(songs)
         )
         self.song_scrounger.filter_if_any_artists_mentioned_greedy = MagicMock(
@@ -144,7 +144,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         self.song_scrounger.reduce_by_popularity_per_artist = MagicMock(
             return_value = set([songs[0]]))
 
-        results = await self.song_scrounger.find_media_items(text, self.mock_spotify_client.find_song)
+        results = self.song_scrounger.find_media_items(text, self.mock_spotify_client.get_matching_tracks)
 
         self.assertEqual(len(results.keys()), 1)
         self.assertTrue("Sorry" in results.keys())
@@ -166,7 +166,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
                 artists=[mock_artist("Justin Bieber")]
             )
         ]
-        self.mock_spotify_client.find_song = AsyncMock(
+        self.mock_spotify_client.get_matching_tracks = MagicMock(
             return_value = set(songs)
         )
         self.song_scrounger.filter_if_any_artists_mentioned_greedy = MagicMock(
@@ -174,7 +174,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         self.song_scrounger.reduce_by_popularity_per_artist = MagicMock(
             return_value = set(songs))
 
-        results = await self.song_scrounger.find_media_items(text, self.mock_spotify_client.find_song)
+        results = self.song_scrounger.find_media_items(text, self.mock_spotify_client.get_matching_tracks)
 
         self.assertEqual(len(results.keys()), 1)
         self.assertTrue("Sorry" in results.keys())
@@ -202,7 +202,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
                 artists=[mock_artist("Nothing But Thieves")]
             )
         ]
-        self.mock_spotify_client.find_track = AsyncMock(
+        self.mock_spotify_client.find_track = MagicMock(
             return_value = set(songs)
         )
         self.song_scrounger.filter_if_any_artists_mentioned = MagicMock(
@@ -210,7 +210,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         self.song_scrounger.reduce_by_popularity_per_artist = MagicMock(
             return_value = set(songs))
 
-        results = await self.song_scrounger.find_media_items(text, self.mock_spotify_client.find_track)
+        results = self.song_scrounger.find_media_items(text, self.mock_spotify_client.find_track)
 
         self.assertEqual(len(results.keys()), 1)
         self.assertTrue("Sorry" in results.keys())
@@ -236,14 +236,14 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
             popularity=2
         )
         songs = [less_popular_version, more_popular_version]
-        self.mock_spotify_client.find_track = AsyncMock(
+        self.mock_spotify_client.find_track = MagicMock(
             return_value = set(songs))
         self.song_scrounger.filter_if_any_artists_mentioned = MagicMock(
             return_value = set(songs))
         self.song_scrounger.reduce_by_popularity_per_artist = MagicMock(
             return_value = set([more_popular_version]))
 
-        results = await self.song_scrounger.find_media_items(text, self.mock_spotify_client.find_track)
+        results = self.song_scrounger.find_media_items(text, self.mock_spotify_client.find_track)
 
         self.assertEqual(len(results.keys()), 1)
         self.assertTrue("American Pie" in results.keys())
@@ -267,7 +267,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         self.song_scrounger.find_names = MagicMock(
             return_value = ["Sweetener"]
         )
-        self.mock_spotify_client.find_album = AsyncMock(
+        self.mock_spotify_client.find_album = MagicMock(
             return_value = set(albums)
         )
         self.song_scrounger.filter_if_any_artists_mentioned_greedy = MagicMock(
@@ -275,7 +275,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         self.song_scrounger.reduce_by_popularity_per_artist = MagicMock(
             return_value = set([albums[0]]))
 
-        results = await self.song_scrounger.find_media_items(text, self.mock_spotify_client.find_album)
+        results = self.song_scrounger.find_media_items(text, self.mock_spotify_client.find_album)
 
         self.assertEqual(len(results.keys()), 1)
         self.assertTrue("Sweetener" in results.keys())
@@ -775,7 +775,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
 
     @patch("packages.song_scrounger.song_scrounger.read_file_contents", return_value="When Don McLean recorded \"American Pie\"")
     async def test_find_songs__mocked_spotify_client__song_w_single_artist(self, mock_read_file_contents):
-        self.mock_spotify_client.find_song.return_value = [
+        self.mock_spotify_client.get_matching_tracks.return_value = [
             mock_track(
                 name="American Pie",
                 spotify_uri="spotify:track:1fDsrQ23eTAVFElUMaf38X",
@@ -787,7 +787,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         results = await self.song_scrounger.find_songs("mock file path")
 
         mock_read_file_contents.assert_called_once_with("mock file path")
-        self.mock_spotify_client.find_song.assert_any_call("American Pie")
+        self.mock_spotify_client.get_matching_tracks.assert_any_call("American Pie")
         self.assertEqual(1, len(results.keys()))
         self.assertIn("American Pie", results.keys())
         self.assertEqual(len(results["American Pie"]), 1)
@@ -798,7 +798,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
     @patch("packages.song_scrounger.song_scrounger.read_file_contents", return_value="The song \"Time Is On My Side\" by the Rolling Stones cannot be found verbatim on Spotify")
     async def test_find_songs__spotify_song_title_contains_metadata__song_is_matched_regardless(
         self, mock_read_file_contents):
-        self.mock_spotify_client.find_song.return_value = [
+        self.mock_spotify_client.get_matching_tracks.return_value = [
             mock_track(
                 "Time Is On My Side - Mono Version",
                 spotify_uri="spotify:track:2jaN6NgXflZTj2z9CWcqaP",
@@ -816,7 +816,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         results = await self.song_scrounger.find_songs("mock file path")
 
         mock_read_file_contents.assert_called_once_with("mock file path")
-        self.mock_spotify_client.find_song.assert_any_call("Time Is On My Side")
+        self.mock_spotify_client.get_matching_tracks.assert_any_call("Time Is On My Side")
         self.assertEqual(1, len(results.keys()))
         self.assertIn("Time Is On My Side", results.keys())
         self.assertEqual(len(results["Time Is On My Side"]), 1)
@@ -831,7 +831,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
     async def test_find_songs__artist_name_appears_as_substr_only__artist_not_matched(
         self, mock_read_file_contents):
         # NOTE: its important that the spotify URIs don't match
-        self.mock_spotify_client.find_song.return_value = [
+        self.mock_spotify_client.get_matching_tracks.return_value = [
             mock_track(
                 "Satisfaction",
                 spotify_uri="spotify:track:mock1",
@@ -849,7 +849,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         results = await self.song_scrounger.find_songs("mock file path")
 
         mock_read_file_contents.assert_called_once_with("mock file path")
-        self.mock_spotify_client.find_song.assert_any_call("Satisfaction")
+        self.mock_spotify_client.get_matching_tracks.assert_any_call("Satisfaction")
         self.assertEqual(len(results.keys()), 1)
         self.assertEqual(len(results["Satisfaction"]), 2)
         artists = [artist.name for artist in list(results["Satisfaction"])[0].artists] + [artist.name for artist in list(results["Satisfaction"])[1].artists]
@@ -859,7 +859,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
     @patch("packages.song_scrounger.song_scrounger.read_file_contents", return_value="\"Mock Song Name\"")
     async def test_find_songs__song_dups_same_artist__returns_most_popular_version_only(
         self, mock_read_file_contents):
-        self.mock_spotify_client.find_song.return_value = [
+        self.mock_spotify_client.get_matching_tracks.return_value = [
             mock_track(
                 name="Mock Song Name",
                 spotify_uri="spotify:track:mock1",
@@ -883,7 +883,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         results = await self.song_scrounger.find_songs("mock file path")
 
         mock_read_file_contents.assert_called_once_with("mock file path")
-        self.mock_spotify_client.find_song.assert_called_once_with("Mock Song Name")
+        self.mock_spotify_client.get_matching_tracks.assert_called_once_with("Mock Song Name")
         self.assertEqual(len(results.keys()), 1)
         self.assertEqual(len(results["Mock Song Name"]), 1)
 
@@ -892,7 +892,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         return_value="\"Mock Song Name\" by Mock Artist\nOther Mock Artist"
     )
     async def test_find_songs__multiple_artists_match__prefers_artist_in_same_paragraph(self, mock_read_file_contents):
-        self.mock_spotify_client.find_song.return_value = [
+        self.mock_spotify_client.get_matching_tracks.return_value = [
             mock_track(
                 name="Mock Song Name",
                 spotify_uri="spotify:track:mock1",
@@ -910,7 +910,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         results = await self.song_scrounger.find_songs("mock file path")
 
         mock_read_file_contents.assert_called_once_with("mock file path")
-        self.mock_spotify_client.find_song.assert_called_once_with("Mock Song Name")
+        self.mock_spotify_client.get_matching_tracks.assert_called_once_with("Mock Song Name")
         self.assertEqual(len(results.keys()), 1)
         self.assertEqual(len(results["Mock Song Name"]), 1)
         self.assertEqual(list(results["Mock Song Name"])[0].name, "Mock Song Name")
