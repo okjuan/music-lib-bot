@@ -1014,12 +1014,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(results.keys()), 1)
         self.assertTrue("Socially Awkward" in results.keys())
         self.assertEqual(len(results["Socially Awkward"]), 1)
-        song = list(results["Socially Awkward"])[0]
-        self.assertIsNotNone(song)
-        self.assertEqual(song.name, "Socially Awkward")
-        self.assertEqual(song.spotify_uri, "spotify:track:2yE3omg2KMRfFw4ukBlDIJ")
-        self.assertEqual(len(song.artists), 1)
-        self.assertEqual(song.artists, ["Kiefer"])
+        self.assertEqual(list(results['Socially Awkward'])[0].artists[0].name, "Kiefer")
 
     @unittest.skip("Integration tests disabled by default")
     async def test_find_songs__real_world_input_example(self):
