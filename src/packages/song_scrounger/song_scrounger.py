@@ -87,15 +87,15 @@ class SongScrounger:
         with_mentioned_artists = set()
         for song_or_album in songs_or_albums:
             for artist in song_or_album.artists:
-                if self.is_mentioned(artist, text):
+                if self.is_mentioned(artist.name, text):
                     with_mentioned_artists.add(song_or_album)
         return with_mentioned_artists
 
-    def is_mentioned(self, artist, text):
+    def is_mentioned(self, artist_name, text):
         return (
-            self.is_mentioned_verbatim(artist, text) or
-            self.is_mentioned_in_parts(artist, text) or
-            self.is_partially_mentioned(artist, text)
+            self.is_mentioned_verbatim(artist_name, text) or
+            self.is_mentioned_in_parts(artist_name, text) or
+            self.is_partially_mentioned(artist_name, text)
         )
 
     def reduce_by_popularity_per_artist(self, songs_or_albums):
@@ -105,7 +105,7 @@ class SongScrounger:
         ])
 
     def group_by_artist(self, songs_or_albums):
-        cache_key_from_artists = lambda artists: "-".join(artists)
+        cache_key_from_artists = lambda artists: "-".join([artist.name for artist in artists])
         by_same_artist = defaultdict(set)
         for song_or_album in songs_or_albums:
             by_same_artist[cache_key_from_artists(song_or_album.artists)].add(song_or_album)

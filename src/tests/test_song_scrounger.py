@@ -308,7 +308,8 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         results = list(results)
         self.assertEqual(len(results), 1)
         self.assertEqual("American Pie", results[0].name)
-        self.assertEqual(["Don McLean"], results[0].artists)
+        self.assertEqual(1, len(results[0].artists))
+        self.assertEqual("Don McLean", results[0].artists[0].name)
         self.assertEqual(
             "spotify:track:1fDsrQ23eTAVFElUMaf38X",
             results[0].spotify_uri
@@ -334,7 +335,8 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
             songs, "\"American Pie\" by Don McLean")
         self.assertEqual(len(results), 1)
         self.assertEqual("American Pie", results[0].name)
-        self.assertEqual(["Don McLean"], results[0].artists)
+        self.assertEqual(1, len(results[0].artists))
+        self.assertEqual("Don McLean", results[0].artists[0].name)
         self.assertEqual(
             "spotify:track:1fDsrQ23eTAVFElUMaf38X",
             results[0].spotify_uri
@@ -474,10 +476,9 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         filtered_songs_list = list(filtered_songs)
         self.assertEqual(filtered_songs_list[0].name, "bad guy")
         self.assertEqual(filtered_songs_list[0].spotify_uri, "spotify:track:2Fxmhks0bxGSBdJ92vM42m")
-        self.assertEqual(
-            filtered_songs_list[0].artists,
-            ["Billie Eilish", "Finneas O'Connell"]
-        )
+        self.assertEqual(2, len(filtered_songs_list[0].artists))
+        self.assertEqual("Billie Eilish", filtered_songs_list[0].artists[0].name)
+        self.assertEqual("Finneas O'Connell", filtered_songs_list[0].artists[1].name)
 
     @unittest.skip("Enable when implemented")
     async def test_filter_by_mentioned_artist__song_name_artist_name_clash(self):
@@ -524,9 +525,9 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
             songs = list(songs)
             if len(songs) != 1:
                 raise ValueError(f"Mock did expected list of len==1: {songs}")
-            elif "Don McLean" in songs[0].artists[0]:
+            elif "Don McLean" in songs[0].artists[0].name:
                 return song_by_artist1
-            elif "Madonna" in songs[0].artists[0]:
+            elif "Madonna" in songs[0].artists[0].name:
                 return song_by_artist2
             else:
                 raise ValueError(f"Mock did not expect arg: {songs}")
@@ -822,7 +823,8 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(
             set([song.spotify_uri for song in results["Time Is On My Side"]]),
             set(["spotify:track:2jaN6NgXflZTj2z9CWcqaP"]))
-        self.assertIn("The Rolling Stones", list(results["Time Is On My Side"])[0].artists)
+        self.assertEqual(1, len(list(results["Time Is On My Side"])[0].artists))
+        self.assertIn("The Rolling Stones", list(results["Time Is On My Side"])[0].artists[0].name)
 
     # NOTE: 'Allen' is a substr of 'challenges', and 'Stone' of 'stoned'
     @patch("song_scrounger.song_scrounger.read_file_contents", return_value="The song \"Satisfaction\" challenges stoned hippies")
@@ -850,14 +852,9 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         self.mock_spotify_client.find_song.assert_any_call("Satisfaction")
         self.assertEqual(len(results.keys()), 1)
         self.assertEqual(len(results["Satisfaction"]), 2)
-        self.assertIn(
-            "MOCKARTIST",
-            list(results["Satisfaction"])[0].artists + list(results["Satisfaction"])[1].artists
-        )
-        self.assertIn(
-            "Allen Stone",
-            list(results["Satisfaction"])[0].artists + list(results["Satisfaction"])[1].artists
-        )
+        artists = [artist.name for artist in list(results["Satisfaction"])[0].artists] + [artist.name for artist in list(results["Satisfaction"])[1].artists]
+        self.assertIn("MOCKARTIST", artists)
+        self.assertIn("Allen Stone", artists)
 
     @patch("song_scrounger.song_scrounger.read_file_contents", return_value="\"Mock Song Name\"")
     async def test_find_songs__song_dups_same_artist__returns_most_popular_version_only(
@@ -919,7 +916,8 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(list(results["Mock Song Name"])[0].name, "Mock Song Name")
         self.assertEqual(list(results["Mock Song Name"])[0].spotify_uri, "spotify:track:mock1")
         self.assertEqual(len(list((results["Mock Song Name"]))[0].artists), 1)
-        self.assertEqual(list(results["Mock Song Name"])[0].artists[0], "Mock Artist")
+        self.assertEqual(len(list(results["Mock Song Name"])[0].artists), 1)
+        self.assertEqual(list(results["Mock Song Name"])[0].artists[0].name, "Mock Artist")
 
     @unittest.skip("Integration tests disabled by default")
     async def test_find_songs__song_w_single_artist(self):
