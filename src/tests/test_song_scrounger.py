@@ -428,12 +428,12 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         song_by_mentioned_artist = mock_track(
             name="Sorry",
             spotify_uri="spotify:track:09CtPGIpYB4BrO8qb1RGsF",
-            artists=["Justin Bieber"]
+            artists=[mock_artist(name="Justin Bieber")]
         )
         song_by_unmentioned_artist = mock_track(
             name="Sorry",
             spotify_uri="spotify:track:6rAXHPd18PZ6W8m9EectzH",
-            artists=["Nothing But Thieves"]
+            artists=[mock_artist(name="Nothing But Thieves")]
         )
         self.song_scrounger.is_mentioned = MagicMock(side_effect=[True, False, False, False])
 
@@ -450,7 +450,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         songs = [mock_track(
             name="Sorry",
             spotify_uri="spotify:track:09CtPGIpYB4BrO8qb1RGsF",
-            artists=["Justin Bieber"]
+            artists=[mock_artist(name="Justin Bieber")]
         )]
         self.song_scrounger.is_mentioned_verbatim = MagicMock(return_value=False)
 
