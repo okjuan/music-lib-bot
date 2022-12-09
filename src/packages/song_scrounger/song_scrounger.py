@@ -20,6 +20,24 @@ class SongScrounger:
         albums = self.find_media_items(text, self.spotify_client.get_matching_albums)
         return albums
 
+    def find_songs(self, text):
+        """Given text (string), return songs mentioned in it.
+
+        Returns:
+            (dict): key (str) is name; val (set(Song)) of matching media items.
+        """
+        songs = self.find_media_items(text, self.spotify_client.get_matching_tracks)
+        return songs
+
+    def find_albums(self, text):
+        """Given text (string), return albums mentioned in it.
+
+        Returns:
+            (dict): key (str) is name; val (set(Album)) of matching media items.
+        """
+        albums = self.find_media_items(text, self.spotify_client.get_matching_albums)
+        return albums
+
     def find_media_items(self, text, name_lookup):
         """Parses given text for names of media items (songs or albums),
         matching with artists if mentioned.
