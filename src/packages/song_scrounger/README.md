@@ -19,7 +19,7 @@ async def main():
     song_scrounger = SongScrounger(spotify_client)
 
     # assuming the file is in the current working directory
-    songs = await song_scrounger.find_songs("example_containing_songs.txt")
+    songs = await song_scrounger.find_songs_in_text_file("example_containing_songs.txt")
 
     all_songs = [song for song_name, matching_songs in songs.items() for song in matching_songs]
     spotify_uris = [song.spotify_uri for song in all_songs]
@@ -27,7 +27,7 @@ async def main():
     await spotify_client.create_playlist(playlist_name, spotify_uris)
 
     # assuming the file is in the current working directory
-    albums = await song_scrounger.find_albums("example_containing_albums.txt")
+    albums = await song_scrounger.find_albums_in_text_file("example_containing_albums.txt")
 
     all_albums = [album for album_name, matching_albums in albums.items() for album in matching_albums]
     spotify_uris = [song.spotify_uri for album in all_albums for song in album.songs]
