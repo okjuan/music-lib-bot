@@ -12,7 +12,7 @@ API_BATCH_SIZE = 20
 API_FETCH_LIMIT = 100
 SPOTIFY_ALBUMS_API_LIMIT = 50
 SPOTIFY_ADD_TRACKS_TO_PLAYLIST_API_LIMIT = 100
-SPOTIFY_SCOPES = "user-library-read,playlist-modify-private,playlist-modify-private,playlist-read-private,playlist-read-collaborative"
+SPOTIFY_SCOPES = "user-library-read,playlist-modify-public,playlist-modify-private,playlist-read-private,playlist-read-collaborative"
 RECOMMENDATION_SEED_LIMIT = 5
 RECOMMENDATIONS_LIMIT = 100
 
