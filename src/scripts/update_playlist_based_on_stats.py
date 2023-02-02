@@ -6,7 +6,7 @@ sys.path.extend(['.', '../'])
 from packages.music_management.music_util import MusicUtil
 from packages.music_management.my_music_lib import MyMusicLib
 from packages.music_management.playlist_updater import PlaylistUpdater
-from packages.music_management.playlist_stats import PlaylistStats
+from packages.music_management.playlist_analyzer import PlaylistAnalyzer
 from packages.music_api_clients.spotify import Spotify
 
 
@@ -14,7 +14,7 @@ def main():
     spotify = Spotify()
     music_util = MusicUtil(spotify, print)
     my_music_lib = MyMusicLib(spotify, music_util, print)
-    playlist_stats = PlaylistStats(my_music_lib, music_util, print)
+    playlist_analyzer = PlaylistAnalyzer(my_music_lib, music_util, print)
 
     target_playlist = "kremwerk"
     print(f"Getting playlist '{target_playlist}' along with audio feature data")
@@ -31,7 +31,7 @@ def main():
         music_util,
         spotify,
         print,
-        playlist_stats,
+        playlist_analyzer,
     )
 
     playlist_updater.add_recommended_songs_with_similar_attributes(

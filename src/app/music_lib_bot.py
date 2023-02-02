@@ -6,7 +6,7 @@ sys.path.extend(['.', '../'])
 from packages.music_management.music_util import MusicUtil
 from packages.music_management.my_music_lib import MyMusicLib
 from packages.music_management.playlist_creator import PlaylistCreator
-from packages.music_management.playlist_stats import PlaylistStats
+from packages.music_management.playlist_analyzer import PlaylistAnalyzer
 from packages.music_management.playlist_updater import PlaylistUpdater
 from app.lib.interactive_option_picker import InteractiveOptionPicker
 from packages.music_api_clients.spotify import Spotify
@@ -52,7 +52,7 @@ class MusicLibBot:
             self.music_util,
             self.ui.tell_user,
         )
-        self.playlist_stats = PlaylistStats(
+        self.playlist_analyzer = PlaylistAnalyzer(
             self.my_music_lib,
             self.music_util,
             self.ui.tell_user,
@@ -92,7 +92,7 @@ class MusicLibBot:
                 self.music_util,
                 self.music_api_client,
                 self.ui.tell_user,
-                self.playlist_stats,
+                self.playlist_analyzer,
             )
             target_playlist = playlist_updater.create_or_update_target_from_seed(
                 seed_playlist,
@@ -121,7 +121,7 @@ class MusicLibBot:
             self.music_util,
             self.music_api_client,
             self.ui.tell_user,
-            self.playlist_stats,
+            self.playlist_analyzer,
         )
         num_tracks_added = playlist_updater.add_tracks_from_my_saved_albums_with_same_genres(
             playlist,

@@ -292,14 +292,14 @@ class MusicUtil:
             recommended_tracks_by_percentage[percentage_recommended].append(track)
         return recommended_tracks_by_percentage
 
-    def get_strict_song_attribute_ranges(self, playlist, playlist_stats):
+    def get_strict_song_attribute_ranges(self, playlist, playlist_analyzer):
         """
         Params:
             playlist (Playlist).
-            playlist_stats (PlaylistStats).
+            playlist_analyzer (PlaylistAnalyzer).
         """
-        audio_features_min, audio_features_max = playlist_stats.get_audio_feature_representative_range(playlist)
-        popularity_min, popularity_max = playlist_stats.get_popularity_representative_range(playlist)
+        audio_features_min, audio_features_max = playlist_analyzer.get_audio_feature_representative_range(playlist)
+        popularity_min, popularity_max = playlist_analyzer.get_popularity_representative_range(playlist)
         song_attribute_ranges = SongAttributeRanges.from_audio_features_min_max_ranges(
             audio_features_min, audio_features_max)
         song_attribute_ranges.set_popularity_min_max_range(

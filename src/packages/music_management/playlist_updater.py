@@ -1,10 +1,10 @@
 class PlaylistUpdater:
-    def __init__(self, my_music_lib, music_util, music_api_client, info_logger, playlist_stats):
+    def __init__(self, my_music_lib, music_util, music_api_client, info_logger, playlist_analyzer):
         self.my_music_lib = my_music_lib
         self.music_util = music_util
         self.music_api_client = music_api_client
         self.info_logger = info_logger
-        self.playlist_stats = playlist_stats
+        self.playlist_analyzer = playlist_analyzer
 
     def create_or_update_target_from_seed(self, seed_playlist, num_tracks_per_album, get_target_playlist_name):
         """Creates or updates a 'target' playlist with songs in source playlist, avoiding duplicates!
@@ -106,7 +106,7 @@ class PlaylistUpdater:
 
     def _add_recommended_songs_that_match_strict_criteria(self, playlist, get_num_songs_to_add):
         song_attribute_ranges = self.music_util.get_strict_song_attribute_ranges(
-            playlist, self.playlist_stats)
+            playlist, self.playlist_analyzer)
         self.info_logger(f"Got recommendation criteria:\n{song_attribute_ranges}")
         return self.add_recommended_songs(
             playlist, song_attribute_ranges, get_num_songs_to_add)
