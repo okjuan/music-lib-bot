@@ -2,7 +2,7 @@ from packages.music_api_clients.models.audio_features import AudioFeatures
 from statistics import quantiles
 
 
-class PlaylistStats:
+class PlaylistAnalyzer:
     def __init__(self, my_music_lib, music_util, info_logger):
         self.my_music_lib = my_music_lib
         self.music_util = music_util

@@ -6,7 +6,7 @@ sys.path.extend(['.', '../'])
 from packages.music_management.music_util import MusicUtil
 from packages.music_management.my_music_lib import MyMusicLib
 from packages.music_management.playlist_creator import PlaylistCreator
-from packages.music_management.playlist_stats import PlaylistStats
+from packages.music_management.playlist_analyzer import PlaylistAnalyzer
 from packages.music_management.playlist_updater import PlaylistUpdater
 from app.lib.interactive_option_picker import InteractiveOptionPicker
 from packages.music_api_clients.spotify import Spotify
@@ -52,7 +52,7 @@ class MusicLibBot:
             self.music_util,
             self.ui.tell_user,
         )
-        self.playlist_stats = PlaylistStats(
+        self.playlist_analyzer = PlaylistAnalyzer(
             self.my_music_lib,
             self.music_util,
             self.ui.tell_user,
@@ -64,8 +64,8 @@ class MusicLibBot:
             "",
             "Ok, so this is how this works..",
             "First, I'll find all your playlists that have a certain prefix in their name...",
-            "Then, for each of them, I'll create a 'target' playlist...",
-            "...or find an existing one because I may have done this for you in the past.",
+            "Then, for each of them, I'll create a 'target' playlist",
+            "(or find an existing one because I may have done this for you in the past.)",
             "A target playlist is named the same as its seed playlist minus the prefix.",
             "Then I'll add songs from the seed to the target, avoiding duplicates!",
         ]
@@ -84,53 +84,52 @@ class MusicLibBot:
             f"How many tracks per album do you want in the target playlist? default is {DEFAULT_NUM_TRACKS_PER_ALBUM}",
             DEFAULT_NUM_TRACKS_PER_ALBUM
         )
+        updates = PlaylistUpdater(
+            self.my_music_lib,
+            self.music_util,
+            self.music_api_client,
+            self.ui.tell_user,
+            self.playlist_analyzer,
+        ).create_or_update_all_targets_from_seeds(
+            seed_playlists,
+            num_tracks_per_album,
+            lambda seed_playlist: seed_playlist.name[len(seed_prefix):],
+        )
 
-        updated_playlists = []
-        for seed_playlist in seed_playlists:
-            playlist_updater = PlaylistUpdater(
-                seed_playlist,
-                self.my_music_lib,
-                self.music_util,
-                self.music_api_client,
-                self.ui.tell_user,
-                self.playlist_stats,
-            )
-            target_playlist = playlist_updater.create_or_update_target_from_seed(
-                num_tracks_per_album,
-                lambda seed_playlist_name: seed_playlist_name[len(seed_prefix):],
-            )
-            if target_playlist is not None:
-                updated_playlists += [target_playlist]
-            del playlist_updater
-
-        num_playlists_updated = len(updated_playlists)
-        if num_playlists_updated > 0:
-            summary_message = f"I updated {num_playlists_updated} playlists including '{updated_playlists[0].name}'"
-            if num_playlists_updated > 1:
-                summary_message += f" and '{updated_playlists[1].name}'"
-        else:
-            summary_message = "Didn't update any playlists!"
-        self.ui.tell_user(summary_message + ".")
+        no_playlist_was_updated = True
+        for update in updates:
+            if update[1] > 0:
+                no_playlist_was_updated = False
+                self.ui.tell_user(f"Added {update[1]} songs to playlist '{update[0].name}'.")
+            else:
+                self.ui.tell_user(f"Playlist '{update[0].name}' did not need any updates.")
+        if no_playlist_was_updated:
+            self.ui.tell_user("Didn't update any playlists!")
 
     def run_add_tracks_from_my_saved_albums_with_similar_genres(self):
         self.ui.tell_user("Let's update an existing playlist with tracks from my saved albums with similar genres.")
         playlist = self._get_playlist_from_user(
             self.my_music_lib.get_playlist_by_name)
         playlist_updater = PlaylistUpdater(
-            playlist,
             self.my_music_lib,
             self.music_util,
             self.music_api_client,
             self.ui.tell_user,
-            self.playlist_stats,
+            self.playlist_analyzer,
         )
         num_tracks_added = playlist_updater.add_tracks_from_my_saved_albums_with_same_genres(
-            self._get_num_tracks_per_album, self._get_num_albums_to_fetch)
+            playlist,
+            self._get_num_tracks_per_album,
+            self._get_num_albums_to_fetch,
+        )
         if num_tracks_added > 0:
             return
         self.ui.tell_user("Will try to add songs with similar genres..")
         playlist_updater.add_tracks_from_my_saved_albums_with_similar_genres(
-            self._get_num_tracks_per_album, self._get_num_albums_to_fetch)
+            playlist,
+            self._get_num_tracks_per_album,
+            self._get_num_albums_to_fetch,
+        )
 
     def run_add_recommended_tracks_with_similar_attributes(self):
         self.ui.tell_user("Let's update an existing playlist with recommended tracks with similar attributes.")

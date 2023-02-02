@@ -99,5 +99,5 @@ python run_tests.py TestSpotify
 python run_tests.py TestMusicLibBot
 python run_tests.py TestMyMusicLib
 python run_tests.py TestMusicUtil
-python run_tests.py TestPlaylistStats
+python run_tests.py TestPlaylistAnalyzer
 ```
