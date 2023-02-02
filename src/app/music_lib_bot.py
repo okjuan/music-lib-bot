@@ -64,9 +64,9 @@ class MusicLibBot:
             "",
             "Ok, so this is how this works..",
             "First, I'll find all your playlists that have a certain prefix in their name...",
-            "Then, for each of them, I'll create a 'target' playlist"
-            "(or find an existing one because I may have done this for you in the past.)",
-            "(A target playlist is named the same as its seed playlist minus the prefix.)",
+            "Then, for each of them, I'll create a 'target' playlist...",
+            "...or find an existing one because I may have done this for you in the past.",
+            "A target playlist is named the same as its seed playlist minus the prefix.",
             "Then I'll add songs from the seed to the target, avoiding duplicates!",
         ]
         self.ui.tell_user("\n".join(messages))
@@ -100,7 +100,7 @@ class MusicLibBot:
                 lambda seed_playlist_name: seed_playlist_name[len(seed_prefix):],
             )
             if target_playlist is not None:
-                updated_playlists += target_playlist
+                updated_playlists += [target_playlist]
             del playlist_updater
 
         num_playlists_updated = len(updated_playlists)
