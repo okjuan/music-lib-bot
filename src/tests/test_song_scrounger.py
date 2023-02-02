@@ -752,7 +752,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
             ),
         ]
 
-        results = await self.song_scrounger.find_songs("mock file path")
+        results = await self.song_scrounger.find_songs_in_text_file("mock file path")
 
         mock_read_file_contents.assert_called_once_with("mock file path")
         self.mock_spotify_client.get_matching_tracks.assert_any_call("American Pie")
@@ -781,7 +781,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
             ),
         ]
 
-        results = await self.song_scrounger.find_songs("mock file path")
+        results = await self.song_scrounger.find_songs_in_text_file("mock file path")
 
         mock_read_file_contents.assert_called_once_with("mock file path")
         self.mock_spotify_client.get_matching_tracks.assert_any_call("Time Is On My Side")
@@ -814,7 +814,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
             ),
         ]
 
-        results = await self.song_scrounger.find_songs("mock file path")
+        results = await self.song_scrounger.find_songs_in_text_file("mock file path")
 
         mock_read_file_contents.assert_called_once_with("mock file path")
         self.mock_spotify_client.get_matching_tracks.assert_any_call("Satisfaction")
@@ -848,7 +848,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
             )
         ]
 
-        results = await self.song_scrounger.find_songs("mock file path")
+        results = await self.song_scrounger.find_songs_in_text_file("mock file path")
 
         mock_read_file_contents.assert_called_once_with("mock file path")
         self.mock_spotify_client.get_matching_tracks.assert_called_once_with("Mock Song Name")
@@ -875,7 +875,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
             )
         ]
 
-        results = await self.song_scrounger.find_songs("mock file path")
+        results = await self.song_scrounger.find_songs_in_text_file("mock file path")
 
         mock_read_file_contents.assert_called_once_with("mock file path")
         self.mock_spotify_client.get_matching_tracks.assert_called_once_with("Mock Song Name")
@@ -1061,7 +1061,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
 
         song_scrounger = SongScrounger(Spotify())
         input_file_path = helper.get_path_to_test_input_file(input_file_name)
-        return await song_scrounger.find_songs(input_file_path)
+        return await song_scrounger.find_songs_in_text_file(input_file_path)
 
     @unittest.skip("Integration tests disabled by default")
     @patch("packages.song_scrounger.song_scrounger.read_file_contents", return_value="\"Revolver\" by The Beatles")
@@ -1129,7 +1129,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
 
         song_scrounger = SongScrounger(Spotify())
         input_file_path = helper.get_path_to_test_input_file(input_file_name)
-        return await song_scrounger.find_albums(input_file_path)
+        return await song_scrounger.find_albums_in_text_file(input_file_path)
 
 class TestSongScroungerHelper():
     @classmethod

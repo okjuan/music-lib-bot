@@ -10,13 +10,31 @@ class SongScrounger:
     def __init__(self, spotify_client):
         self.spotify_client = spotify_client
 
-    async def find_songs(self, input_file_path):
+    async def find_songs_in_text_file(self, input_file_path):
         text = read_file_contents(input_file_path)
         songs = self.find_media_items(text, self.spotify_client.get_matching_tracks)
         return songs
 
-    async def find_albums(self, input_file_path):
+    async def find_albums_in_text_file(self, input_file_path):
         text = read_file_contents(input_file_path)
+        albums = self.find_media_items(text, self.spotify_client.get_matching_albums)
+        return albums
+
+    def find_songs(self, text):
+        """Given text (string), return songs mentioned in it.
+
+        Returns:
+            (dict): key (str) is name; val (set(Song)) of matching media items.
+        """
+        songs = self.find_media_items(text, self.spotify_client.get_matching_tracks)
+        return songs
+
+    def find_albums(self, text):
+        """Given text (string), return albums mentioned in it.
+
+        Returns:
+            (dict): key (str) is name; val (set(Album)) of matching media items.
+        """
         albums = self.find_media_items(text, self.spotify_client.get_matching_albums)
         return albums
 
