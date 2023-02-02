@@ -27,7 +27,6 @@ def main():
     print(f"Got it!")
 
     playlist_updater = PlaylistUpdater(
-        playlist,
         my_music_lib,
         music_util,
         spotify,
@@ -36,7 +35,7 @@ def main():
     )
 
     playlist_updater.add_recommended_songs_with_similar_attributes(
-        lambda: 10)
+        playlist, lambda: 10)
 
 
 if __name__ == "__main__":

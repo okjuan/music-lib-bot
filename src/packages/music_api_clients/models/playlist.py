@@ -1,6 +1,7 @@
 from packages.music_api_clients.models.track import Track
 
 class Playlist:
+    # TODO accept genres
     def __init__(self, name, description, tracks_fetcher, spotify_id=None):
         self.name = name
         self.description = description
@@ -8,6 +9,7 @@ class Playlist:
         self.spotify_id = spotify_id
         self.tracks = None
         self.num_tracks = None
+        # TODO assign self.genres
 
     def __key(self):
         return self.spotify_id
@@ -19,6 +21,8 @@ class Playlist:
         if isinstance(other, Playlist):
             return self.__key() == other.__key()
         return NotImplemented
+
+    # TODO expose self.genres setter
 
     def get_tracks(self):
         if self.tracks is None:

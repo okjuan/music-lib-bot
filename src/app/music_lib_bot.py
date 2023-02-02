@@ -88,7 +88,6 @@ class MusicLibBot:
         updated_playlists = []
         for seed_playlist in seed_playlists:
             playlist_updater = PlaylistUpdater(
-                seed_playlist,
                 self.my_music_lib,
                 self.music_util,
                 self.music_api_client,
@@ -96,6 +95,7 @@ class MusicLibBot:
                 self.playlist_stats,
             )
             target_playlist = playlist_updater.create_or_update_target_from_seed(
+                seed_playlist,
                 num_tracks_per_album,
                 lambda seed_playlist_name: seed_playlist_name[len(seed_prefix):],
             )
@@ -117,7 +117,6 @@ class MusicLibBot:
         playlist = self._get_playlist_from_user(
             self.my_music_lib.get_playlist_by_name)
         playlist_updater = PlaylistUpdater(
-            playlist,
             self.my_music_lib,
             self.music_util,
             self.music_api_client,
@@ -125,12 +124,18 @@ class MusicLibBot:
             self.playlist_stats,
         )
         num_tracks_added = playlist_updater.add_tracks_from_my_saved_albums_with_same_genres(
-            self._get_num_tracks_per_album, self._get_num_albums_to_fetch)
+            playlist,
+            self._get_num_tracks_per_album,
+            self._get_num_albums_to_fetch,
+        )
         if num_tracks_added > 0:
             return
         self.ui.tell_user("Will try to add songs with similar genres..")
         playlist_updater.add_tracks_from_my_saved_albums_with_similar_genres(
-            self._get_num_tracks_per_album, self._get_num_albums_to_fetch)
+            playlist,
+            self._get_num_tracks_per_album,
+            self._get_num_albums_to_fetch,
+        )
 
     def run_add_recommended_tracks_with_similar_attributes(self):
         self.ui.tell_user("Let's update an existing playlist with recommended tracks with similar attributes.")

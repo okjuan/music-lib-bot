@@ -22,9 +22,9 @@ def main():
     seed_playlists = my_music_lib.search_my_playlists(seed_prefix)
     print(f"Found {len(seed_playlists)} matching playlists.")
 
+    # TODO: replace all of this with a single call to playlist_updater.update_my_seed_playlists
     for seed_playlist in seed_playlists:
         playlist_updater = PlaylistUpdater(
-            seed_playlist,
             my_music_lib,
             music_util,
             spotify,
@@ -33,7 +33,7 @@ def main():
         )
         get_target_playlist_name = lambda seed_playlist_name: seed_playlist_name[len(seed_prefix):]
         updated_playlist = playlist_updater.create_or_update_target_from_seed(
-            3, get_target_playlist_name)
+            seed_playlist, 3, get_target_playlist_name)
         if updated_playlist is not None:
             print(f"Updated '{updated_playlist.name}'.")
 
