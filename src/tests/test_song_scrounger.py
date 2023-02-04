@@ -149,7 +149,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(results.keys()), 1)
         self.assertTrue("Sorry" in results.keys())
         self.assertEqual(len(results["Sorry"]), 1)
-        self.assertEqual(results["Sorry"], set([songs[0]]))
+        self.assertEqual(results["Sorry"], [songs[0]])
 
     async def test_find_media_items__same_item_mentioned_twice__returns_only_one_copy(self):
         text = "\"Sorry\" by Justin Bieber... as I said, \"Sorry\"..."
@@ -179,7 +179,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(results.keys()), 1)
         self.assertTrue("Sorry" in results.keys())
         self.assertEqual(len(results["Sorry"]), 1)
-        self.assertEqual(results["Sorry"], set(songs))
+        self.assertEqual(results["Sorry"], songs)
 
     async def test_find_media_items__homonym_items_w_different_artists__returns_both_versions(self):
         text = "\"Sorry\" by Justin Bieber...\"Sorry\" by Nothing But Thieves"
@@ -215,7 +215,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(results.keys()), 1)
         self.assertTrue("Sorry" in results.keys())
         self.assertEqual(len(results["Sorry"]), 2)
-        self.assertEqual(results["Sorry"], set(songs))
+        self.assertEqual(set(results["Sorry"]), set(songs))
 
     async def test_find_media_items__multiple_search_results_w_same_artist__returns_only_one(self):
         text = "\"American Pie\" by Don McLean"
@@ -248,7 +248,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(results.keys()), 1)
         self.assertTrue("American Pie" in results.keys())
         self.assertEqual(len(results["American Pie"]), 1)
-        self.assertEqual(results["American Pie"], set([more_popular_version]))
+        self.assertEqual(results["American Pie"], [more_popular_version])
 
     async def test_find_media_items__single_album(self):
         text = "\"Sweetener\" by Ariana Grande."
@@ -280,7 +280,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(results.keys()), 1)
         self.assertTrue("Sweetener" in results.keys())
         self.assertEqual(len(results["Sweetener"]), 1)
-        self.assertEqual(results["Sweetener"], set([albums[0]]))
+        self.assertEqual(results["Sweetener"], [albums[0]])
 
     async def test_filter_if_any_artists_mentioned_greedy__no_matching_artist_in_cur_paragraph_and_multiple_matching_songs__finds_artist_elsewhere_in_doc(self):
         song_w_matching_artist = mock_track(
@@ -752,7 +752,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
             ),
         ]
 
-        results = await self.song_scrounger.find_songs_in_text_file("mock file path")
+        results = self.song_scrounger.find_songs_in_text_file("mock file path")
 
         mock_read_file_contents.assert_called_once_with("mock file path")
         self.mock_spotify_client.get_matching_tracks.assert_any_call("American Pie")
@@ -781,7 +781,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
             ),
         ]
 
-        results = await self.song_scrounger.find_songs_in_text_file("mock file path")
+        results = self.song_scrounger.find_songs_in_text_file("mock file path")
 
         mock_read_file_contents.assert_called_once_with("mock file path")
         self.mock_spotify_client.get_matching_tracks.assert_any_call("Time Is On My Side")
@@ -814,7 +814,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
             ),
         ]
 
-        results = await self.song_scrounger.find_songs_in_text_file("mock file path")
+        results = self.song_scrounger.find_songs_in_text_file("mock file path")
 
         mock_read_file_contents.assert_called_once_with("mock file path")
         self.mock_spotify_client.get_matching_tracks.assert_any_call("Satisfaction")
@@ -848,7 +848,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
             )
         ]
 
-        results = await self.song_scrounger.find_songs_in_text_file("mock file path")
+        results = self.song_scrounger.find_songs_in_text_file("mock file path")
 
         mock_read_file_contents.assert_called_once_with("mock file path")
         self.mock_spotify_client.get_matching_tracks.assert_called_once_with("Mock Song Name")
@@ -875,7 +875,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
             )
         ]
 
-        results = await self.song_scrounger.find_songs_in_text_file("mock file path")
+        results = self.song_scrounger.find_songs_in_text_file("mock file path")
 
         mock_read_file_contents.assert_called_once_with("mock file path")
         self.mock_spotify_client.get_matching_tracks.assert_called_once_with("Mock Song Name")
@@ -1129,7 +1129,7 @@ class TestSongScrounger(unittest.IsolatedAsyncioTestCase):
 
         song_scrounger = SongScrounger(Spotify())
         input_file_path = helper.get_path_to_test_input_file(input_file_name)
-        return await song_scrounger.find_albums_in_text_file(input_file_path)
+        return song_scrounger.find_albums_in_text_file(input_file_path)
 
 class TestSongScroungerHelper():
     @classmethod

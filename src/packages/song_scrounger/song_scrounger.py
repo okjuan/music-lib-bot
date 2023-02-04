@@ -10,12 +10,12 @@ class SongScrounger:
     def __init__(self, spotify_client):
         self.spotify_client = spotify_client
 
-    async def find_songs_in_text_file(self, input_file_path):
+    def find_songs_in_text_file(self, input_file_path):
         text = read_file_contents(input_file_path)
         songs = self.find_media_items(text, self.spotify_client.get_matching_tracks)
         return songs
 
-    async def find_albums_in_text_file(self, input_file_path):
+    def find_albums_in_text_file(self, input_file_path):
         text = read_file_contents(input_file_path)
         albums = self.find_media_items(text, self.spotify_client.get_matching_albums)
         return albums
@@ -24,7 +24,7 @@ class SongScrounger:
         """Given text (string), return songs mentioned in it.
 
         Returns:
-            (dict): key (str) is name; val (set(Song)) of matching media items.
+            (dict): key (str) is name; val (list(Song)) of matching media items.
         """
         songs = self.find_media_items(text, self.spotify_client.get_matching_tracks)
         return songs
@@ -33,7 +33,7 @@ class SongScrounger:
         """Given text (string), return albums mentioned in it.
 
         Returns:
-            (dict): key (str) is name; val (set(Album)) of matching media items.
+            (dict): key (str) is name; val (list(Album)) of matching media items.
         """
         albums = self.find_media_items(text, self.spotify_client.get_matching_albums)
         return albums
@@ -52,9 +52,9 @@ class SongScrounger:
             name_lookup (asyn func): given a name (str), returns an object (e.g. Song, Album).
 
         Returns:
-            (dict): key (str) is name; val (set(Song|Album)) of matching media items.
+            (dict): key (str) is name; val (list(Song|Album)) of matching media items.
         """
-        results = defaultdict(set)
+        results = defaultdict(list)
         paragraphs = self._get_paragraphs(text)
         for paragraph in paragraphs:
             names = self.find_names(paragraph)
@@ -62,7 +62,8 @@ class SongScrounger:
                 media_items = name_lookup(name)
                 media_items = self.filter_if_any_artists_mentioned_greedy(media_items, paragraph, text)
                 media_items = self.reduce_by_popularity_per_artist(media_items)
-                results[name] = results[name] | media_items
+                union = set(results[name]) | media_items
+                results[name] = list(union)
         return results
 
     def filter_if_any_artists_mentioned_greedy(self, songs_or_albums, subset_text, whole_text):
