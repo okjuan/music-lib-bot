@@ -2,9 +2,11 @@
 # $ python app/music_lib_bot.py
 import sys
 sys.path.extend(['.', '../'])
+import os
 
 from packages.music_management.music_util import MusicUtil
 from packages.music_management.my_music_lib import MyMusicLib
+from packages.song_scrounger.song_scrounger import SongScrounger
 from packages.music_management.playlist_creator import PlaylistCreator
 from packages.music_management.playlist_analyzer import PlaylistAnalyzer
 from packages.music_management.playlist_updater import PlaylistUpdater
@@ -41,10 +43,11 @@ class MusicLibBot:
     collecting configuration parameters from the user and informing the user.
     """
 
-    def __init__(self, music_api_client, my_music_lib, music_util, ui):
+    def __init__(self, music_api_client, my_music_lib, music_util, song_scrounger, ui):
         self.music_api_client = music_api_client
         self.my_music_lib = my_music_lib
         self.music_util = music_util
+        self.song_scrounger = song_scrounger
         self.ui = ui
         self.playlist_creator = PlaylistCreator(
             self.music_api_client,
@@ -216,6 +219,61 @@ class MusicLibBot:
             _get_num_tracks_per_album,
         )
 
+    def run_song_scrounger(self):
+        skip_explanation = self.ui.get_yes_or_no("Do you know how this works? y or n - default is y", True)
+        if not skip_explanation:
+            self.ui.tell_user("""
+                I can find songs mentioned \"In Quotes\" <-- like that.
+                And if there is mention of an artist elsewhere, I'll find it to narrow down the matching songs.
+                (The artist's name doesn't have to be in quotes.)
+
+                For example, if you give me this text:
+                \tI like the song "American Pie"
+
+                I'll find the song name American Pie, but I won't know which artist you're interested in.
+                So I'll pick the most popular one.
+
+                But if, for example, you give me this text:
+                \tWhen Don McLean recorded "American Pie"
+
+                I'll find the song name American Pie AND I'll know you want the Don McLean version.
+
+                Ok! Let's do it!
+            """)
+        file = self._get_file_from_user()
+        songs = self.song_scrounger.find_songs_in_text_file(file)
+        if len(songs) == 0:
+            self.ui.tell_user("Didn't find any songs :(")
+            return
+
+        self.ui.tell_user(f"\nFound {len(songs)} song name(s) in the file.")
+
+        print_summary = self.ui.get_yes_or_no(f"Do you want a summary of my findings? y or n - default is n", False)
+        if print_summary:
+            for song_name, matching_songs in songs.items():
+                num_songs = len(matching_songs)
+                if num_songs == 0:
+                    self.ui.tell_user(f"- Couldn't find any songs named '{song_name}'")
+                    continue
+
+                if num_songs == 1:
+                    self.ui.tell_user(f"- '{song_name}' by {matching_songs[0].artists[0].name}")
+                else:
+                    self.ui.tell_user(f"- '{song_name}' by {len(matching_songs)} different artists:")
+                    for matched_song in matching_songs:
+                        self.ui.tell_user(f"\t- one by {', '.join([artist.name for artist in matched_song.artists])}")
+
+        new_playlist_name = self.ui.get_non_empty_string("What should your new playlist be called?")
+
+        self.ui.tell_user("Creating playlist...")
+        songs_to_add = [
+            s
+            for ss in songs.values()
+            for s in ss
+        ]
+        self.my_music_lib.create_playlist(new_playlist_name, songs_to_add)
+        self.ui.tell_user("Done!")
+
     def run(self):
         options = {
             "a": "Create playlist from an artist's discography.",
@@ -224,6 +282,7 @@ class MusicLibBot:
             "d": "Create playlist from albums in your library that have matching genres.",
             "e": "Update existing playlist with tracks from my saved albums with similar genres.",
             "f": "Update existing playlist with recommended tracks with similar attributes.",
+            "g": "Create playlist from songs mentioned in raw text (e.g. from a file).",
         }
         functions = {
             "a": self.run_create_playlist_from_an_artists_discography,
@@ -232,6 +291,7 @@ class MusicLibBot:
             "d": self.run_interactive_playlist_picker,
             "e": self.run_add_tracks_from_my_saved_albums_with_similar_genres,
             "f": self.run_add_recommended_tracks_with_similar_attributes,
+            "g": self.run_song_scrounger,
         }
         def option_pick_handler(pick):
             functions[pick]()
@@ -243,6 +303,17 @@ class MusicLibBot:
             self.ui,
             get_option_description,
         ).run()
+
+    def _get_file_from_user(self):
+        file_path = None
+        while file_path is None:
+            file_path = self.ui.get_non_empty_string(
+                "What's the name of your file? (put it in the current folder or give me a full path)")
+            os.path.isfile(file_path)
+            if file_path is None:
+                self.ui.tell_user("Can't find that file :/ Please try again.")
+                self.ui.tell_user("Give me a path relative to the current folder like folder/filename.txt or an absolute path like /Users/me/filename.txt.")
+        return file_path
 
     def _get_playlist_from_user(self, get_playlist_by_name):
         playlist = None
@@ -378,7 +449,8 @@ def main():
     ui = ConsoleUI()
     music_util = MusicUtil(spotify, ui.tell_user)
     my_music_lib = MyMusicLib(spotify, music_util, ui.tell_user)
-    MusicLibBot(spotify, my_music_lib, music_util, ui).run()
+    song_scrounger = SongScrounger(spotify)
+    MusicLibBot(spotify, my_music_lib, music_util, song_scrounger, ui).run()
 
 
 if __name__ == "__main__":
