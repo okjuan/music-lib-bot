@@ -351,6 +351,8 @@ class MusicLibBot:
     def _get_artist_from_user(self):
         artist_name = self.ui.get_non_empty_string("What artist interests you?")
         matching_artists = self.music_api_client.get_matching_artists(artist_name)
+        exact_matching_artists = self.music_util.filter_exact_matches(artist_name, matching_artists)
+        matching_artists = matching_artists if len(exact_matching_artists) == 0 else exact_matching_artists
         if matching_artists == []:
             self.ui.tell_user(f"Sorry, I couldn't find an artist by the name '{artist_name}'")
             return None
