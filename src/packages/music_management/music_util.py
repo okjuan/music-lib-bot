@@ -2,6 +2,8 @@ from collections import defaultdict
 from re import match
 from packages.music_api_clients.models.audio_features import AudioFeatures
 from packages.music_api_clients.models.song_attribute_ranges import SongAttributeRanges
+from packages.music_api_clients.models.artist import Artist
+from typing import List
 
 
 class MusicUtil:
@@ -180,6 +182,13 @@ class MusicUtil:
             for track in playlist.get_tracks()
             for artist in track.artists
         })
+
+    def filter_exact_matches(self, artist_name: str, artists: List["Artist"]):
+        return [
+            artist
+            for artist in artists
+            if artist.name.lower().strip() == artist_name.lower().strip()
+        ]
 
     def order_albums_chronologically(self, albums):
         return sorted(albums, key=lambda album: album.release_date)
