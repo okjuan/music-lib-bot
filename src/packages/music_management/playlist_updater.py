@@ -48,7 +48,7 @@ class PlaylistUpdater:
         albums_to_add = set(seed_albums) - set(current_albums)
 
         if len(albums_to_add) == 0:
-            return target_playlist, False
+            return target_playlist, 0
 
         tracks_to_add = self.music_util.get_most_popular_tracks_from_each(
             albums_to_add, num_tracks_per_album)
