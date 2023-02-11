@@ -31,8 +31,13 @@ def main():
         playlist_analyzer
     ).create_or_update_all_targets_from_seeds(seed_playlists, 3, get_target_playlist_name)
 
+    no_playlist_was_updated = True
     for update in updates:
-        print(f"Added {update[1]} songs to playlist '{update[0].name}'.")
+        if update[1] > 0:
+            no_playlist_was_updated = False
+            print(f"Added {update[1]} songs to playlist '{update[0].name}'.")
+    if no_playlist_was_updated:
+        print("Didn't update any playlists!")
 
 
 if __name__ == "__main__":
