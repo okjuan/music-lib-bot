@@ -75,6 +75,16 @@ class Spotify:
         albums = self._get_albums_from_ids(matching_album_ids)
         return set(albums)
 
+    def get_all_user_playlists(self, user_id):
+        def get_playlist_tracks(spotify_playlist_id):
+            return lambda: self._get_playlist_tracks(spotify_playlist_id)
+        results = self.client.user_playlists(user_id)
+        return [
+            Playlist.from_spotify_playlist_search_results(
+                playlist, get_playlist_tracks(playlist['id']))
+            for playlist in results['items']
+        ]
+
     def get_current_user_playlist_by_name(self, name):
         playlist_id = self.find_current_user_playlist(name)
         if playlist_id is None:
