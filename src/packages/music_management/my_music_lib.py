@@ -26,6 +26,9 @@ class MyMusicLib:
             self.music_api_client.add_tracks(playlist, tracks)
         return playlist
 
+    def delete_playlist(self, playlist_id):
+        self.music_api_client.delete_playlist(playlist_id)
+
     def get_or_create_playlist(self, name):
         playlist = self.get_playlist_by_name(name)
         if playlist is None:

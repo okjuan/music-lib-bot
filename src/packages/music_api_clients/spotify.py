@@ -209,6 +209,9 @@ class Spotify:
             user_id, name, public=False, description=description)
         return Playlist.from_spotify_playlist(playlist)
 
+    def delete_playlist(self, playlist_id):
+        self.client.current_user_unfollow_playlist(playlist_id)
+
     def add_tracks(self, playlist, tracks):
         num_tracks_added_so_far, num_tracks_to_add = 0, len(tracks)
         while num_tracks_added_so_far < num_tracks_to_add:
