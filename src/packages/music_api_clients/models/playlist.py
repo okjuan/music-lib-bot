@@ -6,7 +6,7 @@ class Playlist:
         self.description = description
         self.tracks_fetcher = tracks_fetcher
         self.spotify_id = spotify_id
-        self.tracks = None
+        self._tracks = None
         self.num_tracks = None
 
     def __key(self):
@@ -21,15 +21,15 @@ class Playlist:
         return NotImplemented
 
     def get_tracks(self):
-        if self.tracks is None:
-            self.tracks = self.tracks_fetcher()
-        return self.tracks
+        if self._tracks is None:
+            self._tracks = self.tracks_fetcher()
+        return self._tracks
 
     def get_num_tracks(self):
         if self.num_tracks is None:
-            if self.tracks is None:
-                self.tracks = self.tracks_fetcher()
-            self.num_tracks = len(self.tracks)
+            if self._tracks is None:
+                self._tracks = self.tracks_fetcher()
+            self.num_tracks = len(self._tracks)
         return self.num_tracks
 
     def has_any_tracks_from_album(self, album):
