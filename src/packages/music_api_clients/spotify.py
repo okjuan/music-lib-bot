@@ -333,13 +333,15 @@ class Spotify:
             (List): all fetched items.
         """
         all_items, finished = fetch_func()
-        all_items = set(all_items)
+        # transforming list to a set is losing the order
+        # TODO: find another way to remove duplicates
+        #all_items = set(all_items)
         offset, batch_size = 0, API_BATCH_SIZE
         while not finished:
             offset += batch_size
             items, finished = fetch_func(batch_size=batch_size, offset=offset)
-            all_items |= set(items)
-        return list(all_items)
+            all_items.extend(items)
+        return all_items
 
     def _fetch_in_batches(self, items_to_fetch, fetch_items):
         """
